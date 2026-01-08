@@ -1,0 +1,15 @@
+﻿<IfModule mod_rewrite.c>
+RewriteEngine On
+
+# Garante que estamos na pasta /public
+RewriteBase /
+
+# Se não for arquivo real
+RewriteCond %{REQUEST_FILENAME} !-f
+
+# Se não for diretório real
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Redireciona tudo para o index.php
+RewriteRule ^(.*)$ index.php?url= [QSA,L]
+</IfModule>

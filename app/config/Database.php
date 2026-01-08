@@ -2,42 +2,43 @@
 
 class Database
 {
-    private static  = null;
-    private ;
+    private static $instance = null;
+    private $conn;
 
-    private System.Management.Automation.Internal.Host.InternalHost = 'localhost';
-    private  = 'amigo_do_bolso';
-    private  = 'root';
-    private  = '';
+    private $host = 'localhost';
+    private $db_name = 'amigo_do_bolso';
+    private $username = 'root';
+    private $password = '';
 
     private function __construct()
     {
         try {
-            ->conn = new PDO(
-                ""mysql:host={->host};dbname={->db_name};charset=utf8mb4"",
-                ->username,
-                ->password,
+            $this->conn = new PDO(
+                "mysql:host={$this->host};dbname={$this->db_name};charset=utf8mb4",
+                $this->username,
+                $this->password,
                 [
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                     PDO::ATTR_EMULATE_PREPARES => false
                 ]
             );
-        } catch (PDOException ) {
-            die(""Erro de conexão: "" . ->getMessage());
+        } catch (PDOException $e) {
+            die("Erro de conexão: " . $e->getMessage());
         }
     }
 
     public static function getInstance()
     {
-        if (self:: === null) {
-            self:: = new self();
+        if (self::$instance === null) {
+            self::$instance = new self();
         }
-        return self::;
+
+        return self::$instance;
     }
 
     public function getConnection()
     {
-        return ->conn;
+        return $this->conn;
     }
 }

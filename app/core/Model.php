@@ -2,65 +2,69 @@
 
 class Model
 {
-    protected ;
-    protected ;
+    protected $db;
+    protected $table;
 
     public function __construct()
     {
-        ->db = Database::getInstance()->getConnection();
+        $this->db = Database::getInstance()->getConnection();
     }
 
     public function findAll()
     {
-         = ->db->query(""SELECT * FROM {->table}"");
-        return ->fetchAll();
+        $stmt = $this->db->query("SELECT * FROM {$this->table}");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function findById()
+    public function findById($id)
     {
-         = ->db->prepare(""SELECT * FROM {->table} WHERE id = ?"");
-        ->execute([]);
-        return ->fetch();
+        $stmt = $this->db->prepare("SELECT * FROM {$this->table} WHERE id = :id");
+        $stmt->bindValue(':id', $id);
+        $stmt->execute();
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function create()
+    public function create(array $data)
     {
-         = implode(', ', array_keys());
-         = ':' . implode(', :', array_keys());
+        $fields = implode(', ', array_keys($data));
+        $values = ':' . implode(', :', array_keys($data));
 
-         = ""INSERT INTO {->table} () VALUES ()"";
-         = ->db->prepare();
+        $sql = "INSERT INTO {$this->table} ($fields) VALUES ($values)";
+        $stmt = $this->db->prepare($sql);
 
-        foreach ( as  => ) {
-            ->bindValue("":"", );
+        foreach ($data as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
         }
 
-        ->execute();
-        return ->db->lastInsertId();
+        $stmt->execute();
+        return $this->db->lastInsertId();
     }
 
-    public function update(, )
+    public function update($id, array $data)
     {
-         = [];
-        foreach ( as  => ) {
-            [] = "" = :"";
-        }
-         = implode(', ', );
+        $fields = [];
 
-         = ""UPDATE {->table} SET  WHERE id = :id"";
-         = ->db->prepare();
-
-        ->bindValue(':id', );
-        foreach ( as  => ) {
-            ->bindValue("":"", );
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = :$key";
         }
 
-        return ->execute();
+        $fields = implode(', ', $fields);
+
+        $sql = "UPDATE {$this->table} SET $fields WHERE id = :id";
+        $stmt = $this->db->prepare($sql);
+
+        $stmt->bindValue(':id', $id);
+        foreach ($data as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
+
+        return $stmt->execute();
     }
 
-    public function delete()
+    public function delete($id)
     {
-         = ->db->prepare(""DELETE FROM {->table} WHERE id = ?"");
-        return ->execute([]);
+        $stmt = $this->db->prepare("DELETE FROM {$this->table} WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
     }
 }

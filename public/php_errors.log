@@ -1,0 +1,110 @@
+[08-Jan-2026 20:51:39 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:39 Europe/Berlin] REQUEST_URI: /auth/register
+[08-Jan-2026 20:51:39 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:39 Europe/Berlin] ======================
+[08-Jan-2026 20:51:39 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:39 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:39 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:39 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:39 Europe/Berlin] REQUEST_URI: /favicon.ico
+[08-Jan-2026 20:51:39 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:39 Europe/Berlin] ======================
+[08-Jan-2026 20:51:39 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:39 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:39 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:40 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:40 Europe/Berlin] REQUEST_URI: /auth/register
+[08-Jan-2026 20:51:40 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:40 Europe/Berlin] ======================
+[08-Jan-2026 20:51:40 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:40 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:41 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:41 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:41 Europe/Berlin] REQUEST_URI: /favicon.ico
+[08-Jan-2026 20:51:41 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:41 Europe/Berlin] ======================
+[08-Jan-2026 20:51:41 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:41 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:41 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:54 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:54 Europe/Berlin] REQUEST_URI: /auth/register
+[08-Jan-2026 20:51:54 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:54 Europe/Berlin] ======================
+[08-Jan-2026 20:51:54 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:54 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:54 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:54 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:54 Europe/Berlin] REQUEST_URI: /favicon.ico
+[08-Jan-2026 20:51:54 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:54 Europe/Berlin] ======================
+[08-Jan-2026 20:51:54 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:54 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:54 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:56 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:56 Europe/Berlin] REQUEST_URI: /auth/register
+[08-Jan-2026 20:51:56 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:56 Europe/Berlin] ======================
+[08-Jan-2026 20:51:56 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:56 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:56 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:56 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:56 Europe/Berlin] REQUEST_URI: /favicon.ico
+[08-Jan-2026 20:51:56 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:56 Europe/Berlin] ======================
+[08-Jan-2026 20:51:56 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:56 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:56 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:57 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:57 Europe/Berlin] REQUEST_URI: /auth/register
+[08-Jan-2026 20:51:57 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:57 Europe/Berlin] ======================
+[08-Jan-2026 20:51:57 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:57 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:57 Europe/Berlin] AuthController::login() chamado
+[08-Jan-2026 20:51:57 Europe/Berlin] === TESTE .htaccess ===
+[08-Jan-2026 20:51:57 Europe/Berlin] REQUEST_URI: /favicon.ico
+[08-Jan-2026 20:51:57 Europe/Berlin] GET url: 
+[08-Jan-2026 20:51:57 Europe/Berlin] ======================
+[08-Jan-2026 20:51:57 Europe/Berlin] Router - URL parseada: Array
+(
+    [0] => 
+)
+
+[08-Jan-2026 20:51:57 Europe/Berlin] Router - Controller: AuthController, Method: login
+[08-Jan-2026 20:51:57 Europe/Berlin] AuthController::login() chamado

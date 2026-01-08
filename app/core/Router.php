@@ -1,55 +1,92 @@
 ﻿<?php
 
-class Router
-{
-    private $controller = 'DashboardController';
-    private $method = 'index';
-    private $params = [];
-
-    public function run()
+    class Router
     {
-        $url = $this->parseUrl();
+        private $controller = 'AuthController';
+        private $method = 'login';
+        private $params = [];
 
-        // Verifica se é rota de autenticação
-        if (isset($url[0]) && $url[0] === 'auth') {
-            $this->controller = 'AuthController';
-            array_shift($url);
-        } 
-        elseif (isset($url[0]) && !empty($url[0])) {
-            $controllerName = ucfirst($url[0]) . 'Controller';
+        public function run()
+        {
+            $url = $this->parseUrl();
 
-            if (file_exists(CONTROLLERS . '/' . $controllerName . '.php')) {
-                $this->controller = $controllerName;
+            // DEBUG
+            error_log("Router - URL parseada: " . print_r($url, true));
+
+            // Se não tem URL, vai para login se não estiver logado
+            if (empty($url) || (count($url) === 1 && empty($url[0]))) {
+                if (isset($_SESSION['user_id'])) {
+                    $this->controller = 'DashboardController';
+                    $this->method = 'index';
+                } else {
+                    $this->controller = 'AuthController';
+                    $this->method = 'login';
+                }
+            }
+            // Verifica se é rota de autenticação
+            elseif ($url[0] === 'auth') {
+                $this->controller = 'AuthController';
+                array_shift($url);
+
+                // Define o método (login, register, logout)
+                if (isset($url[0]) && !empty($url[0])) {
+                    $method = $url[0];
+
+                    // Valida se o método existe
+                    if (in_array($method, ['login', 'register', 'logout'])) {
+                        $this->method = $method;
+                        error_log("Router - Método auth detectado: {$method}");
+                    }
+
+                    array_shift($url);
+                }
+            }
+            // Outras rotas
+            elseif (isset($url[0]) && !empty($url[0])) {
+                $controllerName = ucfirst($url[0]) . 'Controller';
+
+                if (file_exists(CONTROLLERS . '/' . $controllerName . '.php')) {
+                    $this->controller = $controllerName;
+                    array_shift($url);
+
+                    // Se não tem método especificado, usa 'index' como padrão
+                    if (isset($url[0]) && !empty($url[0])) {
+                        $this->method = $url[0];
+                        array_shift($url);
+                    } else {
+                        $this->method = 'index';
+                    }
+                }
             }
 
-            array_shift($url);
+            error_log("Router - Controller: {$this->controller}, Method: {$this->method}");
+
+            // Carrega o controller
+            $controllerFile = CONTROLLERS . '/' . $this->controller . '.php';
+
+            if (!file_exists($controllerFile)) {
+                die("Controller não encontrado: {$this->controller}");
+            }
+
+            require_once $controllerFile;
+            $this->controller = new $this->controller;
+
+            // Verifica se o método existe
+            if (!method_exists($this->controller, $this->method)) {
+                die("Método não encontrado: {$this->method} no controller " . get_class($this->controller));
+            }
+
+            $this->params = $url ? array_values($url) : [];
+
+            call_user_func_array([$this->controller, $this->method], $this->params);
         }
 
-        require_once CONTROLLERS . '/' . $this->controller . '.php';
-        $this->controller = new $this->controller;
-
-        if (isset($url[0]) && method_exists($this->controller, $url[0])) {
-            $this->method = $url[0];
-            array_shift($url);
+        private function parseUrl()
+        {
+            if (isset($_GET['url'])) {
+                $url = filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL);
+                return explode('/', $url);
+            }
+            return [];
         }
-
-        $this->params = $url ? array_values($url) : [];
-
-        call_user_func_array(
-            [$this->controller, $this->method],
-            $this->params
-        );
     }
-
-    private function parseUrl()
-    {
-        if (isset($_GET['url'])) {
-            return explode(
-                '/',
-                filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL)
-            );
-        }
-
-        return [];
-    }
-}

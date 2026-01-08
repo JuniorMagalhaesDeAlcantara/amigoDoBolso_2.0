@@ -4,21 +4,25 @@ class DashboardController extends Controller {
     private $groupModel;
     private $transactionModel;
     private $goalModel;
+    private $userModel;
     
     public function __construct() {
         $this->requireLogin();
         $this->groupModel = new GroupModel();
         $this->transactionModel = new TransactionModel();
         $this->goalModel = new GoalModel();
+        $this->userModel = new UserModel();
     }
     
     public function index() {
         $userId = $_SESSION['user_id'];
-        $groups = $this->groupModel->getUserGroups($userId);
+        $groups = $this->userModel->getUserGroups($userId);
         
         // Se não tem grupo, redireciona para criar
         if (empty($groups)) {
-            $this->redirect('/grupos/criar');
+            // IMPORTANTE: Não usa redirect aqui, carrega a view direto
+            $this->view('grupos/criar');
+            return;
         }
         
         // Pega o primeiro grupo (ou o selecionado na sessão)

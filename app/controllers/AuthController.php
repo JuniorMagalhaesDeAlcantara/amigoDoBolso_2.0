@@ -8,6 +8,9 @@ class AuthController extends Controller {
     }
     
     public function login() {
+        // DEBUG
+        error_log("AuthController::login() chamado");
+        
         if ($this->isLoggedIn()) {
             $this->redirect('/dashboard');
         }
@@ -34,11 +37,17 @@ class AuthController extends Controller {
     }
     
     public function register() {
+        // DEBUG
+        error_log("AuthController::register() chamado");
+        error_log("REQUEST_METHOD: " . $_SERVER['REQUEST_METHOD']);
+        
         if ($this->isLoggedIn()) {
             $this->redirect('/dashboard');
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            error_log("POST detectado no register");
+            
             $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
             $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
             $password = $_POST['password'] ?? '';
@@ -82,8 +91,10 @@ class AuthController extends Controller {
                 }
             }
             
+            error_log("Erros: " . print_r($errors, true));
             $this->view('auth/register', ['errors' => $errors]);
         } else {
+            error_log("GET detectado no register - carregando view");
             $this->view('auth/register');
         }
     }

@@ -2,48 +2,51 @@
 
 class Router
 {
-    private  = 'DashboardController';
-    private  = 'index';
-    private  = [];
+    private $controller = 'DashboardController';
+    private $method = 'index';
+    private $params = [];
 
     public function run()
     {
-         = ->parseUrl();
+        $url = $this->parseUrl();
 
         // Verifica se é rota de autenticação
-        if (isset([0]) && [0] === 'auth') {
-            ->controller = 'AuthController';
-            array_shift();
-        } elseif (isset([0]) && !empty([0])) {
-             = ucfirst([0]) . 'Controller';
-            if (file_exists(CONTROLLERS . '/' .  . '.php')) {
-                ->controller = ;
+        if (isset($url[0]) && $url[0] === 'auth') {
+            $this->controller = 'AuthController';
+            array_shift($url);
+        } 
+        elseif (isset($url[0]) && !empty($url[0])) {
+            $controllerName = ucfirst($url[0]) . 'Controller';
+
+            if (file_exists(CONTROLLERS . '/' . $controllerName . '.php')) {
+                $this->controller = $controllerName;
             }
-            array_shift();
+
+            array_shift($url);
         }
 
-        require_once CONTROLLERS . '/' . ->controller . '.php';
-        ->controller = new ->controller;
+        require_once CONTROLLERS . '/' . $this->controller . '.php';
+        $this->controller = new $this->controller;
 
-        if (isset([0]) && method_exists(->controller, [0])) {
-            ->method = [0];
-            array_shift();
+        if (isset($url[0]) && method_exists($this->controller, $url[0])) {
+            $this->method = $url[0];
+            array_shift($url);
         }
 
-        ->params =  ? array_values() : [];
+        $this->params = $url ? array_values($url) : [];
 
         call_user_func_array(
-            [->controller, ->method],
-            ->params
+            [$this->controller, $this->method],
+            $this->params
         );
     }
 
     private function parseUrl()
     {
-        if (isset(['url'])) {
+        if (isset($_GET['url'])) {
             return explode(
                 '/',
-                filter_var(rtrim(['url'], '/'), FILTER_SANITIZE_URL)
+                filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL)
             );
         }
 

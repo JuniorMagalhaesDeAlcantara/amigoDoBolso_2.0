@@ -2,39 +2,41 @@
 
 class Controller
 {
-    protected function view(,  = [])
+    protected function view($view, $data = [])
     {
-        extract();
+        extract($data);
 
-        if (file_exists(VIEWS . '/' .  . '.php')) {
-            require_once VIEWS . '/' .  . '.php';
+        $file = VIEWS . '/' . $view . '.php';
+
+        if (file_exists($file)) {
+            require_once $file;
         } else {
-            die(""View não encontrada: "");
+            die("View não encontrada: {$view}");
         }
     }
 
-    protected function redirect()
+    protected function redirect($url)
     {
-        header(""Location: "" . );
-        exit();
+        header("Location: " . $url);
+        exit;
     }
 
     protected function isLoggedIn()
     {
-        return isset(['user_id']);
+        return isset($_SESSION['user_id']);
     }
 
     protected function requireLogin()
     {
-        if (!->isLoggedIn()) {
-            ->redirect('/auth/login');
+        if (!$this->isLoggedIn()) {
+            $this->redirect('/auth/login');
         }
     }
 
-    protected function json()
+    protected function json($data)
     {
-        header('Content-Type: application/json');
-        echo json_encode();
-        exit();
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode($data);
+        exit;
     }
 }

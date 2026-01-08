@@ -7,24 +7,26 @@ define('APP', ROOT . '/app');
 define('VIEWS', APP . '/views');
 define('CONTROLLERS', APP . '/controllers');
 define('MODELS', APP . '/models');
+define('CORE', APP . '/core');
+define('CONFIG', APP . '/config');
 
 // Autoload de classes
-spl_autoload_register(function () {
-     = [
-        APP . '/core/' .  . '.php',
-        APP . '/controllers/' .  . '.php',
-        APP . '/models/' .  . '.php',
-        APP . '/config/' .  . '.php',
+spl_autoload_register(function ($class) {
+    $paths = [
+        CORE . '/' . $class . '.php',
+        CONTROLLERS . '/' . $class . '.php',
+        MODELS . '/' . $class . '.php',
+        CONFIG . '/' . $class . '.php',
     ];
-    
-    foreach ( as ) {
-        if (file_exists()) {
-            require_once ;
+
+    foreach ($paths as $file) {
+        if (file_exists($file)) {
+            require_once $file;
             return;
         }
     }
 });
 
 // Inicia o roteador
- = new Router();
-->run();
+$router = new Router();
+$router->run();

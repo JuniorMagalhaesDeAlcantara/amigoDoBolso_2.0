@@ -136,3 +136,14 @@ SELECT
 FROM transactions t
 INNER JOIN categories c ON t.category_id = c.id
 GROUP BY t.group_id, c.id, YEAR(t.transaction_date), MONTH(t.transaction_date);
+
+-- Ajustar tabela de transações para o novo fluxo
+ALTER TABLE transactions 
+ADD COLUMN payment_method ENUM('dinheiro', 'cartao_credito') DEFAULT 'dinheiro' AFTER type;
+
+ALTER TABLE transactions
+MODIFY COLUMN recurrence_type ENUM('mensal', 'semanal', 'anual') DEFAULT NULL;
+
+-- Adicionar coluna para quantidade de recorrências
+ALTER TABLE transactions
+ADD COLUMN recurrence_months INT DEFAULT NULL AFTER recurrence_type;

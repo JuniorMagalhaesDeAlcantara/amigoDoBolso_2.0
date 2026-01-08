@@ -16,6 +16,7 @@
             <ul class="navbar-menu">
                 <li><a href="/dashboard">Dashboard</a></li>
                 <li><a href="/transacoes">Transações</a></li>
+                <li><a href="/cartoes">Cartões</a></li>
                 <li><a href="/metas">Metas</a></li>
                 <li><a href="/grupos/detalhes">Grupo</a></li>
                 <li><a href="/auth/logout" class="btn-logout">Sair</a></li>

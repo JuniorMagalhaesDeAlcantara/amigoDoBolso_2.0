@@ -12,11 +12,12 @@ class TransactionModel extends Model
     public function getByGroup($groupId, $month = null, $year = null)
     {
         $sql = "SELECT t.*, c.name as category_name, c.color, u.name as user_name,
-                cc.name as card_name
+                cc.name as card_name, bc.name as benefit_name, bc.type as benefit_type
                 FROM {$this->table} t
                 INNER JOIN categories c ON t.category_id = c.id
                 INNER JOIN users u ON t.user_id = u.id
                 LEFT JOIN credit_cards cc ON t.credit_card_id = cc.id
+                LEFT JOIN benefit_cards bc ON t.benefit_card_id = bc.id
                 WHERE t.group_id = ?";
 
         $params = [$groupId];
@@ -310,6 +311,25 @@ class TransactionModel extends Model
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$cardId, $month, $year]);
+        return $stmt->fetchAll();
+    }
+
+    /**
+     * Busca transações de um benefício específico (VR/VA)
+     */
+    public function getByBenefit($benefitId, $month, $year)
+    {
+        $sql = "SELECT t.*, c.name as category_name, c.color, u.name as user_name
+                FROM {$this->table} t
+                INNER JOIN categories c ON t.category_id = c.id
+                INNER JOIN users u ON t.user_id = u.id
+                WHERE t.benefit_card_id = ?
+                AND MONTH(t.transaction_date) = ? 
+                AND YEAR(t.transaction_date) = ?
+                ORDER BY t.transaction_date DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$benefitId, $month, $year]);
         return $stmt->fetchAll();
     }
 

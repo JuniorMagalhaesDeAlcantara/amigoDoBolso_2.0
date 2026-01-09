@@ -5,6 +5,7 @@ class TransacoesController extends Controller
     private $transactionModel;
     private $categoryModel;
     private $creditCardModel;
+    private $benefitCardModel;
 
     public function __construct()
     {
@@ -12,6 +13,7 @@ class TransacoesController extends Controller
         $this->transactionModel = new TransactionModel();
         $this->categoryModel = new CategoryModel();
         $this->creditCardModel = new CreditCardModel();
+        $this->benefitCardModel = new BenefitCardModel();
     }
 
     public function index()
@@ -64,8 +66,43 @@ class TransacoesController extends Controller
                 'payment_method' => $paymentMethod
             ];
 
+            // Se for VR ou VA
+            if ($paymentMethod === 'vr' || $paymentMethod === 'va') {
+                $benefitCardId = filter_input(INPUT_POST, 'benefit_card_id', FILTER_VALIDATE_INT);
+                $benefit = $this->benefitCardModel->findById($benefitCardId);
+
+                if (!$benefit) {
+                    $_SESSION['error'] = "Benefício não encontrado";
+                    $this->redirect('/transacoes/criar');
+                    return;
+                }
+
+                // Converte valor para float
+                $amountFloat = floatval($amount);
+
+                // Verifica se tem saldo suficiente
+                if ($benefit['current_balance'] < $amountFloat) {
+                    $_SESSION['error'] = "Saldo insuficiente no benefício. Disponível: R$ " . 
+                                        number_format($benefit['current_balance'], 2, ',', '.');
+                    $this->redirect('/transacoes/criar');
+                    return;
+                }
+
+                // Adiciona benefit_card_id aos dados
+                $data['benefit_card_id'] = $benefitCardId;
+
+                // Cria a transação
+                $this->transactionModel->create($data);
+
+                // Debita do saldo do benefício
+                $this->benefitCardModel->debit($benefitCardId, $amountFloat);
+
+                $this->redirect('/transacoes');
+                return;
+            }
+
             // Se for cartão de crédito
-            if ($paymentMethod === 'cartao_credito') {
+            if ($paymentMethod === 'credito') {
                 $data['credit_card_id'] = filter_input(INPUT_POST, 'credit_card_id', FILTER_VALIDATE_INT);
                 $installments = filter_input(INPUT_POST, 'installments', FILTER_VALIDATE_INT) ?? 1;
 
@@ -88,10 +125,12 @@ class TransacoesController extends Controller
         } else {
             $categories = $this->categoryModel->getByGroup($groupId);
             $creditCards = $this->creditCardModel->getByGroup($groupId);
+            $benefitCards = $this->benefitCardModel->getByGroup($groupId);
 
             $this->view('transacoes/criar', [
                 'categories' => $categories,
-                'creditCards' => $creditCards
+                'creditCards' => $creditCards,
+                'benefitCards' => $benefitCards
             ]);
         }
     }
@@ -157,6 +196,11 @@ class TransacoesController extends Controller
         $hasRelated = $this->transactionModel->hasRelatedTransactions($id);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            // Se foi VR/VA, devolve o saldo
+            if ($transaction['benefit_card_id']) {
+                $this->benefitCardModel->credit($transaction['benefit_card_id'], $transaction['amount']);
+            }
+
             // Verifica se deve deletar todas
             $deleteAll = isset($_POST['delete_related']) && $_POST['delete_related'] === '1';
 
@@ -179,6 +223,9 @@ class TransacoesController extends Controller
             ]);
         } else {
             // Se não tem relacionadas, deleta direto
+            if ($transaction['benefit_card_id']) {
+                $this->benefitCardModel->credit($transaction['benefit_card_id'], $transaction['amount']);
+            }
             $this->transactionModel->delete($id);
             $this->redirect('/transacoes');
         }

@@ -171,3 +171,57 @@ ALTER TABLE credit_cards ADD COLUMN bank VARCHAR(50) DEFAULT 'outros';
 
 -- Adicionar coluna holder_name na tabela credit_cards
 ALTER TABLE credit_cards ADD COLUMN holder_name VARCHAR(255) NULL AFTER name;
+
+-- Tabela de Carteiras de Benefício (VR/VA)
+CREATE TABLE benefit_cards (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    group_id INT NOT NULL,
+    type ENUM('vr', 'va') NOT NULL COMMENT 'vr = Vale Refeição, va = Vale Alimentação',
+    provider VARCHAR(50) NOT NULL COMMENT 'sodexo, caju, swile, alelo, ticket, etc',
+    name VARCHAR(100) NOT NULL COMMENT 'Nome personalizado: ex: VR Sodexo, VA Caju',
+    monthly_amount DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT 'Valor que entra todo mês',
+    current_balance DECIMAL(10, 2) NOT NULL DEFAULT 0.00 COMMENT 'Saldo disponível atual',
+    recharge_day INT NOT NULL DEFAULT 1 COMMENT 'Dia do mês que entra o crédito (1-31)',
+    last_recharge_date DATE NULL COMMENT 'Última vez que foi creditado',
+    active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    INDEX idx_group_type (group_id, type),
+    INDEX idx_active (active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Tabela de Histórico de Recargas (para auditoria e relatórios)
+CREATE TABLE benefit_recharges (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    benefit_card_id INT NOT NULL,
+    amount DECIMAL(10, 2) NOT NULL,
+    recharge_date DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (benefit_card_id) REFERENCES benefit_cards(id) ON DELETE CASCADE,
+    INDEX idx_benefit_date (benefit_card_id, recharge_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Adicionar novos payment_methods na tabela transactions
+-- (assumindo que você já tem essa tabela)
+ALTER TABLE transactions 
+    MODIFY COLUMN payment_method ENUM(
+        'dinheiro', 
+        'pix', 
+        'credito', 
+        'debito', 
+        'vr',      -- NOVO
+        'va'       -- NOVO
+    ) NOT NULL DEFAULT 'dinheiro';
+
+-- Adicionar coluna benefit_card_id em transactions (opcional, para rastreamento)
+ALTER TABLE transactions 
+    ADD COLUMN benefit_card_id INT NULL AFTER credit_card_id,
+    ADD FOREIGN KEY (benefit_card_id) REFERENCES benefit_cards(id) ON DELETE SET NULL;
+
+-- Adicionar coluna initial_balance em benefit_cards
+ALTER TABLE benefit_cards
+ADD COLUMN initial_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00
+AFTER monthly_amount;

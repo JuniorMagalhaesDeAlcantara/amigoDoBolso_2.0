@@ -196,17 +196,23 @@ class TransacoesController extends Controller
         $hasRelated = $this->transactionModel->hasRelatedTransactions($id);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Se foi VR/VA, devolve o saldo
-            if ($transaction['benefit_card_id']) {
-                $this->benefitCardModel->credit($transaction['benefit_card_id'], $transaction['amount']);
-            }
-
             // Verifica se deve deletar todas
             $deleteAll = isset($_POST['delete_related']) && $_POST['delete_related'] === '1';
 
-            if ($hasRelated && $deleteAll) {
+            if ($deleteAll) {
+                // Se vai deletar todas as relacionadas, precisa devolver o saldo de cada uma
+                $related = $this->transactionModel->getRelatedTransactions($id);
+                foreach ($related as $rel) {
+                    if ($rel['benefit_card_id']) {
+                        $this->benefitCardModel->credit($rel['benefit_card_id'], $rel['amount']);
+                    }
+                }
                 $this->transactionModel->deleteWithRelated($id, true);
             } else {
+                // Deleta apenas esta, devolvendo o saldo se for benefício
+                if ($transaction['benefit_card_id']) {
+                    $this->benefitCardModel->credit($transaction['benefit_card_id'], $transaction['amount']);
+                }
                 $this->transactionModel->delete($id);
             }
 
@@ -214,20 +220,13 @@ class TransacoesController extends Controller
             return;
         }
 
-        // Se tem relacionadas, mostra página de confirmação
-        if ($hasRelated) {
-            $related = $this->transactionModel->getRelatedTransactions($id);
-            $this->view('transacoes/confirmar-delete', [
-                'transaction' => $transaction,
-                'related' => $related
-            ]);
-        } else {
-            // Se não tem relacionadas, deleta direto
-            if ($transaction['benefit_card_id']) {
-                $this->benefitCardModel->credit($transaction['benefit_card_id'], $transaction['amount']);
-            }
-            $this->transactionModel->delete($id);
-            $this->redirect('/transacoes');
-        }
-    }    
+        // SEMPRE mostra página de confirmação
+        $related = $hasRelated ? $this->transactionModel->getRelatedTransactions($id) : [$transaction];
+        
+        $this->view('transacoes/confirmar-delete', [
+            'transaction' => $transaction,
+            'related' => $related,
+            'hasRelated' => $hasRelated
+        ]);
+    }
 }

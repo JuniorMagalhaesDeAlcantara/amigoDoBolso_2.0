@@ -11,14 +11,38 @@ class TransactionModel extends Model
 
     public function getByGroup($groupId, $month = null, $year = null)
     {
-        $sql = "SELECT t.*, c.name as category_name, c.color, u.name as user_name,
-                cc.name as card_name, bc.name as benefit_name, bc.type as benefit_type
-                FROM {$this->table} t
-                INNER JOIN categories c ON t.category_id = c.id
-                INNER JOIN users u ON t.user_id = u.id
-                LEFT JOIN credit_cards cc ON t.credit_card_id = cc.id
-                LEFT JOIN benefit_cards bc ON t.benefit_card_id = bc.id
-                WHERE t.group_id = ?";
+        $sql = "SELECT 
+                t.id,
+                t.group_id,
+                t.user_id,
+                t.category_id,
+                t.description,
+                t.amount,
+                t.type,
+                t.transaction_date,
+                t.payment_method,
+                t.credit_card_id,
+                t.benefit_card_id,
+                t.installments,
+                t.installment_number,
+                t.is_installment,
+                t.is_recurring,
+                t.recurrence_type,
+                t.recurrence_months,
+                t.parent_transaction_id,
+                t.created_at,
+                c.name as category_name,
+                c.color,
+                u.name as user_name,
+                cc.name as card_name,
+                bc.name as benefit_name,
+                bc.type as benefit_type
+            FROM {$this->table} t
+            INNER JOIN categories c ON t.category_id = c.id
+            INNER JOIN users u ON t.user_id = u.id
+            LEFT JOIN credit_cards cc ON t.credit_card_id = cc.id
+            LEFT JOIN benefit_cards bc ON t.benefit_card_id = bc.id
+            WHERE t.group_id = ?";
 
         $params = [$groupId];
 

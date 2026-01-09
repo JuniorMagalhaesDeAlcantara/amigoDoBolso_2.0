@@ -27,3 +27,4 @@
 </div>
 
 <?php include VIEWS . '/layouts/footer.php'; ?>
+

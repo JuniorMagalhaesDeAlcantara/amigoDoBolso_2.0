@@ -323,16 +323,22 @@ document.getElementById('is_recurring').addEventListener('change', function() {
 </script>
 
 <style>
+/* Substituir o <style> da página criar.php por este CSS */
+
 .alert {
-    padding: 1rem;
-    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
     margin-bottom: 1.5rem;
+    font-size: 0.9375rem;
 }
 
 .alert-error {
-    background: #fee;
-    border: 1px solid #fcc;
-    color: #c33;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
 }
 
 .input-with-button {
@@ -344,25 +350,47 @@ document.getElementById('is_recurring').addEventListener('change', function() {
     flex: 1;
 }
 
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+}
+
 .checkbox-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--gray-50);
+    border: 2px solid var(--gray-300);
+    border-radius: 10px;
     cursor: pointer;
+    transition: all 0.2s;
+}
+
+.checkbox-label:hover {
+    background: white;
+    border-color: var(--primary);
 }
 
 .checkbox-label input[type="checkbox"] {
-    width: auto;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
+    margin: 0;
+}
+
+.checkbox-label span {
+    font-weight: 600;
+    color: var(--gray-900);
 }
 
 .text-warning {
-    color: #f39c12;
+    color: var(--warning);
 }
 
 hr {
     border: none;
-    border-top: 2px solid #e1e8ed;
+    border-top: 2px solid var(--gray-200);
     margin: 2rem 0;
 }
 
@@ -375,18 +403,141 @@ hr {
 small {
     display: block;
     margin-top: 0.5rem;
-    color: #666;
-    font-size: 0.85rem;
+    color: var(--gray-600);
+    font-size: 0.8125rem;
 }
 
 #amount_display {
-    font-size: 1.3rem;
-    font-weight: bold;
-    color: #667eea;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-align: right;
+    font-family: 'Courier New', monospace;
 }
 
 #benefitBalanceInfo {
     font-weight: 600;
+    color: var(--secondary);
+}
+
+/* Campos condicionais */
+#cardFields,
+#benefitFields,
+#recurringFields {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background: var(--gray-50);
+    border: 2px dashed var(--gray-300);
+    border-radius: 10px;
+}
+
+#cardFields .form-group:first-child,
+#benefitFields .form-group:first-child {
+    margin-top: 0;
+}
+
+/* Info boxes */
+.info-message {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 8px;
+    color: var(--primary);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+}
+
+/* Melhorias nos form-groups */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.9375rem;
+    color: var(--gray-900);
+    transition: all 0.2s;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Card container */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Container small */
+.container-small {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container-small {
+        padding: 1rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    .input-with-button {
+        flex-direction: column;
+    }
+
+    .input-with-button select,
+    .input-with-button .btn {
+        width: 100%;
+    }
 }
 </style>
 

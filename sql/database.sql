@@ -147,3 +147,27 @@ MODIFY COLUMN recurrence_type ENUM('mensal', 'semanal', 'anual') DEFAULT NULL;
 -- Adicionar coluna para quantidade de recorrências
 ALTER TABLE transactions
 ADD COLUMN recurrence_months INT DEFAULT NULL AFTER recurrence_type;
+
+-- Adicionar coluna brand na tabela credit_cards
+ALTER TABLE credit_cards ADD COLUMN IF NOT EXISTS brand VARCHAR(50) DEFAULT NULL;
+
+-- Adicionar colunas para controle de parcelamento/recorrência
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS parent_transaction_id INT DEFAULT NULL;
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS is_installment BOOLEAN DEFAULT FALSE;
+ALTER TABLE transactions ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT FALSE;
+
+-- Criar índice para melhorar performance nas buscas
+CREATE INDEX IF NOT EXISTS idx_parent_transaction ON transactions(parent_transaction_id);
+
+-- Adicionar foreign key para parent_transaction_id
+ALTER TABLE transactions 
+ADD CONSTRAINT fk_parent_transaction 
+FOREIGN KEY (parent_transaction_id) 
+REFERENCES transactions(id) 
+ON DELETE CASCADE;
+
+-- Adicionar coluna bank na tabela credit_cards
+ALTER TABLE credit_cards ADD COLUMN bank VARCHAR(50) DEFAULT 'outros';
+
+-- Adicionar coluna holder_name na tabela credit_cards
+ALTER TABLE credit_cards ADD COLUMN holder_name VARCHAR(255) NULL AFTER name;

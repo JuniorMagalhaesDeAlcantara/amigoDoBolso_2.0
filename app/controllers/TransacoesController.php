@@ -229,5 +229,5 @@ class TransacoesController extends Controller
             $this->transactionModel->delete($id);
             $this->redirect('/transacoes');
         }
-    }
+    }    
 }

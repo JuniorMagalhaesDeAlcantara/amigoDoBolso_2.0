@@ -82,7 +82,7 @@ class BenefitCardModel extends Model
     {
         // Busca o benefício
         $benefit = $this->findById($id);
-        
+
         if (!$benefit) {
             return false;
         }
@@ -90,7 +90,7 @@ class BenefitCardModel extends Model
         $today = date('j'); // Dia do mês (1-31)
         $rechargeDay = $benefit['recharge_day'];
         $lastRecharge = $benefit['last_recharge_date'];
-        
+
         // Verifica se já recebeu recarga este mês
         if ($lastRecharge && date('Y-m', strtotime($lastRecharge)) === date('Y-m')) {
             return false; // Já recarregou este mês
@@ -100,10 +100,10 @@ class BenefitCardModel extends Model
         if ($today >= $rechargeDay) {
             // Credita o valor mensal
             $this->credit($id, $benefit['monthly_amount']);
-            
+
             // Registra no histórico
             $this->recordRecharge($id, $benefit['monthly_amount']);
-            
+
             return true;
         }
 
@@ -117,17 +117,17 @@ class BenefitCardModel extends Model
     {
         if (!$month) $month = date('n');
         if (!$year) $year = date('Y');
-        
+
         $sql = "SELECT COALESCE(SUM(amount), 0) as total
                 FROM transactions 
                 WHERE benefit_card_id = ? 
                 AND MONTH(transaction_date) = ?
                 AND YEAR(transaction_date) = ?";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$benefitCardId, $month, $year]);
         $result = $stmt->fetch();
-        
+
         return $result['total'] ?? 0;
     }
 
@@ -157,9 +157,24 @@ class BenefitCardModel extends Model
                 WHERE benefit_card_id = ? 
                 ORDER BY recharge_date DESC 
                 LIMIT ?";
-        
+
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$benefitCardId, $limit]);
         return $stmt->fetchAll();
+    }
+
+    /**
+     * Buscar cartão de benefício por ID
+     */
+    public function findById($id)
+    {
+        $sql = "SELECT *
+                FROM benefit_cards
+                WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 }

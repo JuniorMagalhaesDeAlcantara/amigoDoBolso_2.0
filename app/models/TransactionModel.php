@@ -370,4 +370,55 @@ class TransactionModel extends Model
         $stmt->execute([$cardId, $limit]);
         return $stmt->fetchAll();
     }
+
+    public function getMonthlyEvolution($groupId, $months = 6)
+    {
+        $sql = "SELECT 
+                    DATE_FORMAT(transaction_date, '%b') as month,
+                    MONTH(transaction_date) as month_num,
+                    YEAR(transaction_date) as year,
+                    SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
+                    SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expense
+                FROM transactions
+                WHERE group_id = :group_id
+                AND transaction_date >= DATE_SUB(CURRENT_DATE, INTERVAL :months MONTH)
+                GROUP BY YEAR(transaction_date), MONTH(transaction_date)
+                ORDER BY year, month_num";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'group_id' => $groupId,
+            'months' => $months
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Buscar transações do mês com informações de categoria e usuário
+     */
+    public function getByGroupAndMonth($groupId, $month, $year)
+    {
+        $sql = "SELECT 
+                    t.*,
+                    c.name as category_name,
+                    c.color,
+                    u.name as user_name
+                FROM transactions t
+                INNER JOIN categories c ON t.category_id = c.id
+                INNER JOIN users u ON t.user_id = u.id
+                WHERE t.group_id = :group_id
+                AND MONTH(t.transaction_date) = :month
+                AND YEAR(t.transaction_date) = :year
+                ORDER BY t.transaction_date DESC, t.created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'group_id' => $groupId,
+            'month' => $month,
+            'year' => $year
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

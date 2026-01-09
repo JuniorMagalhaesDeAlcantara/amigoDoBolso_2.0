@@ -3,11 +3,13 @@
 class TransacoesController extends Controller {
     private $transactionModel;
     private $categoryModel;
+    private $creditCardModel;
     
     public function __construct() {
         $this->requireLogin();
         $this->transactionModel = new TransactionModel();
         $this->categoryModel = new CategoryModel();
+        $this->creditCardModel = new CreditCardModel();
     }
     
     public function index() {
@@ -41,6 +43,9 @@ class TransacoesController extends Controller {
         }
         
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_STRING);
+            $isRecurring = isset($_POST['is_recurring']) && $_POST['is_recurring'] === '1';
+            
             $data = [
                 'group_id' => $groupId,
                 'user_id' => $_SESSION['user_id'],
@@ -49,20 +54,40 @@ class TransacoesController extends Controller {
                 'amount' => filter_input(INPUT_POST, 'amount', FILTER_VALIDATE_FLOAT),
                 'type' => filter_input(INPUT_POST, 'type', FILTER_SANITIZE_STRING),
                 'transaction_date' => filter_input(INPUT_POST, 'transaction_date', FILTER_SANITIZE_STRING),
+                'payment_method' => $paymentMethod
             ];
             
-            $installments = filter_input(INPUT_POST, 'installments', FILTER_VALIDATE_INT) ?? 1;
+            // Se for cartão de crédito
+            if ($paymentMethod === 'cartao_credito') {
+                $data['credit_card_id'] = filter_input(INPUT_POST, 'credit_card_id', FILTER_VALIDATE_INT);
+                $installments = filter_input(INPUT_POST, 'installments', FILTER_VALIDATE_INT) ?? 1;
+                
+                if ($installments > 1) {
+                    // Cria transações parceladas
+                    $this->transactionModel->createInstallments($data, $installments);
+                    $this->redirect('/transacoes');
+                    return;
+                }
+            }
             
-            if ($installments > 1) {
-                $this->transactionModel->createInstallments($data, $installments);
+            // Se for recorrente
+            if ($isRecurring) {
+                $recurrenceMonths = filter_input(INPUT_POST, 'recurrence_months', FILTER_VALIDATE_INT) ?? 1;
+                $this->transactionModel->createRecurring($data, $recurrenceMonths);
             } else {
+                // Transação única
                 $this->transactionModel->create($data);
             }
             
             $this->redirect('/transacoes');
         } else {
             $categories = $this->categoryModel->getByGroup($groupId);
-            $this->view('transacoes/criar', ['categories' => $categories]);
+            $creditCards = $this->creditCardModel->getByGroup($groupId);
+            
+            $this->view('transacoes/criar', [
+                'categories' => $categories,
+                'creditCards' => $creditCards
+            ]);
         }
     }
     

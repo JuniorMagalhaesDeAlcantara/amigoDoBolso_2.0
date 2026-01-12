@@ -2,17 +2,45 @@
 
 <footer class="footer">
     <div class="container">
-        <img src="/assets/images/logoOficial.png"
-            alt="Logo Amigo do Bolso"
-            class="footer-logo">
-        <p>&copy; <?= date('Y') ?> Controle Financeiro Colaborativo - Desenvolvido com 💚</p>
-        <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #888;">
-            Simplicidade • Organização • Evolução
-        </p>
+        <div class="footer-content">
+            <div class="footer-divider"></div>
+
+            <p class="footer-text">
+                &copy; <?= date('Y') ?> Amigo do Bolso - Controle Financeiro Colaborativo
+            </p>
+
+            <p class="footer-tagline">
+                Simplicidade • Organização • Evolução
+            </p>
+        </div>
     </div>
 </footer>
 
-<script src="/js/app.js"></script>
+<script>
+    // Toggle Mobile Menu
+    function toggleMobileMenu() {
+        const menu = document.getElementById('navMenu');
+        menu.classList.toggle('mobile-open');
+    }
+
+    // Show mobile toggle on small screens
+    window.addEventListener('resize', function() {
+        const toggle = document.querySelector('.mobile-toggle');
+        const menu = document.getElementById('navMenu');
+
+        if (window.innerWidth <= 768) {
+            toggle.style.display = 'flex';
+        } else {
+            toggle.style.display = 'none';
+            menu.classList.remove('mobile-open');
+        }
+    });
+
+    // Initialize on load
+    window.dispatchEvent(new Event('resize'));
+</script>
+
+<script src="/js/main.js"></script>
 </body>
 
 </html>

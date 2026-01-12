@@ -77,49 +77,51 @@
                     $style = $bankStyles[$bank] ?? $bankStyles['outros'];
                 ?>
                     <div class="credit-card" style="background: <?= $style['gradient'] ?>">
-                        <!-- Chip do Cartão -->
-                        <div class="card-chip">
-                            <div class="chip"></div>
+                        <div class="card-top">
+                            <!-- Chip do Cartão -->
+                            <div class="card-chip">
+                                <div class="chip"></div>
+                            </div>
+
+                            <!-- Logo do Banco -->
+                            <div class="card-logo">
+                                <?php if ($style['logo']): ?>
+                                    <img src="<?= $style['logo'] ?>" alt="<?= $bank ?>" onerror="this.style.display='none'">
+                                <?php endif; ?>
+                            </div>
                         </div>
 
-                        <!-- Logo do Banco -->
-                        <div class="card-logo">
-                            <?php if ($style['logo']): ?>
-                                <img src="<?= $style['logo'] ?>" alt="<?= $bank ?>" onerror="this.style.display='none'">
+                        <div class="card-middle">
+                            <!-- Nome do Cartão -->
+                            <div class="card-name"><?= htmlspecialchars($card['name']) ?></div>
+
+                            <!-- Número do Cartão -->
+                            <div class="card-number">•••• •••• •••• <?= $card['last_digits'] ?></div>
+
+                            <!-- Nome do Titular -->
+                            <?php if (!empty($card['holder_name'])): ?>
+                                <div class="card-holder"><?= strtoupper(htmlspecialchars($card['holder_name'])) ?></div>
                             <?php endif; ?>
                         </div>
 
-                        <!-- Nome do Cartão -->
-                        <div class="card-name"><?= htmlspecialchars($card['name']) ?></div>
+                        <div class="card-bottom">
+                            <!-- Linha de Info -->
+                            <div class="card-info-row">
+                                <!-- Detalhes -->
+                                <div class="card-details-row">
+                                    <div class="card-detail">
+                                        <span class="detail-label">Fecha</span>
+                                        <span class="detail-value">Dia <?= $card['closing_day'] ?></span>
+                                    </div>
+                                    <div class="card-detail">
+                                        <span class="detail-label">Vence</span>
+                                        <span class="detail-value">Dia <?= $card['due_day'] ?></span>
+                                    </div>
+                                </div>
 
-                        <!-- Número do Cartão -->
-                        <div class="card-number">•••• •••• •••• <?= $card['last_digits'] ?></div>
-
-                        <!-- Nome do Titular -->
-                        <?php if (!empty($card['holder_name'])): ?>
-                            <div class="card-holder"><?= strtoupper(htmlspecialchars($card['holder_name'])) ?></div>
-                        <?php endif; ?>
-
-                        <!-- Detalhes -->
-                        <div class="card-details-row">
-                            <div class="card-detail">
-                                <span class="detail-label">Fechamento</span>
-                                <span class="detail-value">Dia <?= $card['closing_day'] ?></span>
-                            </div>
-                            <div class="card-detail">
-                                <span class="detail-label">Vencimento</span>
-                                <span class="detail-value">Dia <?= $card['due_day'] ?></span>
-                            </div>
-                        </div>
-
-                        <!-- Divisor -->
-                        <div class="card-divider"></div>
-
-                        <!-- Fatura Atual -->
-                        <div class="card-invoice">
-                            <div class="invoice-header">
-                                <div>
-                                    <div class="invoice-label">Fatura Atual</div>
+                                <!-- Fatura -->
+                                <div class="card-invoice-compact">
+                                    <div class="invoice-label">Fatura</div>
                                     <div class="invoice-value">R$ <?= number_format($card['current_invoice'], 2, ',', '.') ?></div>
                                 </div>
                             </div>
@@ -139,18 +141,18 @@
                                     </div>
                                 </div>
                             <?php endif; ?>
-                        </div>
 
-                        <!-- Ações -->
-                        <div class="card-actions">
-                            <a href="/cartoes/extrato/<?= $card['id'] ?>" class="btn-action btn-primary-action">
-                                📊 Ver Extrato
-                            </a>
-                            <a href="/cartoes/deletar/<?= $card['id'] ?>"
-                                class="btn-action btn-delete-action"
-                                onclick="return confirm('Tem certeza que deseja deletar este cartão?\n\nAtenção: As transações já cadastradas não serão deletadas.')">
-                                🗑️
-                            </a>
+                            <!-- Ações -->
+                            <div class="card-actions">
+                                <a href="/cartoes/extrato/<?= $card['id'] ?>" class="btn-action btn-primary-action">
+                                    📊 Ver Extrato
+                                </a>
+                                <a href="/cartoes/deletar/<?= $card['id'] ?>"
+                                    class="btn-action btn-delete-action"
+                                    onclick="return confirm('Tem certeza que deseja deletar este cartão?\n\nAtenção: As transações já cadastradas não serão deletadas.')">
+                                    🗑️ Excluir
+                                </a>
+                            </div>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -162,11 +164,11 @@
 <style>
     .empty-state {
         text-align: center;
-        padding: 4rem 2rem;
+        padding: 3rem 1.5rem;
     }
 
     .empty-icon {
-        font-size: 5rem;
+        font-size: 4rem;
         margin-bottom: 1rem;
         opacity: 0.3;
     }
@@ -174,30 +176,33 @@
     .empty-state h3 {
         color: #333;
         margin-bottom: 0.5rem;
+        font-size: 1.25rem;
     }
 
     .empty-state p {
         color: #666;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
     }
 
     .cards-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-        gap: 2rem;
-        padding: 1rem;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 1.5rem;
+        padding: 0.5rem;
     }
 
     .credit-card {
-        min-height: 340px;
-        border-radius: 20px;
-        padding: 2rem;
+        aspect-ratio: 1.586 / 1; /* Proporção real de cartão de crédito (85.6mm x 53.98mm) */
+        border-radius: 16px;
+        padding: 1.4rem;
         color: white;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
         transition: transform 0.3s, box-shadow 0.3s;
         position: relative;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         overflow: hidden;
     }
 
@@ -217,23 +222,40 @@
     }
 
     .credit-card:hover {
-        transform: translateY(-10px) rotateY(5deg);
-        box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+        transform: translateY(-5px) rotateY(2deg);
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
+    }
+
+    .card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        z-index: 1;
+    }
+
+    .card-middle {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        z-index: 1;
+    }
+
+    .card-bottom {
+        z-index: 1;
     }
 
     /* Chip do cartão */
     .card-chip {
-        width: 50px;
-        height: 40px;
-        margin-bottom: 1rem;
-        z-index: 1;
+        width: 45px;
+        height: 35px;
     }
 
     .chip {
         width: 100%;
         height: 100%;
         background: linear-gradient(135deg, #e5c07b 0%, #daa520 100%);
-        border-radius: 8px;
+        border-radius: 6px;
         position: relative;
         box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
     }
@@ -241,28 +263,24 @@
     .chip::before {
         content: '';
         position: absolute;
-        top: 5px;
-        left: 5px;
-        right: 5px;
-        bottom: 5px;
+        top: 4px;
+        left: 4px;
+        right: 4px;
+        bottom: 4px;
         background: repeating-linear-gradient(45deg,
                 transparent,
                 transparent 2px,
                 rgba(0, 0, 0, 0.1) 2px,
                 rgba(0, 0, 0, 0.1) 4px);
-        border-radius: 4px;
+        border-radius: 3px;
     }
 
     .card-logo {
-        position: absolute;
-        top: 2rem;
-        right: 2rem;
-        width: 80px;
-        height: 50px;
+        width: 60px;
+        height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1;
     }
 
     .card-logo img {
@@ -274,115 +292,97 @@
     }
 
     .card-name {
-        font-size: 1.2rem;
+        font-size: 1.05rem;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 0.5rem;
+        letter-spacing: 1.5px;
+        margin-bottom: 0.3rem;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-        z-index: 1;
     }
 
     .card-number {
         font-family: 'Courier New', monospace;
-        font-size: 1.4rem;
-        letter-spacing: 4px;
-        margin-bottom: 0.5rem;
+        font-size: 1.15rem;
+        letter-spacing: 3px;
+        margin-bottom: 0.3rem;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         font-weight: 500;
-        z-index: 1;
     }
 
     .card-holder {
         font-family: 'Courier New', monospace;
-        font-size: 0.9rem;
-        letter-spacing: 2px;
-        margin-bottom: 1rem;
+        font-size: 0.8rem;
+        letter-spacing: 1.5px;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         opacity: 0.9;
-        z-index: 1;
+    }
+
+    .card-info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 0.7rem;
+        padding: 0.85rem;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
     }
 
     .card-details-row {
         display: flex;
-        gap: 2.5rem;
-        margin-bottom: 0.8rem;
-        z-index: 1;
+        gap: 1.8rem;
     }
 
     .card-detail {
         display: flex;
         flex-direction: column;
-        gap: 0.3rem;
+        gap: 0.2rem;
     }
 
     .detail-label {
-        font-size: 0.7rem;
+        font-size: 0.65rem;
         opacity: 0.8;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
         font-weight: 500;
     }
 
     .detail-value {
-        font-size: 1.1rem;
+        font-size: 0.9rem;
         font-weight: 700;
         text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
-    .card-divider {
-        height: 1px;
-        background: linear-gradient(90deg,
-                transparent 0%,
-                rgba(255, 255, 255, 0.5) 50%,
-                transparent 100%);
-        margin: 0.8rem 0;
-        z-index: 1;
-    }
-
-    .card-invoice {
-        background: rgba(0, 0, 0, 0.2);
-        padding: 1.2rem;
-        border-radius: 12px;
-        margin-top: auto;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        z-index: 1;
-    }
-
-    .invoice-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
+    .card-invoice-compact {
+        text-align: right;
     }
 
     .invoice-label {
-        font-size: 0.75rem;
-        opacity: 0.9;
-        margin-bottom: 0.3rem;
+        font-size: 0.65rem;
+        opacity: 0.8;
+        margin-bottom: 0.2rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
     }
 
     .invoice-value {
-        font-size: 1.8rem;
+        font-size: 1.3rem;
         font-weight: 800;
-        margin-bottom: 0.8rem;
         text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
     }
 
     .limit-progress {
-        margin-top: 0.8rem;
+        margin-bottom: 0.7rem;
     }
 
     .progress-bar {
         width: 100%;
-        height: 8px;
+        height: 6px;
         background: rgba(255, 255, 255, 0.2);
-        border-radius: 4px;
+        border-radius: 3px;
         overflow: hidden;
-        margin-bottom: 0.5rem;
+        margin-bottom: 0.4rem;
         box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
     }
 
@@ -397,7 +397,7 @@
         justify-content: space-between;
         font-size: 0.75rem;
         opacity: 0.95;
-        font-weight: 500;
+        font-weight: 600;
     }
 
     .available {
@@ -406,26 +406,24 @@
 
     .card-actions {
         display: flex;
-        gap: 0.75rem;
-        margin-top: 1rem;
-        z-index: 1;
+        gap: 0.6rem;
     }
 
     .btn-action {
         flex: 1;
-        padding: 0.75rem 1rem;
+        padding: 0.65rem 1rem;
         border: none;
-        border-radius: 10px;
+        border-radius: 8px;
         font-weight: 700;
         cursor: pointer;
         text-decoration: none;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 0.5rem;
+        gap: 0.4rem;
         transition: all 0.3s;
-        font-size: 0.85rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        font-size: 0.8rem;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     }
 
     .btn-primary-action {
@@ -436,25 +434,48 @@
     .btn-primary-action:hover {
         background: white;
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
     }
 
     .btn-delete-action {
         background: rgba(239, 68, 68, 0.9);
         color: white;
-        flex: 0 0 auto;
-        padding: 0.75rem 1.25rem;
     }
 
     .btn-delete-action:hover {
         background: rgba(220, 38, 38, 1);
         transform: translateY(-2px);
-        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
     }
 
     @media (max-width: 768px) {
         .cards-grid {
             grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .cards-grid {
+            grid-template-columns: 1fr;
+            padding: 0;
+        }
+
+        .credit-card {
+            padding: 1.2rem;
+        }
+
+        .card-info-row {
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: stretch;
+        }
+
+        .card-invoice-compact {
+            text-align: left;
+        }
+
+        .card-actions {
+            flex-direction: column;
         }
     }
 </style>

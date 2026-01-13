@@ -323,8 +323,6 @@ document.getElementById('is_recurring').addEventListener('change', function() {
 </script>
 
 <style>
-/* Substituir o <style> da página criar.php por este CSS */
-
 .alert {
     display: flex;
     align-items: center;

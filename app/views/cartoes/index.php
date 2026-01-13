@@ -21,7 +21,8 @@
                     $bankStyles = [
                         'nubank' => [
                             'gradient' => 'linear-gradient(135deg, #8A05BE 0%, #C000FF 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Nubank_logo_2021.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Nubank_logo_2021.svg',
+                            'logo_white' => true
                         ],
                         'inter' => [
                             'gradient' => 'linear-gradient(135deg, #FF7A00 0%, #FF9500 100%)',
@@ -33,31 +34,34 @@
                         ],
                         'itau' => [
                             'gradient' => 'linear-gradient(135deg, #FF6600 0%, #FF8C00 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/c/cb/Itau_logo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/8/85/Ita%C3%BA_1992.svg'
                         ],
                         'bradesco' => [
                             'gradient' => 'linear-gradient(135deg, #CC092F 0%, #E30613 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/0/04/Bradesco_logo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Banco_Bradesco_logo_%28vertical%29.png',
+                            'logo_white' => true
                         ],
                         'santander' => [
                             'gradient' => 'linear-gradient(135deg, #EC0000 0%, #FF0000 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Banco_Santander_Logotipo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/b/b8/Banco_Santander_Logotipo.svg',
+                            'logo_white' => true
                         ],
                         'bb' => [
                             'gradient' => 'linear-gradient(135deg, #FFEB00 0%, #FFD700 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/8/89/Banco_do_Brasil_logo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/5/53/Banco_do_Brasil_Logo.svg'
                         ],
                         'caixa' => [
                             'gradient' => 'linear-gradient(135deg, #0066B3 0%, #0080D6 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Caixa_Econ%C3%B4mica_Federal_logo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/3/3c/Caixa_Econ%C3%B4mica_Federal_logo_1997.svg',
+                            'logo_white' => true
                         ],
                         'picpay' => [
                             'gradient' => 'linear-gradient(135deg, #21C25E 0%, #11D96D 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/7/7c/PicPay_logo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/5/5e/PicPay_Logogrande.png'
                         ],
                         'neon' => [
                             'gradient' => 'linear-gradient(135deg, #00D9A5 0%, #00E5B8 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/6/65/Neon_Pagamentos_logo.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/2/2b/Neon_logo_2021.png'
                         ],
                         'next' => [
                             'gradient' => 'linear-gradient(135deg, #00AB63 0%, #00C578 100%)',
@@ -65,7 +69,8 @@
                         ],
                         'original' => [
                             'gradient' => 'linear-gradient(135deg, #00A859 0%, #00C069 100%)',
-                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/b/bc/Banco_Original.svg'
+                            'logo' => 'https://upload.wikimedia.org/wikipedia/commons/9/91/Logo_Oficial_Banco_Original_-_Verde.png',
+                            'logo_white' => true
                         ],
                         'outros' => [
                             'gradient' => 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -85,8 +90,12 @@
 
                             <!-- Logo do Banco -->
                             <div class="card-logo">
-                                <?php if ($style['logo']): ?>
-                                    <img src="<?= $style['logo'] ?>" alt="<?= $bank ?>" onerror="this.style.display='none'">
+                                <?php if (!empty($style['logo'])): ?>
+                                    <img
+                                        src="<?= $style['logo'] ?>"
+                                        alt="<?= ucfirst($bank) ?>"
+                                        class="<?= !empty($style['logo_white']) ? 'logo-white' : '' ?>"
+                                        onerror="this.style.display='none'">
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -193,7 +202,8 @@
     }
 
     .credit-card {
-        aspect-ratio: 1.586 / 1; /* Proporção real de cartão de crédito (85.6mm x 53.98mm) */
+        aspect-ratio: 1.586 / 1;
+        /* Proporção real de cartão de crédito (85.6mm x 53.98mm) */
         border-radius: 16px;
         padding: 1.4rem;
         color: white;
@@ -287,9 +297,14 @@
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
+    }
+
+    /* Só entra quando o banco pedir */
+    .logo-white {
         filter: brightness(0) invert(1);
         opacity: 0.9;
     }
+
 
     .card-name {
         font-size: 1.05rem;

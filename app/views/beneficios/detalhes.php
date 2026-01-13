@@ -12,411 +12,587 @@ $typeName = $benefit['type'] === 'vr' ? 'Vale Refeição' : 'Vale Alimentação'
 $percentUsed = $benefit['monthly_amount'] > 0 ? ($monthlyExpense / $benefit['monthly_amount']) * 100 : 0;
 ?>
 
-<div class="container">
-    <!-- Card do Benefício -->
-    <div class="benefit-card-large">
-        <div class="card-header-benefit">
-            <div>
-                <div class="benefit-type-badge">
-                    <span class="type-icon-large"><?= $typeIcon ?></span>
-                    <span><?= $typeName ?></span>
-                </div>
-                <h1><?= htmlspecialchars($benefit['name']) ?></h1>
-                <p class="provider-name"><?= ucfirst($benefit['provider']) ?></p>
-            </div>
-        </div>
-
-        <div class="balance-section">
-            <div class="balance-item balance-main">
-                <span class="balance-label">Saldo Disponível</span>
-                <span class="balance-value-large">R$ <?= number_format($benefit['current_balance'], 2, ',', '.') ?></span>
-            </div>
-
-            <div class="balance-grid">
-                <div class="balance-item">
-                    <span class="balance-label">Gasto em <?= $months[$month] ?></span>
-                    <span class="balance-value">R$ <?= number_format($monthlyExpense, 2, ',', '.') ?></span>
-                </div>
-                <div class="balance-item">
-                    <span class="balance-label">Recarga Mensal</span>
-                    <span class="balance-value">R$ <?= number_format($benefit['monthly_amount'], 2, ',', '.') ?></span>
-                </div>
-                <div class="balance-item">
-                    <span class="balance-label">Próxima Recarga</span>
-                    <span class="balance-value">Dia <?= $benefit['recharge_day'] ?></span>
+<div class="container-details">
+    <!-- Header Compacto -->
+    <div class="details-header">
+        <a href="/beneficios" class="btn-back">← Voltar</a>
+        
+        <div class="benefit-header-card">
+            <div class="header-left">
+                <div class="benefit-icon"><?= $typeIcon ?></div>
+                <div>
+                    <div class="benefit-type-small"><?= $typeName ?></div>
+                    <h1><?= htmlspecialchars($benefit['name']) ?></h1>
+                    <span class="provider-badge"><?= ucfirst($benefit['provider']) ?></span>
                 </div>
             </div>
-
-            <!-- Barra de Progresso -->
-            <div class="progress-section">
-                <div class="progress-bar-large">
-                    <?php 
-                    $progressColor = $percentUsed > 90 ? '#ef4444' : ($percentUsed > 70 ? '#f59e0b' : '#10b981');
-                    ?>
-                    <div class="progress-fill-large" style="width: <?= min($percentUsed, 100) ?>%; background: <?= $progressColor ?>"></div>
-                </div>
-                <div class="progress-info">
-                    <span><?= number_format($percentUsed, 1) ?>% usado este mês</span>
-                    <span>Restam R$ <?= number_format($benefit['current_balance'], 2, ',', '.') ?></span>
-                </div>
+            <div class="header-actions">
+                <a href="/beneficios/recarregar/<?= $benefit['id'] ?>" class="btn-icon" title="Recarga Manual">
+                    💰
+                </a>
+                <a href="/beneficios/editar/<?= $benefit['id'] ?>" class="btn-icon" title="Editar">
+                    ✏️
+                </a>
+                <a href="/beneficios/deletar/<?= $benefit['id'] ?>" 
+                   class="btn-icon btn-danger-icon" 
+                   title="Deletar"
+                   onclick="return confirm('Tem certeza que deseja deletar este benefício?')">
+                    🗑️
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Transações do Mês -->
-    <div class="card">
-        <div class="card-header">
-            <h2>📊 Transações de <?= $months[$month] ?> / <?= $year ?></h2>
-            <div class="filter-buttons">
+    <!-- Cards de Resumo -->
+    <div class="summary-grid">
+        <div class="summary-card balance-card">
+            <div class="summary-icon">💰</div>
+            <div class="summary-content">
+                <span class="summary-label">Saldo Disponível</span>
+                <span class="summary-value">R$ <?= number_format($benefit['current_balance'], 2, ',', '.') ?></span>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">📊</div>
+            <div class="summary-content">
+                <span class="summary-label">Gasto em <?= $months[$month] ?></span>
+                <span class="summary-value">R$ <?= number_format($monthlyExpense, 2, ',', '.') ?></span>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">💵</div>
+            <div class="summary-content">
+                <span class="summary-label">Recarga Mensal</span>
+                <span class="summary-value">R$ <?= number_format($benefit['monthly_amount'], 2, ',', '.') ?></span>
+            </div>
+        </div>
+
+        <div class="summary-card">
+            <div class="summary-icon">📅</div>
+            <div class="summary-content">
+                <span class="summary-label">Próxima Recarga</span>
+                <span class="summary-value">Dia <?= $benefit['recharge_day'] ?></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barra de Progresso -->
+    <div class="progress-card">
+        <?php 
+        $progressColor = $percentUsed > 90 ? '#ef4444' : ($percentUsed > 70 ? '#f59e0b' : '#10b981');
+        ?>
+        <div class="progress-header">
+            <span>Uso do mês: <?= number_format($percentUsed, 1) ?>%</span>
+            <span>Restam: R$ <?= number_format($benefit['monthly_amount'] - $monthlyExpense, 2, ',', '.') ?></span>
+        </div>
+        <div class="progress-bar-compact">
+            <div class="progress-fill-compact" style="width: <?= min($percentUsed, 100) ?>%; background: <?= $progressColor ?>"></div>
+        </div>
+    </div>
+
+    <!-- Extrato de Transações -->
+    <div class="card-extrato">
+        <div class="extrato-header">
+            <h2>📊 Extrato de <?= $months[$month] ?>/<?= $year ?></h2>
+            <div class="month-nav">
                 <a href="?month=<?= $month > 1 ? $month - 1 : 12 ?>&year=<?= $month > 1 ? $year : $year - 1 ?>" 
-                   class="btn btn-secondary btn-sm">← Mês Anterior</a>
+                   class="btn-nav">◄</a>
+                <span class="current-period"><?= $months[$month] ?></span>
                 <a href="?month=<?= $month < 12 ? $month + 1 : 1 ?>&year=<?= $month < 12 ? $year : $year + 1 ?>" 
-                   class="btn btn-secondary btn-sm">Próximo Mês →</a>
+                   class="btn-nav">►</a>
             </div>
         </div>
 
         <?php if (empty($transactions)): ?>
-            <div class="empty-state-small">
-                <p>Nenhuma transação neste mês</p>
+            <div class="empty-state-compact">
+                <span class="empty-icon">📭</span>
+                <span>Nenhuma transação em <?= $months[$month] ?></span>
             </div>
         <?php else: ?>
-            <div class="transactions-list">
+            <div class="extrato-list">
                 <?php foreach ($transactions as $t): ?>
-                    <div class="transaction-item">
-                        <div class="transaction-icon" style="background: <?= $t['color'] ?>20; color: <?= $t['color'] ?>">
-                            💳
+                    <div class="extrato-item">
+                        <div class="extrato-date">
+                            <span class="date-day"><?= date('d', strtotime($t['transaction_date'])) ?></span>
+                            <span class="date-month"><?= strtoupper(substr($months[date('n', strtotime($t['transaction_date']))], 0, 3)) ?></span>
                         </div>
-                        <div class="transaction-info">
-                            <strong><?= htmlspecialchars($t['description']) ?></strong>
-                            <small><?= $t['category_name'] ?> • <?= date('d/m/Y', strtotime($t['transaction_date'])) ?></small>
+                        <div class="extrato-info">
+                            <span class="extrato-desc"><?= htmlspecialchars($t['description']) ?></span>
+                            <span class="extrato-cat" style="color: <?= $t['color'] ?>">● <?= $t['category_name'] ?></span>
                         </div>
-                        <div class="transaction-amount">
-                            <span class="amount-value">R$ <?= number_format($t['amount'], 2, ',', '.') ?></span>
+                        <div class="extrato-value">
+                            <span>- R$ <?= number_format($t['amount'], 2, ',', '.') ?></span>
                         </div>
                     </div>
                 <?php endforeach; ?>
-            </div>
 
-            <div class="total-section">
-                <strong>Total do Mês:</strong>
-                <span class="total-value">R$ <?= number_format($monthlyExpense, 2, ',', '.') ?></span>
+                <div class="extrato-total">
+                    <span>Total do Mês</span>
+                    <span class="total-amount">R$ <?= number_format($monthlyExpense, 2, ',', '.') ?></span>
+                </div>
             </div>
         <?php endif; ?>
     </div>
 
     <!-- Histórico de Recargas -->
-    <div class="card">
-        <div class="card-header">
-            <h2>🔄 Histórico de Recargas</h2>
-        </div>
+    <div class="card-recharges">
+        <h3>🔄 Histórico de Recargas</h3>
 
         <?php if (empty($rechargeHistory)): ?>
-            <div class="empty-state-small">
-                <p>Nenhuma recarga registrada</p>
+            <div class="empty-state-compact">
+                <span class="empty-icon">💰</span>
+                <span>Nenhuma recarga registrada</span>
             </div>
         <?php else: ?>
-            <div class="recharges-list">
+            <div class="recharges-compact">
                 <?php foreach ($rechargeHistory as $recharge): ?>
-                    <div class="recharge-item">
-                        <div class="recharge-icon">💰</div>
-                        <div class="recharge-info">
-                            <strong>Recarga</strong>
-                            <small><?= date('d/m/Y', strtotime($recharge['recharge_date'])) ?></small>
+                    <div class="recharge-compact-item">
+                        <div class="recharge-date">
+                            <?= date('d/m/Y', strtotime($recharge['recharge_date'])) ?>
                         </div>
-                        <div class="recharge-amount">
-                            +R$ <?= number_format($recharge['amount'], 2, ',', '.') ?>
+                        <div class="recharge-badge">Recarga Automática</div>
+                        <div class="recharge-value">
+                            + R$ <?= number_format($recharge['amount'], 2, ',', '.') ?>
                         </div>
                     </div>
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
     </div>
-
-    <!-- Botões de Ação -->
-    <div class="action-buttons">
-        <a href="/beneficios" class="btn btn-secondary">← Voltar</a>
-        <div class="action-buttons-right">
-            <a href="/beneficios/recarregar/<?= $benefit['id'] ?>" class="btn btn-success">
-                💰 Recarga Manual
-            </a>
-            <a href="/beneficios/editar/<?= $benefit['id'] ?>" class="btn btn-primary">
-                ✏️ Editar
-            </a>
-            <a href="/beneficios/deletar/<?= $benefit['id'] ?>" 
-               class="btn btn-danger"
-               onclick="return confirm('Tem certeza que deseja deletar este benefício?')">
-                🗑️ Deletar
-            </a>
-        </div>
-    </div>
 </div>
 
 <style>
-.benefit-card-large {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 20px;
-    padding: 2.5rem;
-    color: white;
-    margin-bottom: 2rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+.container-details {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 1.5rem;
 }
 
-.card-header-benefit {
-    margin-bottom: 2rem;
+/* Header */
+.details-header {
+    margin-bottom: 1.5rem;
 }
 
-.benefit-type-badge {
+.btn-back {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.2);
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
     font-size: 0.9rem;
     margin-bottom: 1rem;
-    backdrop-filter: blur(10px);
-}
-
-.type-icon-large {
-    font-size: 1.2rem;
-}
-
-.card-header-benefit h1 {
-    font-size: 2rem;
-    margin: 0.5rem 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.provider-name {
-    opacity: 0.9;
-    text-transform: capitalize;
-    font-size: 1rem;
-}
-
-.balance-section {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 2rem;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.balance-main {
-    text-align: center;
-    padding-bottom: 1.5rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    margin-bottom: 1.5rem;
-}
-
-.balance-label {
-    display: block;
-    font-size: 0.85rem;
-    opacity: 0.9;
-    margin-bottom: 0.5rem;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-
-.balance-value-large {
-    display: block;
-    font-size: 3rem;
-    font-weight: 800;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.balance-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-.balance-item {
-    text-align: center;
-}
-
-.balance-value {
-    display: block;
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-top: 0.5rem;
-}
-
-.progress-section {
-    margin-top: 1.5rem;
-}
-
-.progress-bar-large {
-    width: 100%;
-    height: 12px;
-    background: rgba(255, 255, 255, 0.2);
+    padding: 0.5rem 0.75rem;
     border-radius: 6px;
-    overflow: hidden;
-    margin-bottom: 0.75rem;
+    transition: background 0.2s;
 }
 
-.progress-fill-large {
-    height: 100%;
-    transition: width 0.3s;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+.btn-back:hover {
+    background: rgba(102, 126, 234, 0.1);
 }
 
-.progress-info {
+.benefit-header-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
-    font-size: 0.9rem;
-    opacity: 0.95;
+    align-items: center;
 }
 
-.filter-buttons {
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.benefit-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.benefit-type-small {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.benefit-header-card h1 {
+    font-size: 1.5rem;
+    color: #1f2937;
+    margin: 0.25rem 0;
+}
+
+.provider-badge {
+    display: inline-block;
+    background: #f3f4f6;
+    color: #6b7280;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.header-actions {
     display: flex;
     gap: 0.5rem;
 }
 
-.transactions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.transaction-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border-radius: 10px;
-    transition: transform 0.2s;
-}
-
-.transaction-item:hover {
-    transform: translateX(5px);
-    background: #e9ecef;
-}
-
-.transaction-icon {
-    width: 45px;
-    height: 45px;
-    border-radius: 10px;
+.btn-icon {
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.3rem;
-}
-
-.transaction-info {
-    flex: 1;
-}
-
-.transaction-info strong {
-    display: block;
-    color: #333;
-    margin-bottom: 0.25rem;
-}
-
-.transaction-info small {
-    color: #666;
-    font-size: 0.85rem;
-}
-
-.transaction-amount {
-    text-align: right;
-}
-
-.amount-value {
+    background: #f3f4f6;
+    border-radius: 8px;
+    text-decoration: none;
     font-size: 1.2rem;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+}
+
+.btn-danger-icon:hover {
+    background: #fee2e2;
+}
+
+/* Summary Grid */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.balance-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.summary-icon {
+    font-size: 2rem;
+}
+
+.summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.summary-label {
+    font-size: 0.75rem;
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.balance-card .summary-label {
+    opacity: 0.9;
+}
+
+.summary-value {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1f2937;
+}
+
+.balance-card .summary-value {
+    color: white;
+}
+
+/* Progress Card */
+.progress-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.progress-bar-compact {
+    width: 100%;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill-compact {
+    height: 100%;
+    transition: width 0.3s;
+}
+
+/* Extrato */
+.card-extrato {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.extrato-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.extrato-header h2 {
+    font-size: 1.2rem;
+    margin: 0;
+}
+
+.month-nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.current-period {
+    font-size: 0.95rem;
+    font-weight: 600;
+    min-width: 80px;
+    text-align: center;
+}
+
+.btn-nav {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    transition: background 0.2s;
+}
+
+.btn-nav:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.extrato-list {
+    padding: 0;
+}
+
+.extrato-item {
+    display: grid;
+    grid-template-columns: 70px 1fr auto;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid #f3f4f6;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.extrato-item:hover {
+    background: #f9fafb;
+}
+
+.extrato-date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+}
+
+.date-day {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #667eea;
+    line-height: 1;
+}
+
+.date-month {
+    font-size: 0.65rem;
+    color: #9ca3af;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.extrato-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.extrato-desc {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.95rem;
+}
+
+.extrato-cat {
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.extrato-value {
+    text-align: right;
+    font-size: 1.1rem;
     font-weight: 700;
     color: #ef4444;
 }
 
-.total-section {
+.extrato-total {
     display: flex;
     justify-content: space-between;
-    padding: 1.5rem;
-    background: #f1f5f9;
-    border-radius: 10px;
-    margin-top: 1rem;
-    font-size: 1.1rem;
+    padding: 1.25rem 1.5rem;
+    background: #f9fafb;
+    border-top: 2px solid #e5e7eb;
+    font-weight: 700;
 }
 
-.total-value {
-    font-size: 1.4rem;
-    font-weight: 800;
+.total-amount {
+    font-size: 1.3rem;
     color: #ef4444;
 }
 
-.recharges-list {
+/* Recargas */
+.card-recharges {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-recharges h3 {
+    font-size: 1.1rem;
+    color: #1f2937;
+    margin-bottom: 1rem;
+}
+
+.recharges-compact {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
 }
 
-.recharge-item {
+.recharge-compact-item {
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
+    padding: 0.875rem 1rem;
     background: #f0fdf4;
-    border-radius: 10px;
-    border-left: 4px solid #10b981;
+    border-left: 3px solid #10b981;
+    border-radius: 8px;
 }
 
-.recharge-icon {
-    width: 45px;
-    height: 45px;
-    background: #10b98120;
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-}
-
-.recharge-info {
-    flex: 1;
-}
-
-.recharge-info strong {
-    display: block;
-    color: #333;
-    margin-bottom: 0.25rem;
-}
-
-.recharge-info small {
-    color: #666;
+.recharge-date {
     font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 600;
+    min-width: 80px;
 }
 
-.recharge-amount {
-    font-size: 1.2rem;
+.recharge-badge {
+    flex: 1;
+    font-size: 0.85rem;
+    color: #059669;
+    font-weight: 600;
+}
+
+.recharge-value {
+    font-size: 1rem;
     font-weight: 700;
     color: #10b981;
 }
 
-.action-buttons {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-    justify-content: space-between;
-}
-
-.empty-state-small {
+/* Empty State */
+.empty-state-compact {
+    padding: 2.5rem 1.5rem;
     text-align: center;
-    padding: 3rem;
-    color: #666;
+    color: #9ca3af;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
 }
 
+.empty-icon {
+    font-size: 2.5rem;
+    opacity: 0.5;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-    .balance-grid {
+    .container-details {
+        padding: 1rem;
+    }
+
+    .benefit-header-card {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .summary-grid {
         grid-template-columns: 1fr;
     }
 
-    .filter-buttons {
-        flex-direction: column;
+    .extrato-item {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 
-    .balance-value-large {
-        font-size: 2rem;
+    .extrato-date {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 0.5rem;
+    }
+
+    .extrato-value {
+        text-align: left;
+    }
+
+    .recharge-compact-item {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 </style>

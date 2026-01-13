@@ -292,32 +292,43 @@ class TransactionModel extends Model
     /**
      * Atualiza transação e opcionalmente as relacionadas
      */
-    public function updateWithRelated($transactionId, $data, $updateRelated = false)
-    {
-        if ($updateRelated) {
-            $related = $this->getRelatedTransactions($transactionId);
+    /**
+ * Atualiza transação e opcionalmente as relacionadas
+ */
+public function updateWithRelated($transactionId, $data, $updateRelated = false)
+{
+    if ($updateRelated) {
+        $related = $this->getRelatedTransactions($transactionId);
 
-            $this->db->beginTransaction();
-            try {
-                foreach ($related as $t) {
-                    // Para parcelas, mantém o valor individual
-                    $updateData = $data;
-                    if (isset($t['is_installment']) && $t['is_installment']) {
-                        unset($updateData['amount']); // Não altera valor de parcelas
+        $this->db->beginTransaction();
+        try {
+            foreach ($related as $t) {
+                // Para parcelas, mantém o valor individual e a data
+                $updateData = $data;
+                
+                if (isset($t['is_installment']) && $t['is_installment']) {
+                    unset($updateData['amount']); // Não altera valor de parcelas
+                    unset($updateData['transaction_date']); // Não altera data de parcelas
+                    
+                    // CORREÇÃO: Atualiza a descrição com o número correto da parcela
+                    if (isset($updateData['description'])) {
+                        $baseDescription = preg_replace('/\s*\(\d+\/\d+\)$/', '', $updateData['description']);
+                        $updateData['description'] = $baseDescription . " ({$t['installment_number']}/{$t['installments']})";
                     }
-
-                    $this->update($t['id'], $updateData);
                 }
-                $this->db->commit();
-                return true;
-            } catch (Exception $e) {
-                $this->db->rollBack();
-                throw $e;
+
+                $this->update($t['id'], $updateData);
             }
-        } else {
-            return $this->update($transactionId, $data);
+            $this->db->commit();
+            return true;
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            throw $e;
         }
+    } else {
+        return $this->update($transactionId, $data);
     }
+}
 
     /**
      * Busca transações de um cartão específico

@@ -81,87 +81,89 @@
                     $bank = $card['bank'] ?? 'outros';
                     $style = $bankStyles[$bank] ?? $bankStyles['outros'];
                 ?>
-                    <div class="credit-card" style="background: <?= $style['gradient'] ?>">
-                        <div class="card-top">
-                            <!-- Chip do Cartão -->
-                            <div class="card-chip">
-                                <div class="chip"></div>
+                    <div class="card-wrapper">
+                        <div class="credit-card" style="background: <?= $style['gradient'] ?>">
+                            <div class="card-top">
+                                <!-- Chip do Cartão -->
+                                <div class="card-chip">
+                                    <div class="chip"></div>
+                                </div>
+
+                                <!-- Logo do Banco -->
+                                <div class="card-logo">
+                                    <?php if (!empty($style['logo'])): ?>
+                                        <img
+                                            src="<?= $style['logo'] ?>"
+                                            alt="<?= ucfirst($bank) ?>"
+                                            class="<?= !empty($style['logo_white']) ? 'logo-white' : '' ?>"
+                                            onerror="this.style.display='none'">
+                                    <?php endif; ?>
+                                </div>
                             </div>
 
-                            <!-- Logo do Banco -->
-                            <div class="card-logo">
-                                <?php if (!empty($style['logo'])): ?>
-                                    <img
-                                        src="<?= $style['logo'] ?>"
-                                        alt="<?= ucfirst($bank) ?>"
-                                        class="<?= !empty($style['logo_white']) ? 'logo-white' : '' ?>"
-                                        onerror="this.style.display='none'">
+                            <div class="card-middle">
+                                <!-- Nome do Cartão -->
+                                <div class="card-name"><?= htmlspecialchars($card['name']) ?></div>
+
+                                <!-- Número do Cartão -->
+                                <div class="card-number">•••• •••• •••• <?= $card['last_digits'] ?></div>
+
+                                <!-- Nome do Titular -->
+                                <?php if (!empty($card['holder_name'])): ?>
+                                    <div class="card-holder"><?= strtoupper(htmlspecialchars($card['holder_name'])) ?></div>
+                                <?php endif; ?>
+                            </div>
+
+                            <div class="card-bottom">
+                                <!-- Linha de Info -->
+                                <div class="card-info-row">
+                                    <!-- Detalhes -->
+                                    <div class="card-details-row">
+                                        <div class="card-detail">
+                                            <span class="detail-label">Fecha</span>
+                                            <span class="detail-value">Dia <?= $card['closing_day'] ?></span>
+                                        </div>
+                                        <div class="card-detail">
+                                            <span class="detail-label">Vence</span>
+                                            <span class="detail-value">Dia <?= $card['due_day'] ?></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Fatura -->
+                                    <div class="card-invoice-compact">
+                                        <div class="invoice-label">Fatura</div>
+                                        <div class="invoice-value">R$ <?= number_format($card['current_invoice'], 2, ',', '.') ?></div>
+                                    </div>
+                                </div>
+
+                                <?php if ($card['credit_limit']): ?>
+                                    <div class="limit-progress">
+                                        <?php
+                                        $percentUsed = ($card['current_invoice'] / $card['credit_limit']) * 100;
+                                        $progressColor = $percentUsed > 80 ? '#ef4444' : ($percentUsed > 50 ? '#f59e0b' : '#10b981');
+                                        ?>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" style="width: <?= min($percentUsed, 100) ?>%; background: <?= $progressColor ?>"></div>
+                                        </div>
+                                        <div class="limit-text">
+                                            <span>Limite: R$ <?= number_format($card['credit_limit'], 2, ',', '.') ?></span>
+                                            <span class="available">Disponível: R$ <?= number_format($card['available'], 2, ',', '.') ?></span>
+                                        </div>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </div>
 
-                        <div class="card-middle">
-                            <!-- Nome do Cartão -->
-                            <div class="card-name"><?= htmlspecialchars($card['name']) ?></div>
-
-                            <!-- Número do Cartão -->
-                            <div class="card-number">•••• •••• •••• <?= $card['last_digits'] ?></div>
-
-                            <!-- Nome do Titular -->
-                            <?php if (!empty($card['holder_name'])): ?>
-                                <div class="card-holder"><?= strtoupper(htmlspecialchars($card['holder_name'])) ?></div>
-                            <?php endif; ?>
-                        </div>
-
-                        <div class="card-bottom">
-                            <!-- Linha de Info -->
-                            <div class="card-info-row">
-                                <!-- Detalhes -->
-                                <div class="card-details-row">
-                                    <div class="card-detail">
-                                        <span class="detail-label">Fecha</span>
-                                        <span class="detail-value">Dia <?= $card['closing_day'] ?></span>
-                                    </div>
-                                    <div class="card-detail">
-                                        <span class="detail-label">Vence</span>
-                                        <span class="detail-value">Dia <?= $card['due_day'] ?></span>
-                                    </div>
-                                </div>
-
-                                <!-- Fatura -->
-                                <div class="card-invoice-compact">
-                                    <div class="invoice-label">Fatura</div>
-                                    <div class="invoice-value">R$ <?= number_format($card['current_invoice'], 2, ',', '.') ?></div>
-                                </div>
-                            </div>
-
-                            <?php if ($card['credit_limit']): ?>
-                                <div class="limit-progress">
-                                    <?php
-                                    $percentUsed = ($card['current_invoice'] / $card['credit_limit']) * 100;
-                                    $progressColor = $percentUsed > 80 ? '#ef4444' : ($percentUsed > 50 ? '#f59e0b' : '#10b981');
-                                    ?>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" style="width: <?= min($percentUsed, 100) ?>%; background: <?= $progressColor ?>"></div>
-                                    </div>
-                                    <div class="limit-text">
-                                        <span>Limite: R$ <?= number_format($card['credit_limit'], 2, ',', '.') ?></span>
-                                        <span class="available">Disponível: R$ <?= number_format($card['available'], 2, ',', '.') ?></span>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-
-                            <!-- Ações -->
-                            <div class="card-actions">
-                                <a href="/cartoes/extrato/<?= $card['id'] ?>" class="btn-action btn-primary-action">
-                                    📊 Ver Extrato
-                                </a>
-                                <a href="/cartoes/deletar/<?= $card['id'] ?>"
-                                    class="btn-action btn-delete-action"
-                                    onclick="return confirm('Tem certeza que deseja deletar este cartão?\n\nAtenção: As transações já cadastradas não serão deletadas.')">
-                                    🗑️ Excluir
-                                </a>
-                            </div>
+                        <!-- Ações ABAIXO do cartão -->
+                        <div class="card-actions">
+                            <a href="/cartoes/extrato/<?= $card['id'] ?>" class="btn-action btn-primary-action">
+                                📊 Ver Extrato
+                            </a>
+                            <a href="/cartoes/deletar/<?= $card['id'] ?>"
+                                class="btn-action btn-delete-action"
+                                onclick="return confirm('Tem certeza que deseja deletar este cartão?\n\nAtenção: As transações já cadastradas não serão deletadas.')">
+                                🗑️ Excluir
+                            </a>
                         </div>
                     </div>
                 <?php endforeach; ?>
@@ -201,6 +203,12 @@
         padding: 0.5rem;
     }
 
+    .card-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
     .credit-card {
         aspect-ratio: 1.586 / 1;
         /* Proporção real de cartão de crédito (85.6mm x 53.98mm) */
@@ -232,8 +240,8 @@
     }
 
     .credit-card:hover {
-        transform: translateY(-5px) rotateY(2deg);
-        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.35);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
     }
 
     .card-top {
@@ -388,7 +396,7 @@
     }
 
     .limit-progress {
-        margin-bottom: 0.7rem;
+        margin-bottom: 0;
     }
 
     .progress-bar {
@@ -419,14 +427,15 @@
         font-weight: 700;
     }
 
+    /* Ações ABAIXO do cartão */
     .card-actions {
         display: flex;
-        gap: 0.6rem;
+        gap: 0.75rem;
     }
 
     .btn-action {
         flex: 1;
-        padding: 0.65rem 1rem;
+        padding: 0.75rem 1rem;
         border: none;
         border-radius: 8px;
         font-weight: 700;
@@ -437,30 +446,34 @@
         justify-content: center;
         gap: 0.4rem;
         transition: all 0.3s;
-        font-size: 0.8rem;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        font-size: 0.85rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        background: white;
     }
 
     .btn-primary-action {
-        background: rgba(255, 255, 255, 0.95);
-        color: #333;
+        color: #667eea;
+        border: 2px solid #667eea;
     }
 
     .btn-primary-action:hover {
-        background: white;
+        background: #667eea;
+        color: white;
         transform: translateY(-2px);
-        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
     .btn-delete-action {
-        background: rgba(239, 68, 68, 0.9);
-        color: white;
+        background: white;
+        color: #ef4444;
+        border: 2px solid #ef4444;
     }
 
     .btn-delete-action:hover {
-        background: rgba(220, 38, 38, 1);
+        background: #ef4444;
+        color: white;
         transform: translateY(-2px);
-        box-shadow: 0 5px 14px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
     @media (max-width: 768px) {
@@ -491,6 +504,10 @@
 
         .card-actions {
             flex-direction: column;
+        }
+
+        .btn-action {
+            width: 100%;
         }
     }
 </style>

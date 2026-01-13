@@ -25,85 +25,100 @@
                         <small class="help-text">Tipo não pode ser alterado</small>
                     </div>
 
-                    <div class="form-group">
-                        <label for="valor">💵 Valor (R$) *</label>
-                        <input
-                            type="text"
-                            id="valor"
-                            name="amount"
-                            value="<?= number_format($transaction['amount'], 2, ',', '.') ?>"
-                            class="money-input"
-                            required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="descricao">📝 Descrição *</label>
-                    <input
-                        type="text"
-                        id="descricao"
-                        name="description"
-                        value="<?= htmlspecialchars($transaction['description']) ?>"
-                        required>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="categoria_id">🏷️ Categoria *</label>
-                        <select id="categoria_id" name="category_id">
-                            <option value="">Sem categoria</option>
-                            <?php foreach ($categories as $cat): ?>
-                                <option value="<?= $cat['id'] ?>" <?= $cat['id'] == $transaction['category_id'] ? 'selected' : '' ?>>
-                                    <?= htmlspecialchars($cat['name']) ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="data_transacao">📅 Data *</label>
-                        <input
-                            type="date"
-                            id="data_transacao"
-                            name="transaction_date"
-                            value="<?= $transaction['transaction_date'] ?>"
-                            required>
-                    </div>
-                </div>
-
-                <?php if ($hasRelated): ?>
-                    <div class="related-section">
-                        <h3>Transações Relacionadas</h3>
-                        <div class="related-preview">
-                            <?php foreach (array_slice($related, 0, 3) as $r): ?>
-                                <div class="related-item-preview">
-                                    <span><?= date('d/m/Y', strtotime($r['transaction_date'])) ?></span>
-                                    <span><?= htmlspecialchars($r['description']) ?></span>
-                                    <span>R$ <?= number_format($r['amount'], 2, ',', '.') ?></span>
-                                </div>
-                            <?php endforeach; ?>
-
-                            <?php if (count($related) > 3): ?>
-                                <p class="more-items">... e mais <?= count($related) - 3 ?> transações</p>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="valor">💵 Valor (R$) *</label>
+                            <input
+                                type="text"
+                                id="valor"
+                                name="amount"
+                                value="<?= number_format($transaction['amount'], 2, ',', '.') ?>"
+                                class="money-input"
+                                <?= $transaction['is_installment'] ? 'disabled' : '' ?>
+                                required>
+                            <?php if ($transaction['is_installment']): ?>
+                                <small class="help-text">⚠️ Valor de parcelas não pode ser alterado</small>
                             <?php endif; ?>
                         </div>
+                    </div>
 
-                        <label class="checkbox-label">
-                            <input type="checkbox" name="update_related" value="1" id="update_related">
-                            <span>Aplicar alterações em <strong>TODAS</strong> as <?= count($related) ?> transações relacionadas</span>
-                        </label>
+                    <div class="form-group">
+                        <label for="descricao">📝 Descrição *</label>
+                        <input
+                            type="text"
+                            id="descricao"
+                            name="description"
+                            value="<?= htmlspecialchars($transaction['description']) ?>"
+                            required>
+                    </div>
 
-                        <div class="help-note">
-                            💡 <strong>Dica:</strong> Se marcar esta opção, categoria, descrição e data serão atualizadas em todas as parcelas/recorrências.
-                            O valor <strong>não será alterado</strong> em compras parceladas para manter o valor de cada parcela.
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="categoria_id">🏷️ Categoria *</label>
+                            <select id="categoria_id" name="category_id">
+                                <option value="">Sem categoria</option>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= $cat['id'] ?>" <?= $cat['id'] == $transaction['category_id'] ? 'selected' : '' ?>>
+                                        <?= htmlspecialchars($cat['name']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="data_transacao">📅 Data *</label>
+                                <input
+                                    type="date"
+                                    id="data_transacao"
+                                    name="transaction_date"
+                                    value="<?= $transaction['transaction_date'] ?>"
+                                    <?= $transaction['is_installment'] ? 'disabled' : '' ?>
+                                    required>
+                                <?php if ($transaction['is_installment']): ?>
+                                    <small class="help-text">⚠️ Data de parcelas não pode ser alterada</small>
+                                <?php endif; ?>
+                            </div>
                         </div>
                     </div>
-                <?php endif; ?>
 
-                <div class="form-actions">
-                    <a href="/transacoes" class="btn btn-secondary">Cancelar</a>
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                </div>
+                    <?php if ($hasRelated): ?>
+                        <div class="related-section">
+                            <h3>Transações Relacionadas</h3>
+                            <div class="related-preview">
+                                <?php foreach (array_slice($related, 0, 3) as $r): ?>
+                                    <div class="related-item-preview">
+                                        <span><?= date('d/m/Y', strtotime($r['transaction_date'])) ?></span>
+                                        <span><?= htmlspecialchars($r['description']) ?></span>
+                                        <span>R$ <?= number_format($r['amount'], 2, ',', '.') ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+
+                                <?php if (count($related) > 3): ?>
+                                    <p class="more-items">... e mais <?= count($related) - 3 ?> transações</p>
+                                <?php endif; ?>
+                            </div>
+
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="update_related" value="1" id="update_related">
+                                <span>Aplicar alterações em <strong>TODAS</strong> as <?= count($related) ?> transações relacionadas</span>
+                            </label>
+
+                            <div class="help-note">
+                                💡 <strong>Dica:</strong> Se marcar esta opção, categoria e descrição serão atualizadas em todas as parcelas/recorrências.
+                                <?php if ($transaction['is_installment']): ?>
+                                    O <strong>valor e a data</strong> não serão alterados em compras parceladas para manter a integridade de cada parcela.
+                                <?php else: ?>
+                                    O valor será aplicado em todas as recorrências.
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="form-actions">
+                        <a href="/transacoes" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    </div>
             </form>
         </div>
     </div>

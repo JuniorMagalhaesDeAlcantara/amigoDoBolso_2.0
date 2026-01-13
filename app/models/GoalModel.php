@@ -35,12 +35,28 @@ class GoalModel extends Model
 
     public function addProgress($goalId, $amount)
     {
+        // Garante que é float e formata com 2 casas decimais
+        $amount = number_format((float)$amount, 2, '.', '');
+        
         $sql = "UPDATE {$this->table} 
-                SET current_amount = current_amount + ? 
+                SET current_amount = current_amount + {$amount}
                 WHERE id = ?";
 
         $stmt = $this->db->prepare($sql);
-        return $stmt->execute([$amount, $goalId]);
+        return $stmt->execute([$goalId]);
+    }
+
+    public function removeProgress($goalId, $amount)
+    {
+        // Garante que é float e formata com 2 casas decimais
+        $amount = number_format((float)$amount, 2, '.', '');
+        
+        $sql = "UPDATE {$this->table} 
+                SET current_amount = GREATEST(0, current_amount - {$amount})
+                WHERE id = ?";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$goalId]);
     }
 
     public function getProgress($goalId)

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class CategoriasController extends Controller {
     private $categoryModel;

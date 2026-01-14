@@ -1,4 +1,4 @@
-﻿<?php include VIEWS . '/layouts/header.php'; ?>
+<?php include VIEWS . '/layouts/header.php'; ?>
 
 <div class="container-small">
     <div class="card">

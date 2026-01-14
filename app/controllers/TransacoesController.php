@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class TransacoesController extends Controller
 {
@@ -16,26 +16,24 @@ class TransacoesController extends Controller
         $this->benefitCardModel = new BenefitCardModel();
     }
 
+    // TransactionController.php - Método index atualizado
+
     public function index()
     {
-        $groupId = $_SESSION['current_group_id'] ?? null;
-
-        if (!$groupId) {
-            $this->redirect('/dashboard');
-            return;
-        }
-
-        $month = $_GET['month'] ?? date('n');
+        $month = $_GET['month'] ?? date('m');
         $year = $_GET['year'] ?? date('Y');
+        $status = $_GET['status'] ?? 'all';
 
-        $transactions = $this->transactionModel->getByGroup($groupId, $month, $year);
-        $categories = $this->categoryModel->getByGroup($groupId);
+        $groupId = $_SESSION['current_group_id'];
+
+        // Busca transações com filtro de status
+        $transactions = $this->transactionModel->getByMonthAndStatus($groupId, $month, $year, $status);
 
         $this->view('transacoes/index', [
             'transactions' => $transactions,
-            'categories' => $categories,
             'month' => $month,
-            'year' => $year
+            'year' => $year,
+            'status' => $status
         ]);
     }
 
@@ -82,8 +80,8 @@ class TransacoesController extends Controller
 
                 // Verifica se tem saldo suficiente
                 if ($benefit['current_balance'] < $amountFloat) {
-                    $_SESSION['error'] = "Saldo insuficiente no benefício. Disponível: R$ " . 
-                                        number_format($benefit['current_balance'], 2, ',', '.');
+                    $_SESSION['error'] = "Saldo insuficiente no benefício. Disponível: R$ " .
+                        number_format($benefit['current_balance'], 2, ',', '.');
                     $this->redirect('/transacoes/criar');
                     return;
                 }
@@ -115,6 +113,7 @@ class TransacoesController extends Controller
 
             // Se for recorrente
             if ($isRecurring) {
+                $data['paid'] = 0; // ← ADICIONAR: Garante que inicia como pendente
                 $recurrenceMonths = filter_input(INPUT_POST, 'recurrence_months', FILTER_VALIDATE_INT) ?? 1;
                 $this->transactionModel->createRecurring($data, $recurrenceMonths);
             } else {
@@ -222,11 +221,45 @@ class TransacoesController extends Controller
 
         // SEMPRE mostra página de confirmação
         $related = $hasRelated ? $this->transactionModel->getRelatedTransactions($id) : [$transaction];
-        
+
         $this->view('transacoes/confirmar-delete', [
             'transaction' => $transaction,
             'related' => $related,
             'hasRelated' => $hasRelated
+        ]);
+    }
+
+    public function togglePaid()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método inválido']);
+            exit; // ← ADICIONAR exit
+        }
+
+        $transactionId = $_POST['transaction_id'] ?? null;
+        $paid = $_POST['paid'] ?? '0';
+
+        if (!$transactionId) {
+            echo json_encode(['success' => false, 'message' => 'ID inválido']);
+            exit; // ← ADICIONAR exit
+        }
+
+        // Verifica se a transação pertence ao grupo atual
+        $transaction = $this->transactionModel->findById($transactionId);
+
+        if (!$transaction || $transaction['group_id'] != $_SESSION['current_group_id']) {
+            echo json_encode(['success' => false, 'message' => 'Transação não encontrada']);
+            exit; // ← ADICIONAR exit
+        }
+
+        // Atualiza o status usando método específico
+        $success = $this->transactionModel->updatePaidStatus($transactionId, $paid === '1' ? 1 : 0);
+
+        echo json_encode([
+            'success' => true,
+            'message' => $paid === '1' ? 'Transação marcada como paga' : 'Transação marcada como pendente'
         ]);
     }
 }

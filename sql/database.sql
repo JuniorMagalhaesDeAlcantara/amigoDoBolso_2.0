@@ -1,4 +1,4 @@
-﻿-- ==========================================
+-- ==========================================
 -- AMIGO DO BOLSO 2.0 - DATABASE SCHEMA
 -- ==========================================
 
@@ -225,3 +225,10 @@ ALTER TABLE transactions
 ALTER TABLE benefit_cards
 ADD COLUMN initial_balance DECIMAL(10,2) NOT NULL DEFAULT 0.00
 AFTER monthly_amount;
+
+-- Adicionar coluna paid em transactions para controle de pagamento
+ALTER TABLE transactions 
+ADD COLUMN paid TINYINT(1) DEFAULT 1 AFTER is_recurring;
+
+-- Índice para melhorar performance de queries
+CREATE INDEX idx_paid ON transactions(paid);

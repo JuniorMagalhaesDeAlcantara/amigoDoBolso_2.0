@@ -1,4 +1,4 @@
-﻿// Script básico do Amigo do Bolso
+// Script básico do Amigo do Bolso
 console.log('Amigo do Bolso carregado!');
 
 // Copiar código de convite ao clicar

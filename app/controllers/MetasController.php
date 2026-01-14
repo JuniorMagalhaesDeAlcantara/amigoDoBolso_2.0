@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class MetasController extends Controller
 {

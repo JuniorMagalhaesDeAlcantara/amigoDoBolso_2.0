@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class Router
 {
@@ -61,7 +61,12 @@ class Router
 
                 // Se não tem método especificado, usa 'index' como padrão
                 if (isset($url[0]) && !empty($url[0])) {
-                    $this->method = $url[0];
+                    // Converte kebab-case para camelCase (togglePaid)
+                    $method = $url[0];
+                    if (strpos($method, '-') !== false) {
+                        $method = lcfirst(str_replace('-', '', ucwords($method, '-')));
+                    }
+                    $this->method = $method;
                     array_shift($url);
                 } else {
                     $this->method = 'index';

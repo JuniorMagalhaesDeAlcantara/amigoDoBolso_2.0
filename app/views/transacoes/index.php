@@ -1,4 +1,4 @@
-﻿<?php include VIEWS . '/layouts/header.php'; ?>
+<?php include VIEWS . '/layouts/header.php'; ?>
 
 <div class="container">
     <div class="page-header">
@@ -75,6 +75,20 @@
                 </select>
             </div>
 
+            <div class="filter-group">
+                <label for="status">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Status
+                </label>
+                <select name="status" id="status" class="filter-select">
+                    <option value="all" <?= ($status ?? 'all') == 'all' ? 'selected' : '' ?>>Todas</option>
+                    <option value="paid" <?= ($status ?? '') == 'paid' ? 'selected' : '' ?>>Pagas</option>
+                    <option value="pending" <?= ($status ?? '') == 'pending' ? 'selected' : '' ?>>Pendentes</option>
+                </select>
+            </div>
+
             <button type="submit" class="btn btn-filter">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z" />
@@ -105,7 +119,7 @@
         <?php else: ?>
             <div class="transactions-list">
                 <?php foreach ($transactions as $transaction): ?>
-                    <div class="transaction-item">
+                    <div class="transaction-item <?= (!$transaction['paid'] && $transaction['is_recurring'] && $transaction['type'] === 'despesa') ? 'pending' : '' ?>">
                         <!-- Ícone do Tipo -->
                         <div class="transaction-icon <?= $transaction['type'] ?>">
                             <?php if ($transaction['type'] === 'receita'): ?>
@@ -126,6 +140,17 @@
                                 <div class="transaction-info">
                                     <h4><?= htmlspecialchars($transaction['description']) ?></h4>
                                     <div class="transaction-badges">
+                                        <!-- Status de Pagamento -->
+                                        <?php if (!$transaction['paid']): ?>
+                                            <span class="badge badge-pending">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <circle cx="12" cy="12" r="10" />
+                                                    <polyline points="12 6 12 12 16 14" />
+                                                </svg>
+                                                Pendente
+                                            </span>
+                                        <?php endif; ?>
+
                                         <!-- Data -->
                                         <span class="badge badge-date">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -150,30 +175,21 @@
                                                     <rect x="2" y="4" width="20" height="16" rx="2" />
                                                     <path d="M2 10h20" />
                                                 </svg>
-
                                                 <?php if (!empty($transaction['card_name'])): ?>
                                                     <?= $transaction['card_name'] ?>
                                                 <?php else: ?>
                                                     Cartão de Crédito
                                                 <?php endif; ?>
-
                                                 <?php if ($transaction['installments'] > 1): ?>
                                                     <span class="installment-badge">
                                                         <?= $transaction['installment_number'] ?>/<?= $transaction['installments'] ?>x
                                                     </span>
                                                 <?php endif; ?>
                                             </span>
-
                                         <?php elseif ($transaction['payment_method'] === 'va'): ?>
-                                            <span class="badge badge-payment badge-va">
-                                                🍽️ VA
-                                            </span>
-
+                                            <span class="badge badge-payment badge-va">🍽️ VA</span>
                                         <?php elseif ($transaction['payment_method'] === 'vr'): ?>
-                                            <span class="badge badge-payment badge-vr">
-                                                🛒 VR
-                                            </span>
-
+                                            <span class="badge badge-payment badge-vr">🛒 VR</span>
                                         <?php else: ?>
                                             <span class="badge badge-payment badge-cash">
                                                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -182,7 +198,6 @@
                                                 À vista
                                             </span>
                                         <?php endif; ?>
-
 
                                         <!-- Recorrente -->
                                         <?php if ($transaction['is_recurring']): ?>
@@ -195,6 +210,21 @@
                                         <?php endif; ?>
                                     </div>
                                 </div>
+
+
+                                <!-- Toggle de Pagamento (só para despesas recorrentes) -->
+                                <?php if ($transaction['is_recurring'] && $transaction['type'] === 'despesa'): ?>
+                                    <div class="payment-toggle">
+                                        <label class="toggle-switch" title="<?= $transaction['paid'] ? 'Marcar como pendente' : 'Marcar como paga' ?>">
+                                            <input
+                                                type="checkbox"
+                                                <?= $transaction['paid'] ? 'checked' : '' ?>
+                                                onchange="togglePaymentStatus(<?= $transaction['id'] ?>, this.checked)">
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                        <span class="toggle-label"><?= $transaction['paid'] ? 'Pago' : 'Pendente' ?></span>
+                                    </div>
+                                <?php endif; ?>
 
                                 <!-- Valor -->
                                 <div class="transaction-value-wrapper">
@@ -231,11 +261,77 @@
     </div>
 </div>
 
+<script>
+    function togglePaymentStatus(transactionId, isPaid) {
+        const formData = new FormData();
+        formData.append('transaction_id', transactionId);
+        formData.append('paid', isPaid ? '1' : '0');
+
+        fetch('transacoes/togglePaid', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(text => {
+                // Remove BOM e espaços invisíveis
+                const cleanText = text.replace(/^\uFEFF/, '').trim();
+                const data = JSON.parse(cleanText);
+
+                if (data.success) {
+                    showToast(
+                        isPaid ? 'Transação marcada como paga!' : 'Transação marcada como pendente',
+                        'success'
+                    );
+
+                    const item = event.target.closest('.transaction-item');
+                    if (isPaid) {
+                        item.classList.remove('pending');
+                    } else {
+                        item.classList.add('pending');
+                    }
+
+                    updatePendingBadge(item, isPaid);
+                } else {
+                    showToast('Erro ao atualizar status', 'error');
+                    event.target.checked = !isPaid;
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showToast('Erro ao atualizar status', 'error');
+                event.target.checked = !isPaid;
+            });
+    }
+
+    function updatePendingBadge(item, isPaid) {
+        const badges = item.querySelector('.transaction-badges');
+        const existingBadge = badges.querySelector('.badge-pending');
+
+        if (!isPaid && !existingBadge) {
+            // Adiciona badge pendente
+            const badge = document.createElement('span');
+            badge.className = 'badge badge-pending';
+            badge.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            Pendente
+        `;
+            badges.insertBefore(badge, badges.firstChild);
+        } else if (isPaid && existingBadge) {
+            // Remove badge pendente
+            existingBadge.remove();
+        }
+    }
+</script>
+
 <style>
     :root {
         --primary: #667eea;
         --secondary: #10b981;
         --danger: #ef4444;
+        --warning: #f59e0b;
         --gray-50: #f9fafb;
         --gray-100: #f3f4f6;
         --gray-200: #e5e7eb;
@@ -298,7 +394,7 @@
 
     .filter-group {
         flex: 1;
-        min-width: 180px;
+        min-width: 150px;
     }
 
     .filter-group label {
@@ -349,7 +445,12 @@
         gap: 0.875rem;
         padding: 0.875rem 1.25rem;
         border-bottom: 1px solid var(--gray-100);
-        transition: background 0.15s;
+        transition: all 0.15s;
+    }
+
+    .transaction-item.pending {
+        background: rgba(245, 158, 11, 0.03);
+        border-left: 3px solid var(--warning);
     }
 
     .transaction-item:last-child {
@@ -358,6 +459,71 @@
 
     .transaction-item:hover {
         background: var(--gray-50);
+    }
+
+    /* TOGGLE DE PAGAMENTO */
+    .payment-toggle {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .toggle-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--gray-600);
+        white-space: nowrap;
+    }
+
+    input:checked~.toggle-slider+.toggle-label {
+        color: var(--secondary);
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        cursor: pointer;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--gray-300);
+        transition: 0.3s;
+        border-radius: 24px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    input:checked+.toggle-slider {
+        background-color: var(--secondary);
+    }
+
+    input:checked+.toggle-slider:before {
+        transform: translateX(20px);
     }
 
     .transaction-icon {
@@ -392,7 +558,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 1rem;
+        gap: 1.5rem;
     }
 
     .transaction-info {
@@ -426,6 +592,12 @@
         font-size: 0.75rem;
         font-weight: 500;
         white-space: nowrap;
+    }
+
+    .badge-pending {
+        background: rgba(245, 158, 11, 0.15);
+        color: #d97706;
+        font-weight: 600;
     }
 
     .badge-date {
@@ -468,6 +640,10 @@
 
     .transaction-value.despesa {
         color: var(--danger);
+    }
+
+    .transaction-item.pending .transaction-value {
+        opacity: 0.7;
     }
 
     .transaction-actions {
@@ -549,8 +725,20 @@
             gap: 0.75rem;
         }
 
-        .transaction-main {
+        .payment-toggle {
+            order: 1;
+        }
+
+        .transaction-icon {
+            order: 2;
+        }
+
+        .transaction-content {
+            order: 3;
             width: 100%;
+        }
+
+        .transaction-main {
             flex-direction: column;
             align-items: flex-start;
             gap: 0.5rem;

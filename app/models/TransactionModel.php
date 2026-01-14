@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class TransactionModel extends Model
 {
@@ -62,16 +62,21 @@ class TransactionModel extends Model
     public function getMonthlyBalance($groupId, $month, $year)
     {
         $sql = "SELECT 
-                    SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as total_income,
-                    SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as total_expense
-                FROM {$this->table}
-                WHERE group_id = ? 
-                AND MONTH(transaction_date) = ? 
-                AND YEAR(transaction_date) = ?";
+            SUM(CASE WHEN type = 'receita' AND paid = 1 THEN amount ELSE 0 END) as total_income,
+            SUM(CASE WHEN type = 'despesa' AND paid = 1 THEN amount ELSE 0 END) as total_expense
+        FROM transactions
+        WHERE group_id = :group_id
+        AND MONTH(transaction_date) = :month
+        AND YEAR(transaction_date) = :year";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$groupId, $month, $year]);
-        return $stmt->fetch();
+        $stmt->execute([
+            'group_id' => $groupId,
+            'month' => $month,
+            'year' => $year
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getSpendingByCategory($groupId, $month, $year)
@@ -190,7 +195,8 @@ class TransactionModel extends Model
                 'is_recurring' => true,
                 'recurrence_type' => 'mensal',
                 'recurrence_months' => $months,
-                'parent_transaction_id' => null
+                'parent_transaction_id' => null,
+                'paid' => 0
             ]);
 
             $parentId = $this->create($parentData);
@@ -204,7 +210,8 @@ class TransactionModel extends Model
                     'is_recurring' => true,
                     'recurrence_type' => 'mensal',
                     'recurrence_months' => $months,
-                    'parent_transaction_id' => $parentId
+                    'parent_transaction_id' => $parentId,
+                    'paid' => 0
                 ]);
 
                 $this->create($childData);
@@ -292,43 +299,40 @@ class TransactionModel extends Model
     /**
      * Atualiza transação e opcionalmente as relacionadas
      */
-    /**
- * Atualiza transação e opcionalmente as relacionadas
- */
-public function updateWithRelated($transactionId, $data, $updateRelated = false)
-{
-    if ($updateRelated) {
-        $related = $this->getRelatedTransactions($transactionId);
+    public function updateWithRelated($transactionId, $data, $updateRelated = false)
+    {
+        if ($updateRelated) {
+            $related = $this->getRelatedTransactions($transactionId);
 
-        $this->db->beginTransaction();
-        try {
-            foreach ($related as $t) {
-                // Para parcelas, mantém o valor individual e a data
-                $updateData = $data;
-                
-                if (isset($t['is_installment']) && $t['is_installment']) {
-                    unset($updateData['amount']); // Não altera valor de parcelas
-                    unset($updateData['transaction_date']); // Não altera data de parcelas
-                    
-                    // CORREÇÃO: Atualiza a descrição com o número correto da parcela
-                    if (isset($updateData['description'])) {
-                        $baseDescription = preg_replace('/\s*\(\d+\/\d+\)$/', '', $updateData['description']);
-                        $updateData['description'] = $baseDescription . " ({$t['installment_number']}/{$t['installments']})";
+            $this->db->beginTransaction();
+            try {
+                foreach ($related as $t) {
+                    // Para parcelas, mantém o valor individual e a data
+                    $updateData = $data;
+
+                    if (isset($t['is_installment']) && $t['is_installment']) {
+                        unset($updateData['amount']); // Não altera valor de parcelas
+                        unset($updateData['transaction_date']); // Não altera data de parcelas
+
+                        // CORREÇÃO: Atualiza a descrição com o número correto da parcela
+                        if (isset($updateData['description'])) {
+                            $baseDescription = preg_replace('/\s*\(\d+\/\d+\)$/', '', $updateData['description']);
+                            $updateData['description'] = $baseDescription . " ({$t['installment_number']}/{$t['installments']})";
+                        }
                     }
-                }
 
-                $this->update($t['id'], $updateData);
+                    $this->update($t['id'], $updateData);
+                }
+                $this->db->commit();
+                return true;
+            } catch (Exception $e) {
+                $this->db->rollBack();
+                throw $e;
             }
-            $this->db->commit();
-            return true;
-        } catch (Exception $e) {
-            $this->db->rollBack();
-            throw $e;
+        } else {
+            return $this->update($transactionId, $data);
         }
-    } else {
-        return $this->update($transactionId, $data);
     }
-}
 
     /**
      * Busca transações de um cartão específico
@@ -455,5 +459,52 @@ public function updateWithRelated($transactionId, $data, $updateRelated = false)
         ]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getByMonthAndStatus($groupId, $month, $year, $status = 'all')
+    {
+        $sql = "SELECT 
+                t.*,
+                c.name as category_name,
+                c.color,
+                u.name as user_name
+            FROM transactions t
+            INNER JOIN categories c ON t.category_id = c.id
+            INNER JOIN users u ON t.user_id = u.id
+            WHERE t.group_id = :group_id
+            AND MONTH(t.transaction_date) = :month
+            AND YEAR(t.transaction_date) = :year";
+
+        // Filtro de status
+        if ($status === 'paid') {
+            $sql .= " AND t.paid = 1";
+        } elseif ($status === 'pending') {
+            $sql .= " AND t.paid = 0";
+        }
+
+        $sql .= " ORDER BY t.transaction_date DESC, t.created_at DESC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'group_id' => $groupId,
+            'month' => $month,
+            'year' => $year
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Atualiza status de pagamento (sempre retorna true se executar)
+     */
+    public function updatePaidStatus($transactionId, $paid)
+    {
+        $sql = "UPDATE {$this->table} SET paid = :paid WHERE id = :id";
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'id' => $transactionId,
+            'paid' => $paid
+        ]);
     }
 }

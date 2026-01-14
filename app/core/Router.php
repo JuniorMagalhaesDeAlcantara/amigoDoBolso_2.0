@@ -40,7 +40,30 @@ class Router
 
                 array_shift($url);
             }
-        } elseif ($url[0] === 'grupos') {
+        }
+        // Rotas de notificações
+        elseif ($url[0] === 'notificacoes') {
+            $this->controller = 'NotificationController';
+            array_shift($url);
+
+            if (isset($url[0]) && !empty($url[0])) {
+                // Converte kebab-case para camelCase
+                $method = $url[0];
+                if (strpos($method, '-') !== false) {
+                    $parts = explode('-', $method);
+                    $method = $parts[0];
+                    for ($i = 1; $i < count($parts); $i++) {
+                        $method .= ucfirst($parts[$i]);
+                    }
+                }
+                $this->method = $method;
+                array_shift($url);
+            } else {
+                $this->method = 'index';
+            }
+        }
+        // Rotas de grupos
+        elseif ($url[0] === 'grupos') {
             $this->controller = 'GruposController';
             array_shift($url);
 
@@ -61,10 +84,14 @@ class Router
 
                 // Se não tem método especificado, usa 'index' como padrão
                 if (isset($url[0]) && !empty($url[0])) {
-                    // Converte kebab-case para camelCase (togglePaid)
+                    // Converte kebab-case para camelCase
                     $method = $url[0];
                     if (strpos($method, '-') !== false) {
-                        $method = lcfirst(str_replace('-', '', ucwords($method, '-')));
+                        $parts = explode('-', $method);
+                        $method = $parts[0];
+                        for ($i = 1; $i < count($parts); $i++) {
+                            $method .= ucfirst($parts[$i]);
+                        }
                     }
                     $this->method = $method;
                     array_shift($url);

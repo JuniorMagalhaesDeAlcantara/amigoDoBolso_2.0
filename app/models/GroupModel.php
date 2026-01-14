@@ -123,4 +123,15 @@ class GroupModel extends Model
             ]);
         }
     }
+
+    public function getAllActive()
+    {
+        $sql = "SELECT DISTINCT g.id, g.name, g.owner_id
+                FROM {$this->table} g
+                INNER JOIN group_members gm ON g.id = gm.group_id
+                ORDER BY g.name ASC";
+
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

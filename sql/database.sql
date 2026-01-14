@@ -232,3 +232,62 @@ ADD COLUMN paid TINYINT(1) DEFAULT 1 AFTER is_recurring;
 
 -- Índice para melhorar performance de queries
 CREATE INDEX idx_paid ON transactions(paid);
+
+-- Tabela de Notificações
+CREATE TABLE notifications (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    type ENUM('fatura_vencimento', 'boleto_vencimento', 'fatura_vencida', 'boleto_vencido', 'relatorio_mensal') NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    priority ENUM('low', 'medium', 'high', 'urgent') DEFAULT 'medium',
+    related_type ENUM('card', 'bill', 'report') NULL,
+    related_id INT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    read_at TIMESTAMP NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_read (user_id, is_read),
+    INDEX idx_created (created_at),
+    INDEX idx_type (type)
+);
+
+-- Tabela de Configurações de Notificação do Usuário
+CREATE TABLE notification_settings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    
+    -- Notificações In-App
+    enable_app_notifications BOOLEAN DEFAULT TRUE,
+    
+    -- Notificações por E-mail
+    enable_email_notifications BOOLEAN DEFAULT TRUE,
+    email_notify_3days BOOLEAN DEFAULT TRUE,
+    email_notify_1day BOOLEAN DEFAULT TRUE,
+    email_notify_today BOOLEAN DEFAULT TRUE,
+    email_notify_overdue BOOLEAN DEFAULT TRUE,
+    email_monthly_report BOOLEAN DEFAULT TRUE,
+    
+    -- Horário preferido para envio (relatório mensal)
+    preferred_send_hour INT DEFAULT 9,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Tabela de Log de E-mails Enviados (evitar duplicatas)
+CREATE TABLE notification_email_log (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    notification_type VARCHAR(100) NOT NULL,
+    related_type VARCHAR(50) NULL,
+    related_id INT NULL,
+    reference_date DATE NOT NULL,
+    sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_notification (user_id, notification_type, related_type, related_id, reference_date),
+    INDEX idx_user_date (user_id, reference_date)
+);

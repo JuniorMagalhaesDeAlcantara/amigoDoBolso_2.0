@@ -13,12 +13,24 @@
                     <p class="subtitle">Gerencie suas receitas e despesas</p>
                 </div>
             </div>
-            <a href="/transacoes/criar" class="btn btn-primary">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M12 5v14M5 12h14" />
-                </svg>
-                Nova Transação
-            </a>
+            <div class="header-actions">
+                <button onclick="generateReport()" class="btn btn-secondary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    Relatório
+                </button>
+                <a href="/transacoes/criar" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 5v14M5 12h14" />
+                    </svg>
+                    Nova Transação
+                </a>
+            </div>
         </div>
     </div>
 
@@ -96,6 +108,51 @@
                 Filtrar
             </button>
         </form>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="summary-cards">
+        <div class="summary-card income-card">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M19 12l-7-7-7 7" />
+                </svg>
+            </div>
+            <div class="card-content">
+                <span class="card-label">Receitas</span>
+                <span class="card-value">R$ <?= number_format($balance['total_income'] ?? 0, 2, ',', '.') ?></span>
+            </div>
+        </div>
+
+        <div class="summary-card expense-card">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 19V5M5 12l7 7 7-7" />
+                </svg>
+            </div>
+            <div class="card-content">
+                <span class="card-label">Despesas</span>
+                <span class="card-value">R$ <?= number_format($balance['total_expense'] ?? 0, 2, ',', '.') ?></span>
+            </div>
+        </div>
+
+        <div class="summary-card balance-card">
+            <div class="card-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+            </div>
+            <div class="card-content">
+                <span class="card-label">Saldo</span>
+                <?php
+                $saldo = ($balance['total_income'] ?? 0) - ($balance['total_expense'] ?? 0);
+                $saldoClass = $saldo >= 0 ? 'positive' : 'negative';
+                ?>
+                <span class="card-value <?= $saldoClass ?>">R$ <?= number_format($saldo, 2, ',', '.') ?></span>
+            </div>
+        </div>
+
+
     </div>
 
     <!-- Lista de Transações -->
@@ -267,13 +324,12 @@
         formData.append('transaction_id', transactionId);
         formData.append('paid', isPaid ? '1' : '0');
 
-        fetch('transacoes/togglePaid', {
+        fetch('/transacoes/togglePaid', { // CORRIGIDO: adicionar / no início
                 method: 'POST',
                 body: formData
             })
             .then(response => response.text())
             .then(text => {
-                // Remove BOM e espaços invisíveis
                 const cleanText = text.replace(/^\uFEFF/, '').trim();
                 const data = JSON.parse(cleanText);
 
@@ -308,22 +364,259 @@
         const existingBadge = badges.querySelector('.badge-pending');
 
         if (!isPaid && !existingBadge) {
-            // Adiciona badge pendente
             const badge = document.createElement('span');
             badge.className = 'badge badge-pending';
             badge.innerHTML = `
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
-            </svg>
-            Pendente
-        `;
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Pendente
+            `;
             badges.insertBefore(badge, badges.firstChild);
         } else if (isPaid && existingBadge) {
-            // Remove badge pendente
             existingBadge.remove();
         }
     }
+
+    function generateReport() {
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+            'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+        ];
+
+        // Coleta dados dos cards
+        const cards = document.querySelectorAll('.summary-card .card-value');
+        const receitas = cards[0]?.textContent.replace('R$ ', '') || '0,00';
+        const despesas = cards[1]?.textContent.replace('R$ ', '') || '0,00';
+        const saldo = cards[2]?.textContent.replace('R$ ', '') || '0,00';
+        const totalTransacoes = cards[3]?.textContent || '0';
+
+        const printWindow = window.open('', '', 'width=900,height=700');
+
+        printWindow.document.write(`
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório - ${monthNames[month-1]}/${year}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            padding: 2rem; 
+            color: #333;
+            line-height: 1.6;
+        }
+        .header { 
+            text-align: center; 
+            margin-bottom: 2.5rem; 
+            border-bottom: 4px solid #667eea; 
+            padding-bottom: 1.5rem; 
+        }
+        .header h1 { 
+            color: #667eea; 
+            font-size: 2.5rem; 
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        .header .period { 
+            color: #374151; 
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .header .generated { 
+            color: #6b7280; 
+            font-size: 0.875rem; 
+        }
+        
+        .summary { 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 1.5rem; 
+            margin-bottom: 3rem; 
+        }
+        .summary-item { 
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 1.5rem; 
+            border-radius: 12px; 
+            border-left: 5px solid #667eea;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        .summary-item.income { 
+            border-left-color: #10b981;
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+        .summary-item.expense { 
+            border-left-color: #ef4444;
+            background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        }
+        .summary-item.balance { 
+            border-left-color: #667eea;
+            background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%);
+        }
+        .summary-item.total { 
+            border-left-color: #f59e0b;
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+        }
+        .summary-label { 
+            display: block; 
+            font-size: 0.875rem; 
+            color: #6b7280; 
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .summary-value { 
+            display: block; 
+            font-size: 1.75rem; 
+            font-weight: 800; 
+            color: #1f2937; 
+        }
+        
+        .actions { 
+            text-align: center; 
+            margin: 2rem 0 3rem; 
+        }
+        .btn { 
+            padding: 0.875rem 2rem; 
+            margin: 0 0.5rem; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 0.9375rem; 
+            font-weight: 700;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
+        .btn-print { background: #667eea; color: white; }
+        .btn-download { background: #10b981; color: white; }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-top: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th { 
+            background: #667eea; 
+            color: white; 
+            padding: 1rem; 
+            text-align: left; 
+            font-size: 0.875rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td { 
+            padding: 0.875rem 1rem; 
+            border-bottom: 1px solid #e5e7eb; 
+            font-size: 0.9375rem; 
+        }
+        tr:nth-child(even) { background: #f9fafb; }
+        tr:hover { background: #f3f4f6; }
+        .receita { color: #10b981; font-weight: 700; }
+        .despesa { color: #ef4444; font-weight: 700; }
+        
+        .footer { 
+            margin-top: 3rem; 
+            padding-top: 1.5rem; 
+            border-top: 3px solid #e5e7eb; 
+            text-align: center; 
+            color: #6b7280; 
+            font-size: 0.875rem; 
+        }
+        
+        @media print {
+            .no-print { display: none; }
+            body { padding: 1rem; }
+            .btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📊 Relatório Financeiro</h1>
+        <p class="period">${monthNames[month-1]} de ${year}</p>
+        <p class="generated">Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
+    </div>
+    
+    <div class="summary">
+        <div class="summary-item income">
+            <span class="summary-label">💚 Receitas</span>
+            <span class="summary-value">R$ ${receitas}</span>
+        </div>
+        <div class="summary-item expense">
+            <span class="summary-label">💸 Despesas</span>
+            <span class="summary-value">R$ ${despesas}</span>
+        </div>
+        <div class="summary-item balance">
+            <span class="summary-label">💰 Saldo</span>
+            <span class="summary-value">${saldo}</span>
+        </div>
+        <div class="summary-item total">
+            <span class="summary-label">📋 Transações</span>
+            <span class="summary-value">${totalTransacoes}</span>
+        </div>
+    </div>
+    
+    <div class="actions no-print">
+        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
+        <button class="btn btn-download" onclick="alert('Para salvar em PDF, use Ctrl+P e selecione \\'Salvar como PDF\\' no destino.'); window.print();">📥 Salvar PDF</button>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Tipo</th>
+                <th style="text-align: right;">Valor</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${Array.from(document.querySelectorAll('.transaction-item')).map(item => {
+                const dateElement = item.querySelector('.badge-date');
+                const date = dateElement ? dateElement.textContent.trim().replace(/\s+/g, ' ') : '';
+                const description = item.querySelector('.transaction-info h4')?.textContent.trim() || '';
+                const categoryElement = item.querySelector('.badge-category');
+                const category = categoryElement ? categoryElement.textContent.trim().replace(/\s+/g, ' ') : '';
+                const value = item.querySelector('.transaction-value')?.textContent.trim() || '';
+                const type = value.startsWith('+') ? 'Receita' : 'Despesa';
+                const typeClass = value.startsWith('+') ? 'receita' : 'despesa';
+                
+                return `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${description}</td>
+                        <td>${category}</td>
+                        <td>${type}</td>
+                        <td class="${typeClass}" style="text-align: right; font-weight: bold;">${value}</td>
+                    </tr>
+                `;
+            }).join('')}
+        </tbody>
+    </table>
+    
+    <div class="footer">
+        <p><strong>Sistema de Gestão Financeira</strong></p>
+        <p>Relatório gerado automaticamente • Todos os valores em Reais (R$)</p>
+    </div>
+</body>
+</html>
+        `);
+
+        printWindow.document.close();
+    }
+</script>
+
 </script>
 
 <style>
@@ -703,6 +996,101 @@
 
     .btn-empty {
         display: inline-flex;
+    }
+
+    /* SUMMARY CARDS */
+    .summary-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.25rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        transition: transform 0.2s;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .summary-card .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .income-card .card-icon {
+        background: rgba(16, 185, 129, 0.12);
+        color: var(--secondary);
+    }
+
+    .expense-card .card-icon {
+        background: rgba(239, 68, 68, 0.12);
+        color: var(--danger);
+    }
+
+    .balance-card .card-icon {
+        background: rgba(102, 126, 234, 0.12);
+        color: var(--primary);
+    }
+
+    .invoice-card .card-icon {
+        background: rgba(245, 158, 11, 0.12);
+        color: var(--warning);
+    }
+
+    .card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .card-label {
+        font-size: 0.8125rem;
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+
+    .card-value {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--gray-900);
+    }
+
+    .card-value.positive {
+        color: var(--secondary);
+    }
+
+    .card-value.negative {
+        color: var(--danger);
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 768px) {
+        .summary-cards {
+            grid-template-columns: 1fr;
+        }
+
+        .header-actions {
+            flex-direction: column;
+        }
     }
 
     /* RESPONSIVE */

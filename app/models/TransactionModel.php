@@ -507,4 +507,23 @@ class TransactionModel extends Model
             'paid' => $paid
         ]);
     }
+
+    public function getOverdueRecurringByGroup($groupId)
+    {
+        $sql = "
+        SELECT *
+        FROM transactions
+        WHERE group_id = :group_id
+          AND paid = 0
+          AND transaction_date < CURDATE()
+          AND is_recurring = 1
+    ";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([
+            'group_id' => $groupId
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

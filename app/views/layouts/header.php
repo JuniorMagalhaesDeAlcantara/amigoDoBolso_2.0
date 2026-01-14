@@ -33,7 +33,7 @@
             padding: 0 !important;
         }
 
-        /* NAVBAR MODERNA */
+        /* NAVBAR OTIMIZADA */
         .navbar {
             position: sticky;
             top: 0;
@@ -47,8 +47,8 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0.875rem 2rem;
-            gap: 2rem;
+            padding: 0.75rem 2rem;
+            gap: 1.5rem;
             max-width: 1400px;
             margin: 0 auto;
         }
@@ -71,14 +71,14 @@
         .logo {
             height: auto;
             width: auto;
-            max-height: 120px;
+            max-height: 100px;
         }
 
-        /* NAVBAR MENU */
+        /* NAVBAR MENU - Espaçamento reduzido */
         .navbar-menu {
             display: flex;
             list-style: none;
-            gap: 0.25rem;
+            gap: 0;
             margin: 0;
             padding: 0;
             align-items: center;
@@ -93,7 +93,7 @@
         .navbar-menu li a {
             color: var(--gray-600);
             text-decoration: none;
-            padding: 0.625rem 1rem;
+            padding: 0.5rem 0.875rem;
             border-radius: 8px;
             transition: all 0.2s;
             font-weight: 500;
@@ -129,18 +129,68 @@
             color: #dc2626 !important;
         }
 
-        /* Group Selector - Superior Direito */
+        /* NAVBAR RIGHT - Notificações + Grupo */
         .navbar-right {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
+        /* Botão de Notificações */
+        .notification-btn {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: white;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            color: var(--gray-600);
+        }
+
+        .notification-btn:hover {
+            border-color: var(--primary);
+            background: var(--gray-50);
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+        }
+
+        .notification-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 700;
+            padding: 0.125rem 0.375rem;
+            border-radius: 10px;
+            min-width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            border: 2px solid white;
+        }
+
+        /* Group Selector */
         .group-selector {
             position: relative;
             display: flex;
             flex-direction: column;
-            gap: 0.25rem;
+            gap: 0.5rem;
         }
 
         .group-selector-label {
@@ -350,6 +400,8 @@
             border-left: 4px solid;
             position: relative;
             overflow: hidden;
+            padding-top: 20px;
+
         }
 
         .toast.removing {
@@ -459,6 +511,7 @@
                 transform: translateX(400px);
                 opacity: 0;
             }
+
             to {
                 transform: translateX(0);
                 opacity: 1;
@@ -470,6 +523,7 @@
                 transform: translateX(0);
                 opacity: 1;
             }
+
             to {
                 transform: translateX(400px);
                 opacity: 0;
@@ -480,6 +534,7 @@
             from {
                 width: 100%;
             }
+
             to {
                 width: 0%;
             }
@@ -505,19 +560,27 @@
         }
 
         /* RESPONSIVE */
-        @media (max-width: 1024px) {
-            .navbar-menu {
-                gap: 0.125rem;
-            }
-
+        @media (max-width: 1200px) {
             .navbar-menu li a {
                 padding: 0.5rem 0.75rem;
+                font-size: 0.8125rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .navbar-menu li a {
+                padding: 0.5rem 0.625rem;
                 font-size: 0.8125rem;
             }
 
             .navbar-menu li a svg {
                 width: 16px;
                 height: 16px;
+            }
+
+            .group-selector-btn {
+                min-width: 160px;
+                padding: 0.5rem 0.875rem;
             }
         }
 
@@ -582,6 +645,16 @@
                 gap: 0.5rem;
             }
 
+            .notification-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .notification-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
             /* Toast mobile */
             .toast-container {
                 top: 4rem;
@@ -598,13 +671,23 @@
 </head>
 
 <body>
-    <?php if (isset($_SESSION['user_id'])): ?>
-        <?php
-        // Buscar todos os grupos do usuário
+    <?php
+    // Busca contador de notificações não lidas
+    $unreadCount = 0;
+    if (isset($_SESSION['user_id'])) {
+        require_once APP . '/models/NotificationModel.php';
+        $notificationModel = new NotificationModel();
+        $unreadCount = $notificationModel->countUnread($_SESSION['user_id']);
+    }
+
+    // Buscar grupos do usuário para o seletor
+    $userGroups = [];
+    $currentGroup = null;
+    if (isset($_SESSION['user_id'])) {
+        require_once APP . '/models/GroupModel.php';
         $groupModel = new GroupModel();
         $userGroups = $groupModel->getUserGroups($_SESSION['user_id']);
         $currentGroupId = $_SESSION['current_group_id'] ?? null;
-        $currentGroup = null;
 
         if ($currentGroupId) {
             foreach ($userGroups as $group) {
@@ -614,15 +697,15 @@
                 }
             }
         }
-        ?>
+    }
+    ?>
 
+    <?php if (isset($_SESSION['user_id'])): ?>
         <nav class="navbar">
             <div class="container">
                 <div class="navbar-brand">
                     <a href="/dashboard">
-                        <img src="/assets/images/logoOficial.png"
-                            alt="Amigo do Bolso"
-                            class="logo">
+                        <img src="/assets/images/logoOficial.png" alt="Amigo do Bolso" class="logo">
                     </a>
                 </div>
 
@@ -630,10 +713,10 @@
                     <li>
                         <a href="/dashboard" class="<?= $_SERVER['REQUEST_URI'] === '/dashboard' ? 'active' : '' ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="3" width="7" height="7"/>
-                                <rect x="14" y="3" width="7" height="7"/>
-                                <rect x="14" y="14" width="7" height="7"/>
-                                <rect x="3" y="14" width="7" height="7"/>
+                                <rect x="3" y="3" width="7" height="7" />
+                                <rect x="14" y="3" width="7" height="7" />
+                                <rect x="14" y="14" width="7" height="7" />
+                                <rect x="3" y="14" width="7" height="7" />
                             </svg>
                             Dashboard
                         </a>
@@ -641,8 +724,8 @@
                     <li>
                         <a href="/transacoes" class="<?= strpos($_SERVER['REQUEST_URI'], '/transacoes') !== false ? 'active' : '' ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="12" y1="1" x2="12" y2="23"/>
-                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                <line x1="12" y1="1" x2="12" y2="23" />
+                                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                             </svg>
                             Transações
                         </a>
@@ -650,8 +733,8 @@
                     <li>
                         <a href="/cartoes" class="<?= strpos($_SERVER['REQUEST_URI'], '/cartoes') !== false ? 'active' : '' ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
-                                <line x1="1" y1="10" x2="23" y2="10"/>
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                                <line x1="1" y1="10" x2="23" y2="10" />
                             </svg>
                             Cartões
                         </a>
@@ -659,8 +742,8 @@
                     <li>
                         <a href="/beneficios" class="<?= strpos($_SERVER['REQUEST_URI'], '/beneficios') !== false ? 'active' : '' ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                                <line x1="7" y1="7" x2="7.01" y2="7"/>
+                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                                <line x1="7" y1="7" x2="7.01" y2="7" />
                             </svg>
                             Benefícios
                         </a>
@@ -668,9 +751,9 @@
                     <li>
                         <a href="/metas" class="<?= strpos($_SERVER['REQUEST_URI'], '/metas') !== false ? 'active' : '' ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"/>
-                                <circle cx="12" cy="12" r="6"/>
-                                <circle cx="12" cy="12" r="2"/>
+                                <circle cx="12" cy="12" r="10" />
+                                <circle cx="12" cy="12" r="6" />
+                                <circle cx="12" cy="12" r="2" />
                             </svg>
                             Metas
                         </a>
@@ -678,10 +761,10 @@
                     <li>
                         <a href="/grupos/detalhes" class="<?= strpos($_SERVER['REQUEST_URI'], '/grupos') !== false ? 'active' : '' ?>">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                             </svg>
                             Grupo
                         </a>
@@ -689,9 +772,9 @@
                     <li>
                         <a href="/auth/logout" class="btn-logout">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                                <polyline points="16 17 21 12 16 7"/>
-                                <line x1="21" y1="12" x2="9" y2="12"/>
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                                <polyline points="16 17 21 12 16 7" />
+                                <line x1="21" y1="12" x2="9" y2="12" />
                             </svg>
                             Sair
                         </a>
@@ -699,20 +782,33 @@
                 </ul>
 
                 <div class="navbar-right">
+                    <!-- Botão de Notificações -->
+                    <a href="/notificacoes" class="notification-btn" title="Notificações">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                            <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                        </svg>
+                        <?php if ($unreadCount > 0): ?>
+                            <span class="notification-badge" id="notificationCount">
+                                <?= $unreadCount > 99 ? '99+' : $unreadCount ?>
+                            </span>
+                        <?php endif; ?>
+                    </a>
+
+                    <!-- Group Selector -->
                     <?php if (!empty($userGroups)): ?>
                         <div class="group-selector">
-                            <label class="group-selector-label">Grupo Ativo</label>
                             <button class="group-selector-btn" onclick="toggleGroupDropdown(event)">
                                 <svg class="group-selector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                                    <circle cx="9" cy="7" r="4"/>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                                    <circle cx="9" cy="7" r="4" />
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                                 </svg>
                                 <div class="group-selector-text">
                                     <span><?= $currentGroup ? htmlspecialchars($currentGroup['name']) : 'Selecionar grupo' ?></span>
                                 </div>
                                 <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="6 9 12 15 18 9"/>
+                                    <polyline points="6 9 12 15 18 9" />
                                 </svg>
                             </button>
 
@@ -723,8 +819,8 @@
                                 </div>
                                 <div class="group-dropdown-list">
                                     <?php foreach ($userGroups as $group): ?>
-                                        <a href="/grupos/trocar/<?= $group['id'] ?>" 
-                                           class="group-dropdown-item <?= $group['id'] == $currentGroupId ? 'active' : '' ?>">
+                                        <a href="/grupos/trocar/<?= $group['id'] ?>"
+                                            class="group-dropdown-item <?= $group['id'] == ($currentGroupId ?? 0) ? 'active' : '' ?>">
                                             <div class="group-dropdown-avatar">
                                                 <?= strtoupper(substr($group['name'], 0, 2)) ?>
                                             </div>
@@ -732,9 +828,9 @@
                                                 <strong><?= htmlspecialchars($group['name']) ?></strong>
                                                 <small><?= $group['member_count'] ?? 0 ?> membro(s)</small>
                                             </div>
-                                            <?php if ($group['id'] == $currentGroupId): ?>
+                                            <?php if ($group['id'] == ($currentGroupId ?? 0)): ?>
                                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                                    <polyline points="20 6 9 17 4 12"/>
+                                                    <polyline points="20 6 9 17 4 12" />
                                                 </svg>
                                             <?php endif; ?>
                                         </a>
@@ -754,48 +850,48 @@
         </nav>
 
         <script>
-        function toggleGroupDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('groupDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        function toggleMobileMenu() {
-            const menu = document.getElementById('navMenu');
-            menu.classList.toggle('mobile-open');
-        }
-
-        // Fechar dropdown ao clicar fora
-        window.addEventListener('click', function(e) {
-            if (!e.target.closest('.group-selector')) {
+            function toggleGroupDropdown(event) {
+                event.stopPropagation();
                 const dropdown = document.getElementById('groupDropdown');
-                if (dropdown) {
-                    dropdown.classList.remove('show');
-                }
+                dropdown.classList.toggle('show');
             }
-        });
 
-        // Sistema de Toast Notifications
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
+            function toggleMobileMenu() {
+                const menu = document.getElementById('navMenu');
+                menu.classList.toggle('mobile-open');
+            }
 
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
+            // Fechar dropdown ao clicar fora
+            window.addEventListener('click', function(e) {
+                if (!e.target.closest('.group-selector')) {
+                    const dropdown = document.getElementById('groupDropdown');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+                }
+            });
 
-            const icons = {
-                success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
-                error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-                info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-            };
+            // Sistema de Toast Notifications
+            function showToast(message, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                if (!container) return;
 
-            const titles = {
-                success: 'Sucesso!',
-                error: 'Erro!',
-                info: 'Informação'
-            };
+                const toast = document.createElement('div');
+                toast.className = `toast toast-${type}`;
 
-            toast.innerHTML = `
+                const icons = {
+                    success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>',
+                    error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                    info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+                };
+
+                const titles = {
+                    success: 'Sucesso!',
+                    error: 'Erro!',
+                    info: 'Informação'
+                };
+
+                toast.innerHTML = `
                 <div class="toast-icon">
                     ${icons[type] || icons.info}
                 </div>
@@ -812,23 +908,23 @@
                 <div class="toast-progress"></div>
             `;
 
-            container.appendChild(toast);
+                container.appendChild(toast);
 
-            // Auto remover após 5 segundos
-            setTimeout(() => {
-                removeToast(toast);
-            }, 5000);
-        }
+                // Auto remover após 5 segundos
+                setTimeout(() => {
+                    removeToast(toast);
+                }, 5000);
+            }
 
-        function removeToast(element) {
-            const toast = element.classList ? element : element.closest('.toast');
-            if (!toast) return;
+            function removeToast(element) {
+                const toast = element.classList ? element : element.closest('.toast');
+                if (!toast) return;
 
-            toast.classList.add('removing');
-            setTimeout(() => {
-                toast.remove();
-            }, 300);
-        }
+                toast.classList.add('removing');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }
         </script>
     <?php endif; ?>
 

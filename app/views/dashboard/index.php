@@ -47,13 +47,7 @@
             <div class="card-value <?= $saldoClass ?>">R$ <?= number_format($saldo, 2, ',', '.') ?></div>
         </div>
 
-        <div class="summary-card credit">
-            <div class="card-header-row">
-                <div class="card-icon">💳</div>
-            </div>
-            <div class="card-label">Fatura de Cartões</div>
-            <div class="card-value">R$ <?= number_format($creditCardTotal ?? 0, 2, ',', '.') ?></div>
-        </div>
+
     </div>
 
     <!-- Cartões de Crédito -->

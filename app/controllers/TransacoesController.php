@@ -29,8 +29,22 @@ class TransacoesController extends Controller
         // Busca transações com filtro de status
         $transactions = $this->transactionModel->getByMonthAndStatus($groupId, $month, $year, $status);
 
+        // Busca o balanço do mês (receitas e despesas)
+        $balance = $this->transactionModel->getMonthlyBalance($groupId, $month, $year);
+
+        // Calcula total de faturas de cartões de crédito
+        $creditCardModel = new CreditCardModel();
+        $cards = $creditCardModel->getByGroup($groupId);
+        $creditCardTotal = 0;
+
+        foreach ($cards as $card) {
+            $creditCardTotal += $this->transactionModel->getCardInvoiceTotal($card['id'], $month, $year);
+        }
+
         $this->view('transacoes/index', [
             'transactions' => $transactions,
+            'balance' => $balance,
+            'creditCardTotal' => $creditCardTotal,
             'month' => $month,
             'year' => $year,
             'status' => $status

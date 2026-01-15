@@ -2,8 +2,8 @@
 -- AMIGO DO BOLSO 2.0 - DATABASE SCHEMA
 -- ==========================================
 
-CREATE DATABASE IF NOT EXISTS amigo_do_bolso CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE amigo_do_bolso;
+--CREATE DATABASE IF NOT EXISTS amigo_do_bolso CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+--USE amigo_do_bolso;
 
 -- Tabela de Usuários
 CREATE TABLE users (

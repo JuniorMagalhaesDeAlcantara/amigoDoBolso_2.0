@@ -63,57 +63,72 @@ class AuthController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING);
-            $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+
+            $name  = trim($_POST['name'] ?? '');
+            $email = trim($_POST['email'] ?? '');
             $password = $_POST['password'] ?? '';
-            $confirmPassword = $_POST['confirm_password'] ?? '';
+            $confirmPassword = $_POST['password_confirm'] ?? ''; // 👈 AJUSTE AQUI
 
             // Validações
-            if (empty($name) || empty($email) || empty($password)) {
-                $error = 'Todos os campos são obrigatórios';
-                $this->view('auth/register', ['error' => $error]);
+            if ($name === '' || $email === '' || $password === '' || $confirmPassword === '') {
+                $this->view('auth/register', [
+                    'error' => 'Todos os campos são obrigatórios'
+                ]);
+                return;
+            }
+
+            if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $this->view('auth/register', [
+                    'error' => 'Email inválido'
+                ]);
                 return;
             }
 
             if ($password !== $confirmPassword) {
-                $error = 'As senhas não coincidem';
-                $this->view('auth/register', ['error' => $error]);
+                $this->view('auth/register', [
+                    'error' => 'As senhas não coincidem'
+                ]);
                 return;
             }
 
             if (strlen($password) < 6) {
-                $error = 'A senha deve ter no mínimo 6 caracteres';
-                $this->view('auth/register', ['error' => $error]);
+                $this->view('auth/register', [
+                    'error' => 'A senha deve ter no mínimo 6 caracteres'
+                ]);
                 return;
             }
 
             // Verifica se email já existe
             if ($this->userModel->findByEmail($email)) {
-                $error = 'Este email já está cadastrado';
-                $this->view('auth/register', ['error' => $error]);
+                $this->view('auth/register', [
+                    'error' => 'Este email já está cadastrado'
+                ]);
                 return;
             }
 
             // Cria usuário
             $userId = $this->userModel->create([
-                'name' => $name,
-                'email' => $email,
+                'name'     => $name,
+                'email'    => $email,
                 'password' => password_hash($password, PASSWORD_DEFAULT)
             ]);
 
             if ($userId) {
-                $_SESSION['user_id'] = $userId;
-                $_SESSION['user_name'] = $name;
+                $_SESSION['user_id']    = $userId;
+                $_SESSION['user_name']  = $name;
                 $_SESSION['user_email'] = $email;
-                $_SESSION['success'] = 'Cadastro realizado com sucesso! Crie seu primeiro grupo.';
+
                 $this->redirect('/grupos/criar');
-            } else {
-                $error = 'Erro ao criar usuário';
-                $this->view('auth/register', ['error' => $error]);
+                return;
             }
-        } else {
-            $this->view('auth/register');
+
+            $this->view('auth/register', [
+                'error' => 'Erro ao criar usuário'
+            ]);
+            return;
         }
+
+        $this->view('auth/register');
     }
 
     public function logout()

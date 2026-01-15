@@ -10,6 +10,11 @@ class Database
     private $username = 'root';
     private $password = '';
 
+   // private $host = 'localhost';
+   // private $db_name = 'juni1512_amigo_do_bolso';
+   // private $username = 'juni1512_jrlevita09';
+   // private $password = 'W0r2tf5pz@103555';
+
     private function __construct()
     {
         try {

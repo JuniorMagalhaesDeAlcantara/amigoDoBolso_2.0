@@ -134,4 +134,10 @@ class GroupModel extends Model
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    public function getAll()
+    {
+        $sql = "SELECT id, name, email, created_at FROM {$this->table} ORDER BY name ASC";
+        $stmt = $this->db->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

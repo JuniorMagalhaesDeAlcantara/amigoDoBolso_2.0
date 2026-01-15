@@ -307,22 +307,28 @@ class TransactionModel extends Model
             $this->db->beginTransaction();
             try {
                 foreach ($related as $t) {
-                    // Para parcelas, mantém o valor individual e a data
                     $updateData = $data;
 
-                    if (isset($t['is_installment']) && $t['is_installment']) {
-                        unset($updateData['amount']); // Não altera valor de parcelas
-                        unset($updateData['transaction_date']); // Não altera data de parcelas
+                    // Parcelas
+                    if (!empty($t['is_installment'])) {
+                        unset($updateData['amount']);
+                        unset($updateData['transaction_date']);
 
-                        // CORREÇÃO: Atualiza a descrição com o número correto da parcela
                         if (isset($updateData['description'])) {
                             $baseDescription = preg_replace('/\s*\(\d+\/\d+\)$/', '', $updateData['description']);
-                            $updateData['description'] = $baseDescription . " ({$t['installment_number']}/{$t['installments']})";
+                            $updateData['description'] =
+                                $baseDescription . " ({$t['installment_number']}/{$t['installments']})";
                         }
+                    }
+
+                    // RECORRÊNCIAS (CORREÇÃO AQUI)
+                    if (!empty($t['is_recurring'])) {
+                        unset($updateData['transaction_date']); // NÃO muda o mês
                     }
 
                     $this->update($t['id'], $updateData);
                 }
+
                 $this->db->commit();
                 return true;
             } catch (Exception $e) {

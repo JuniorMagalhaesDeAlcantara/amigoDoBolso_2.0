@@ -78,16 +78,16 @@ class NotificationService
 
         foreach ($groups as $group) {
             $this->log("Processando grupo ID {$group['id']}: {$group['name']}");
-            
+
             $members = $this->groupModel->getMembers($group['id']);
             $this->log("  Membros no grupo: " . count($members));
-            
+
             $cards = $this->creditCardModel->getByGroup($group['id']);
             $this->log("  Cartões no grupo: " . count($cards));
 
             foreach ($members as $member) {
                 $settings = $this->notificationModel->getUserSettings($member['id']);
-                
+
                 $this->log("  Usuário ID {$member['id']}: App={$settings['enable_app_notifications']}, Email={$settings['enable_email_notifications']}");
 
                 if (
@@ -181,7 +181,7 @@ class NotificationService
 
         // ✅ CORRIGIDO: Verificar settings ao invés de member
         $settings = $this->notificationModel->getUserSettings($userId);
-        
+
         if ($settings['enable_app_notifications']) {
             try {
                 $this->notificationModel->create([
@@ -262,18 +262,17 @@ class NotificationService
             'related_type' => 'report',
             'related_id'   => $group['id']
         ]);
-        
+
         $this->log("[OK] Relatório mensal enviado para usuário {$member['id']}");
     }
 
     // ===============================
-    // DESPESAS RECORRENTES VENCIDAS
+    // DESPESAS RECORRENTES (3, 1, HOJE e VENCIDAS)
     // ===============================
     private function processRecurringExpenses()
     {
-        $this->log('--- Processando despesas recorrentes vencidas ---');
+        $this->log('--- Processando despesas recorrentes ---');
 
-        // ✅ CORRIGIDO: Buscar grupos corretamente
         $groups = $this->getAllGroups();
         $this->log("Grupos encontrados: " . count($groups));
 
@@ -281,13 +280,12 @@ class NotificationService
 
         foreach ($groups as $group) {
             $this->log("Verificando grupo ID {$group['id']}: {$group['name']}");
-            
-            $transactions = $this->transactionModel->getOverdueRecurringByGroup($group['id']);
-            $this->log("  Despesas vencidas: " . count($transactions));
 
-            if (empty($transactions)) {
-                continue;
-            }
+            // Busca todas as despesas recorrentes relevantes (vencidas ou próximas do vencimento)
+            $transactions = $this->transactionModel->getOverdueRecurringByGroup($group['id']);
+            $this->log("  Despesas recorrentes encontradas: " . count($transactions));
+
+            if (empty($transactions)) continue;
 
             $members = $this->groupModel->getMembers($group['id']);
 
@@ -300,10 +298,8 @@ class NotificationService
                 }
 
                 foreach ($transactions as $transaction) {
-                    $sent = $this->notifyRecurringExpense($member, $transaction);
-                    if ($sent) {
-                        $totalNotifications++;
-                    }
+                    $sent = $this->notifyRecurringExpenseWithDueDays($member, $transaction);
+                    if ($sent) $totalNotifications++;
                 }
             }
         }
@@ -311,10 +307,41 @@ class NotificationService
         $this->log("Despesas recorrentes processadas: {$totalNotifications} notificações criadas");
     }
 
-    private function notifyRecurringExpense($member, $transaction)
+    private function notifyRecurringExpenseWithDueDays($member, $transaction)
     {
         $userId = $member['id'];
+        $dueDate = new DateTime($transaction['transaction_date']);
 
+        // Calcula dias até o vencimento (negativo = já venceu)
+        $daysUntilDue = (int)(new DateTime())->diff($dueDate)->format('%r%a');
+
+        $priority = '';
+        $title    = '';
+        $send     = false;
+
+        // Define título e prioridade conforme prazo
+        if ($daysUntilDue === 3) {
+            $priority = 'medium';
+            $title    = '⏰ Despesa vence em 3 dias';
+            $send     = true;
+        } elseif ($daysUntilDue === 1) {
+            $priority = 'high';
+            $title    = '⚠️ Despesa vence amanhã';
+            $send     = true;
+        } elseif ($daysUntilDue === 0) {
+            $priority = 'urgent';
+            $title    = '🔴 Despesa vence hoje';
+            $send     = true;
+        } elseif ($daysUntilDue < 0) {
+            // Vencidas
+            $priority = 'high';
+            $title    = '💸 Despesa recorrente vencida';
+            $send     = true;
+        }
+
+        if (!$send) return false;
+
+        // Evita duplicidade
         if ($this->notificationModel->existsRecent(
             $userId,
             'despesa_recorrente_vencida',
@@ -326,26 +353,23 @@ class NotificationService
             return false;
         }
 
-        try {
-            $this->notificationModel->create([
-                'user_id'      => $userId,
-                'type'         => 'despesa_recorrente_vencida',
-                'title'        => '💸 Despesa recorrente vencida',
-                'message'      =>
-                "A despesa '{$transaction['description']}' venceu em " .
-                    date('d/m/Y', strtotime($transaction['transaction_date'])) .
-                    ".\nValor: R$ " . number_format($transaction['amount'], 2, ',', '.'),
-                'priority'     => 'high',
-                'related_type' => 'transaction',
-                'related_id'   => $transaction['id']
-            ]);
+        $message = "A despesa '{$transaction['description']}' " .
+            ($daysUntilDue < 0 ? "venceu em " : "vence em ") .
+            $dueDate->format('d/m/Y') .
+            ".\nValor: R$ " . number_format($transaction['amount'], 2, ',', '.');
 
-            $this->log("  [OK] ✓ Notificação criada para usuário {$userId}, transação {$transaction['id']}");
-            return true;
-        } catch (Exception $e) {
-            $this->log("  [ERRO] Falha ao criar notificação: " . $e->getMessage());
-            return false;
-        }
+        $this->notificationModel->create([
+            'user_id'      => $userId,
+            'type'         => 'despesa_recorrente_vencida',
+            'title'        => $title,
+            'message'      => $message,
+            'priority'     => $priority,
+            'related_type' => 'transaction',
+            'related_id'   => $transaction['id']
+        ]);
+
+        $this->log("  [OK] ✓ Notificação criada para usuário {$userId}, transação {$transaction['id']} ({$title})");
+        return true;
     }
 
     // ===============================
@@ -354,17 +378,17 @@ class NotificationService
     private function cleanOldNotifications()
     {
         $this->log("--- Limpando notificações antigas ---");
-        
+
         $users = $this->userModel->getAll();
         $cleaned = 0;
-        
+
         foreach ($users as $user) {
             $result = $this->notificationModel->cleanOldNotifications($user['id'], 30);
             if ($result) {
                 $cleaned++;
             }
         }
-        
+
         $this->log("Limpeza concluída para {$cleaned} usuários");
     }
 

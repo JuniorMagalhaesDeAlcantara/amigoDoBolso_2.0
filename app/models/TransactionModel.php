@@ -521,8 +521,8 @@ class TransactionModel extends Model
         FROM transactions
         WHERE group_id = :group_id
           AND paid = 0
-          AND transaction_date < CURDATE()
           AND is_recurring = 1
+          AND transaction_date <= DATE_ADD(CURDATE(), INTERVAL 3 DAY)
     ";
 
         $stmt = $this->db->prepare($sql);

@@ -1,5 +1,444 @@
 <?php include VIEWS . '/layouts/header.php'; ?>
 
+<style>
+    :root {
+        --primary: #667eea;
+        --primary-hover: #5568d3;
+        --secondary: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #3b82f6;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+        --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* ========== CONTAINER ========== */
+    .container-small {
+        max-width: 780px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    /* ========== CARD ========== */
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+    }
+
+    .card h2 {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        line-height: 1.2;
+    }
+
+    /* ========== ALERTS ========== */
+    .alert {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        padding: 1.125rem 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        font-size: 0.9375rem;
+        line-height: 1.5;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .alert-error {
+        background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+        border: 2px solid #fca5a5;
+        color: #991b1b;
+    }
+
+    /* ========== FORM GROUPS ========== */
+    .form-group {
+        margin-bottom: 1.75rem;
+    }
+
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-group label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-700);
+        margin-bottom: 0.625rem;
+        line-height: 1.4;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.875rem 1.125rem;
+        border: 2px solid var(--gray-200);
+        border-radius: 12px;
+        font-size: 1rem;
+        color: var(--gray-900);
+        transition: var(--transition);
+        background: white;
+        font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.12);
+        background: var(--gray-50);
+    }
+
+    .form-group input::placeholder {
+        color: var(--gray-400);
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.625rem;
+        color: var(--gray-500);
+        font-size: 0.8125rem;
+        line-height: 1.5;
+    }
+
+    /* ========== INPUT WITH BUTTON ========== */
+    .input-with-button {
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .input-with-button select {
+        flex: 1;
+    }
+
+    .btn-sm {
+        padding: 0.875rem 1.25rem;
+        font-size: 0.875rem;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    /* ========== AMOUNT FIELD ========== */
+    #amount_display {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-align: right;
+        font-family: 'Courier New', monospace;
+        letter-spacing: 0.5px;
+        padding: 1rem 1.25rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(102, 126, 234, 0.02) 100%);
+    }
+
+    /* ========== CHECKBOX LABEL ========== */
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        padding: 1.125rem 1.25rem;
+        background: var(--gray-50);
+        border: 2px solid var(--gray-200);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-bottom: 0;
+    }
+
+    .checkbox-label:hover {
+        background: white;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.08);
+    }
+
+    .checkbox-label input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        margin: 0;
+        flex-shrink: 0;
+        accent-color: var(--primary);
+    }
+
+    .checkbox-label span {
+        font-weight: 600;
+        color: var(--gray-900);
+        font-size: 0.9375rem;
+    }
+
+    /* ========== CONDITIONAL FIELDS ========== */
+    #cardFields,
+    #benefitFields,
+    #recurringFields {
+        margin-top: 1.75rem;
+        padding: 1.75rem;
+        background: linear-gradient(135deg, var(--gray-50) 0%, white 100%);
+        border: 2px dashed var(--gray-300);
+        border-radius: 12px;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    #cardFields .form-group:first-child,
+    #benefitFields .form-group:first-child,
+    #recurringFields .form-group:first-child {
+        margin-top: 0;
+    }
+
+    #cardFields .form-group:last-child,
+    #benefitFields .form-group:last-child,
+    #recurringFields .form-group:last-child {
+        margin-bottom: 0;
+    }
+
+    /* ========== BENEFIT BALANCE INFO ========== */
+    #benefitBalanceInfo {
+        font-weight: 700;
+        color: var(--secondary);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* ========== TEXT WARNING ========== */
+    .text-warning {
+        color: var(--warning);
+        font-weight: 600;
+    }
+
+    .text-warning a {
+        color: var(--primary);
+        text-decoration: underline;
+        font-weight: 700;
+    }
+
+    .text-warning a:hover {
+        color: var(--primary-hover);
+    }
+
+    /* ========== DIVIDER ========== */
+    hr {
+        border: none;
+        border-top: 2px solid var(--gray-200);
+        margin: 2rem 0;
+    }
+
+    /* ========== BUTTONS ========== */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.75rem;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        cursor: pointer;
+        border: none;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    .btn-secondary {
+        background: white;
+        color: var(--gray-700);
+        border: 2px solid var(--gray-200);
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--gray-300);
+        background: var(--gray-50);
+    }
+
+    /* ========== FORM ACTIONS ========== */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2.5rem;
+        padding-top: 2rem;
+        border-top: 2px solid var(--gray-200);
+    }
+
+    .form-actions .btn {
+        flex: 1;
+    }
+
+    /* ========== RESPONSIVE - TABLET ========== */
+    @media (max-width: 1024px) {
+        .container-small {
+            padding: 1.5rem;
+        }
+
+        .card {
+            padding: 2rem;
+        }
+
+        .card h2 {
+            font-size: 1.625rem;
+        }
+    }
+
+    /* ========== RESPONSIVE - MOBILE ========== */
+    @media (max-width: 768px) {
+        .container-small {
+            padding: 1rem;
+        }
+
+        .card {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            gap: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem 1rem;
+            font-size: 16px; /* Previne zoom no iOS */
+            border-radius: 10px;
+        }
+
+        #amount_display {
+            font-size: 1.75rem;
+            padding: 0.875rem 1rem;
+        }
+
+        .input-with-button {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .input-with-button select,
+        .input-with-button .btn {
+            width: 100%;
+        }
+
+        .checkbox-label {
+            padding: 1rem;
+            gap: 0.75rem;
+        }
+
+        .checkbox-label span {
+            font-size: 0.875rem;
+        }
+
+        #cardFields,
+        #benefitFields,
+        #recurringFields {
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+        }
+
+        .form-actions .btn {
+            width: 100%;
+            padding: 1rem 1.5rem;
+        }
+
+        hr {
+            margin: 1.5rem 0;
+        }
+
+        .alert {
+            padding: 1rem;
+            font-size: 0.875rem;
+        }
+    }
+
+    /* ========== MOBILE PORTRAIT ========== */
+    @media (max-width: 480px) {
+        .container-small {
+            padding: 0.875rem;
+        }
+
+        .card {
+            padding: 1.25rem;
+        }
+
+        .card h2 {
+            font-size: 1.375rem;
+        }
+
+        #amount_display {
+            font-size: 1.5rem;
+        }
+    }
+
+    /* PWA/Standalone Mode */
+    @media (display-mode: standalone) {
+        .container-small {
+            padding-top: calc(env(safe-area-inset-top) + 2rem);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+        }
+    }
+</style>
+
 <div class="container-small">
     <div class="card">
         <h2>➕ Nova Transação</h2>
@@ -320,223 +759,16 @@ document.getElementById('is_recurring').addEventListener('change', function() {
         recurrenceMonths.required = false;
     }
 });
+
+// Previne zoom em iOS ao focar inputs
+if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+    const inputs = document.querySelectorAll('input, select, textarea');
+    inputs.forEach(input => {
+        input.addEventListener('focus', function() {
+            this.style.fontSize = '16px';
+        });
+    });
+}
 </script>
-
-<style>
-.alert {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem 1.25rem;
-    border-radius: 10px;
-    margin-bottom: 1.5rem;
-    font-size: 0.9375rem;
-}
-
-.alert-error {
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    color: #991b1b;
-}
-
-.input-with-button {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.input-with-button select {
-    flex: 1;
-}
-
-.btn-sm {
-    padding: 0.5rem 1rem;
-    font-size: 0.875rem;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--gray-50);
-    border: 2px solid var(--gray-300);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.checkbox-label:hover {
-    background: white;
-    border-color: var(--primary);
-}
-
-.checkbox-label input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    cursor: pointer;
-    margin: 0;
-}
-
-.checkbox-label span {
-    font-weight: 600;
-    color: var(--gray-900);
-}
-
-.text-warning {
-    color: var(--warning);
-}
-
-hr {
-    border: none;
-    border-top: 2px solid var(--gray-200);
-    margin: 2rem 0;
-}
-
-.form-actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-small {
-    display: block;
-    margin-top: 0.5rem;
-    color: var(--gray-600);
-    font-size: 0.8125rem;
-}
-
-#amount_display {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--primary);
-    text-align: right;
-    font-family: 'Courier New', monospace;
-}
-
-#benefitBalanceInfo {
-    font-weight: 600;
-    color: var(--secondary);
-}
-
-/* Campos condicionais */
-#cardFields,
-#benefitFields,
-#recurringFields {
-    margin-top: 1.5rem;
-    padding: 1.5rem;
-    background: var(--gray-50);
-    border: 2px dashed var(--gray-300);
-    border-radius: 10px;
-}
-
-#cardFields .form-group:first-child,
-#benefitFields .form-group:first-child {
-    margin-top: 0;
-}
-
-/* Info boxes */
-.info-message {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.875rem;
-    background: rgba(102, 126, 234, 0.1);
-    border-radius: 8px;
-    color: var(--primary);
-    font-size: 0.875rem;
-    margin-bottom: 1rem;
-}
-
-/* Melhorias nos form-groups */
-.form-group {
-    margin-bottom: 1.5rem;
-}
-
-.form-group:last-child {
-    margin-bottom: 0;
-}
-
-.form-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-    color: var(--gray-700);
-    margin-bottom: 0.5rem;
-}
-
-.form-group input,
-.form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 2px solid var(--gray-300);
-    border-radius: 8px;
-    font-size: 0.9375rem;
-    color: var(--gray-900);
-    transition: all 0.2s;
-    background: white;
-}
-
-.form-group input:focus,
-.form-group select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-/* Card container */
-.card {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.card h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--gray-900);
-    margin-bottom: 1.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-/* Container small */
-.container-small {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .container-small {
-        padding: 1rem;
-    }
-
-    .card {
-        padding: 1.5rem;
-    }
-
-    .form-actions {
-        flex-direction: column;
-    }
-
-    .form-actions .btn {
-        width: 100%;
-    }
-
-    .input-with-button {
-        flex-direction: column;
-    }
-
-    .input-with-button select,
-    .input-with-button .btn {
-        width: 100%;
-    }
-}
-</style>
 
 <?php include VIEWS . '/layouts/footer.php'; ?>

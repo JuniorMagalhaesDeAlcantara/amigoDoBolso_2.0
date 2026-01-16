@@ -24,7 +24,7 @@ class EmailHelper
         try {
             // ✅ Config SMTP
             $mail->isSMTP();
-            $mail->Host       = 'smtp.amigodobolso.jmadev.com.br';
+            $mail->Host       = 'amigodobolso.jmadev.com.br';
             $mail->SMTPAuth   = true;
             $mail->Username   = 'contato@amigodobolso.jmadev.com.br';
             $mail->Password   = 'W0r2tf5pz@';

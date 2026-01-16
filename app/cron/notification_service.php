@@ -9,6 +9,8 @@
 // BOOTSTRAP (OBRIGATÓRIO)
 // ===============================
 define('BASE_PATH', dirname(__DIR__, 2));
+define('APP', BASE_PATH . '/app'); // ✅ ADICIONADO
+
 // Core
 require_once BASE_PATH . '/app/config/Database.php';
 require_once BASE_PATH . '/app/core/Model.php';
@@ -19,6 +21,9 @@ require_once BASE_PATH . '/app/models/CreditCardModel.php';
 require_once BASE_PATH . '/app/models/TransactionModel.php';
 require_once BASE_PATH . '/app/models/GroupModel.php';
 require_once BASE_PATH . '/app/models/UserModel.php';
+
+// ✅ Helper
+require_once BASE_PATH . '/app/helpers/EmailHelper.php';
 
 // ===============================
 // SERVICE
@@ -65,7 +70,6 @@ class NotificationService
     {
         $this->log("--- Processando notificações de cartões ---");
 
-        // ✅ CORRIGIDO: Buscar apenas grupos ativos
         $groups = $this->getAllGroups();
         $this->log("Grupos encontrados: " . count($groups));
 
@@ -173,36 +177,31 @@ class NotificationService
     {
         $userId = $member['id'];
 
-        // Checa se já existe notificação recente
         if ($this->notificationModel->existsRecent($userId, 'fatura_vencimento', 'card', $card['id'], 24)) {
-            $this->log("      [INFO] Notificação já enviada nas últimas 24h para usuário {$userId}, cartão {$card['name']}");
+            $this->log("      [INFO] Notificação já enviada nas últimas 24h");
             return false;
         }
 
-        // ✅ CORRIGIDO: Verificar settings ao invés de member
-        $settings = $this->notificationModel->getUserSettings($userId);
+        $emailData = [
+            'card_name' => $card['name'],
+            'amount' => $amount,
+            'due_date' => date('d/m/Y', strtotime(date('Y-m-') . $card['due_day'])),
+            'days_until_due' => $this->calculateDaysUntilDue($card['due_day'])
+        ];
 
-        if ($settings['enable_app_notifications']) {
-            try {
-                $this->notificationModel->create([
-                    'user_id'      => $userId,
-                    'type'         => 'fatura_vencimento',
-                    'title'        => $title,
-                    'message'      => $message,
-                    'priority'     => $priority,
-                    'related_type' => 'card',
-                    'related_id'   => $card['id']
-                ]);
-                $this->log("      [OK] ✓ Notificação criada para usuário {$userId}, cartão {$card['name']}");
-                return true;
-            } catch (Exception $e) {
-                $this->log("      [ERRO] Falha ao criar notificação: " . $e->getMessage());
-                return false;
-            }
-        } else {
-            $this->log("      [INFO] Notificação ignorada (app notifications desativado)");
-            return false;
-        }
+        $this->notificationModel->createAndNotify(
+            $userId,
+            'fatura_vencimento',
+            $title,
+            $message,
+            $priority,
+            'card',
+            $card['id'],
+            $emailData
+        );
+
+        $this->log("      [OK] ✓ Notificação criada (app + email) para usuário {$userId}");
+        return true;
     }
 
     // ===============================
@@ -217,7 +216,6 @@ class NotificationService
 
         $this->log("--- Processando relatórios mensais ---");
 
-        // ✅ CORRIGIDO: Buscar grupos corretamente
         $groups = $this->getAllGroups();
         $this->log("Grupos para relatório: " . count($groups));
 
@@ -253,21 +251,31 @@ class NotificationService
             "Despesas: R$ " . number_format($expense, 2, ',', '.') . "\n" .
             "Saldo: R$ " . number_format($balance, 2, ',', '.');
 
-        $this->notificationModel->create([
-            'user_id'      => $member['id'],
-            'type'         => 'relatorio_mensal',
-            'title'        => '📈 Relatório Mensal',
-            'message'      => $message,
-            'priority'     => 'low',
-            'related_type' => 'report',
-            'related_id'   => $group['id']
-        ]);
+        $emailData = [
+            'group_name' => $group['name'],
+            'month' => $month,
+            'year' => $year,
+            'income' => $income,
+            'expense' => $expense,
+            'balance' => $balance
+        ];
+
+        $this->notificationModel->createAndNotify(
+            $member['id'],
+            'relatorio_mensal',
+            '📈 Relatório Mensal',
+            $message,
+            'low',
+            'report',
+            $group['id'],
+            $emailData
+        );
 
         $this->log("[OK] Relatório mensal enviado para usuário {$member['id']}");
     }
 
     // ===============================
-    // DESPESAS RECORRENTES (3, 1, HOJE e VENCIDAS)
+    // DESPESAS RECORRENTES
     // ===============================
     private function processRecurringExpenses()
     {
@@ -281,7 +289,6 @@ class NotificationService
         foreach ($groups as $group) {
             $this->log("Verificando grupo ID {$group['id']}: {$group['name']}");
 
-            // Busca todas as despesas recorrentes relevantes (vencidas ou próximas do vencimento)
             $transactions = $this->transactionModel->getOverdueRecurringByGroup($group['id']);
             $this->log("  Despesas recorrentes encontradas: " . count($transactions));
 
@@ -311,15 +318,12 @@ class NotificationService
     {
         $userId = $member['id'];
         $dueDate = new DateTime($transaction['transaction_date']);
-
-        // Calcula dias até o vencimento (negativo = já venceu)
         $daysUntilDue = (int)(new DateTime())->diff($dueDate)->format('%r%a');
 
         $priority = '';
         $title    = '';
         $send     = false;
 
-        // Define título e prioridade conforme prazo
         if ($daysUntilDue === 3) {
             $priority = 'medium';
             $title    = '⏰ Despesa vence em 3 dias';
@@ -329,19 +333,17 @@ class NotificationService
             $title    = '⚠️ Despesa vence amanhã';
             $send     = true;
         } elseif ($daysUntilDue === 0) {
-            $priority = 'urgent';
+            $priority = 'high';
             $title    = '🔴 Despesa vence hoje';
             $send     = true;
         } elseif ($daysUntilDue < 0) {
-            // Vencidas
-            $priority = 'high';
+            $priority = 'urgent';
             $title    = '💸 Despesa recorrente vencida';
             $send     = true;
         }
 
         if (!$send) return false;
 
-        // Evita duplicidade
         if ($this->notificationModel->existsRecent(
             $userId,
             'despesa_recorrente_vencida',
@@ -358,15 +360,23 @@ class NotificationService
             $dueDate->format('d/m/Y') .
             ".\nValor: R$ " . number_format($transaction['amount'], 2, ',', '.');
 
-        $this->notificationModel->create([
-            'user_id'      => $userId,
-            'type'         => 'despesa_recorrente_vencida',
-            'title'        => $title,
-            'message'      => $message,
-            'priority'     => $priority,
-            'related_type' => 'transaction',
-            'related_id'   => $transaction['id']
-        ]);
+        $emailData = [
+            'description' => $transaction['description'],
+            'amount' => $transaction['amount'],
+            'due_date' => $dueDate->format('d/m/Y'),
+            'is_overdue' => $daysUntilDue < 0
+        ];
+
+        $this->notificationModel->createAndNotify(
+            $userId,
+            'despesa_recorrente_vencida',
+            $title,
+            $message,
+            $priority,
+            'transaction',
+            $transaction['id'],
+            $emailData
+        );
 
         $this->log("  [OK] ✓ Notificação criada para usuário {$userId}, transação {$transaction['id']} ({$title})");
         return true;
@@ -404,13 +414,9 @@ class NotificationService
         return (int)(new DateTime())->diff($nextDue)->format('%a');
     }
 
-    /**
-     * Busca todos os grupos de forma segura
-     */
     private function getAllGroups()
     {
         try {
-            // Acessa o banco de dados diretamente
             $db = Database::getInstance()->getConnection();
             $stmt = $db->query("SELECT id, name, created_at FROM `groups` ORDER BY id");
             return $stmt->fetchAll(PDO::FETCH_ASSOC);

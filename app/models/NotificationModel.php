@@ -292,4 +292,93 @@ class NotificationModel extends Model
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return ($result['total'] ?? 0) > 0;
     }
+
+    /**
+     * Cria notificação E envia email se configurado
+     */
+    public function createAndNotify($userId, $type, $title, $message, $priority = 'medium', $relatedType = null, $relatedId = null, $emailData = null)
+    {
+        $settings = $this->getUserSettings($userId);
+
+        // Criar notificação in-app
+        if ($settings['enable_app_notifications']) {
+            $this->create([
+                'user_id' => $userId,
+                'type' => $type,
+                'title' => $title,
+                'message' => $message,
+                'priority' => $priority,
+                'related_type' => $relatedType,
+                'related_id' => $relatedId
+            ]);
+        }
+
+        // Enviar email se habilitado
+        if ($settings['enable_email_notifications'] && $emailData) {
+            // Evita enviar email duplicado
+            if (!$this->wasEmailSentToday($userId, $type, $relatedType, $relatedId)) {
+                $this->sendNotificationEmail($userId, $type, $emailData);
+                $this->logEmail($userId, $type, $relatedType, $relatedId);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Envia email baseado no tipo de notificação
+     */
+    private function sendNotificationEmail($userId, $type, $data)
+    {
+        require_once APP . '/helpers/EmailHelper.php';
+        require_once APP . '/models/UserModel.php';
+
+        $userModel = new UserModel();
+        $user = $userModel->getById($userId);
+
+        if (!$user || !$user['email']) {
+            return false;
+        }
+
+        $to = $user['email'];
+        $name = $user['name'];
+
+        switch ($type) {
+            case 'fatura_vencimento':
+                return EmailHelper::sendCardInvoiceNotification(
+                    $to,
+                    $name,
+                    $data['card_name'],
+                    $data['amount'],
+                    $data['due_date'],
+                    $data['days_until_due']
+                );
+
+            case 'relatorio_mensal':
+                return EmailHelper::sendMonthlyReport(
+                    $to,
+                    $name,
+                    $data['group_name'],
+                    $data['month'],
+                    $data['year'],
+                    $data['income'],
+                    $data['expense'],
+                    $data['balance']
+                );
+
+            case 'despesa_recorrente_vencida':
+                return EmailHelper::sendRecurringExpenseNotification(
+                    $to,
+                    $name,
+                    $data['description'],
+                    $data['amount'],
+                    $data['due_date'],
+                    $data['is_overdue']
+                );
+
+            default:
+                // Email genérico
+                return EmailHelper::send($to, $data['title'] ?? 'Notificação', $data['message'] ?? '', $name);
+        }
+    }
 }

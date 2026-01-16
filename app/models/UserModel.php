@@ -50,4 +50,35 @@ class UserModel extends Model
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * Busca usuário por ID
+     */
+    public function getById($id)
+    {
+        $sql = "SELECT id, name, email, created_at, updated_at 
+                FROM {$this->table} 
+                WHERE id = :id 
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['id' => $id]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Busca usuário por email
+     */
+    public function getByEmail($email)
+    {
+        $sql = "SELECT * FROM {$this->table} 
+                WHERE email = :email 
+                LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['email' => $email]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

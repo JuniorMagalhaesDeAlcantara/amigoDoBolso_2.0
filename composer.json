@@ -1,0 +1,15 @@
+{
+    "name": "jmadev/amigo-do-bolso",
+    "autoload": {
+        "psr-4": {
+            "Jmadev\\AmigoDoBolso\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Junior Magalhaes",
+            "email": "juniormagalhaes@proscore.com.br"
+        }
+    ],
+    "require": {}
+}

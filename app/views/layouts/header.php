@@ -3,13 +3,13 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= $title ?? 'Amigo do Bolso 2.0' ?></title>
-    <link rel="stylesheet" href="/css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#667eea">
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
+            --primary: #667eea;
+            --primary-hover: #5568d3;
+            --secondary: #764ba2;
             --gray-50: #f9fafb;
             --gray-100: #f3f4f6;
             --gray-200: #e5e7eb;
@@ -20,20 +20,32 @@
             --gray-700: #374151;
             --gray-800: #1f2937;
             --gray-900: #111827;
+            --success: #10b981;
+            --error: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            margin: 0 !important;
-            padding: 0 !important;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-50);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* NAVBAR OTIMIZADA */
+        /* ========== NAVBAR DESKTOP ========== */
         .navbar {
             position: sticky;
             top: 0;
@@ -41,6 +53,7 @@
             background: #ffffff;
             border-bottom: 1px solid var(--gray-200);
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: var(--transition);
         }
 
         .navbar .container {
@@ -48,42 +61,20 @@
             align-items: center;
             justify-content: space-between;
             padding: 0.75rem 2rem;
-            gap: 1.5rem;
+            gap: 2rem;
             max-width: 1400px;
             margin: 0 auto;
         }
 
-        .navbar-brand {
-            flex-shrink: 0;
-        }
-
-        .navbar-brand a {
-            display: flex;
-            align-items: center;
-            text-decoration: none;
-            transition: opacity 0.2s;
-        }
-
-        .navbar-brand a:hover {
-            opacity: 0.85;
-        }
-
-        .logo {
-            height: auto;
-            width: auto;
-            max-height: 100px;
-        }
-
-        /* NAVBAR MENU - Espaçamento reduzido */
+        /* Menu Desktop */
         .navbar-menu {
             display: flex;
             list-style: none;
-            gap: 0;
+            gap: 0.25rem;
             margin: 0;
             padding: 0;
             align-items: center;
             flex: 1;
-            justify-content: center;
         }
 
         .navbar-menu li {
@@ -93,11 +84,11 @@
         .navbar-menu li a {
             color: var(--gray-600);
             text-decoration: none;
-            padding: 0.5rem 0.875rem;
-            border-radius: 8px;
-            transition: all 0.2s;
+            padding: 0.625rem 1rem;
+            border-radius: 10px;
+            transition: var(--transition);
             font-weight: 500;
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -116,12 +107,13 @@
         }
 
         .navbar-menu li a.active {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
         }
 
         .btn-logout {
-            color: #ef4444 !important;
+            color: var(--error) !important;
         }
 
         .btn-logout:hover {
@@ -129,11 +121,11 @@
             color: #dc2626 !important;
         }
 
-        /* NAVBAR RIGHT - Notificações + Grupo */
+        /* Navbar Right */
         .navbar-right {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
+            gap: 1rem;
         }
 
         /* Botão de Notificações */
@@ -142,13 +134,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             background: white;
             border: 2px solid var(--gray-200);
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             text-decoration: none;
             color: var(--gray-600);
         }
@@ -158,7 +150,7 @@
             background: var(--gray-50);
             color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
         }
 
         .notification-btn svg {
@@ -170,7 +162,7 @@
             position: absolute;
             top: -6px;
             right: -6px;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: linear-gradient(135deg, var(--error) 0%, #dc2626 100%);
             color: white;
             font-size: 0.625rem;
             font-weight: 700;
@@ -183,50 +175,44 @@
             justify-content: center;
             box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
             border: 2px solid white;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
         }
 
         /* Group Selector */
         .group-selector {
             position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .group-selector-label {
-            font-size: 0.6875rem;
-            font-weight: 600;
-            color: var(--gray-500);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding-left: 0.5rem;
         }
 
         .group-selector-btn {
             display: flex;
             align-items: center;
-            gap: 0.625rem;
+            gap: 0.75rem;
             padding: 0.625rem 1rem;
             background: white;
             border: 2px solid var(--gray-200);
             border-radius: 10px;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: var(--transition);
             font-size: 0.9375rem;
             color: var(--gray-900);
             font-weight: 600;
-            min-width: 180px;
+            min-width: 200px;
         }
 
         .group-selector-btn:hover {
             border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.2);
             transform: translateY(-1px);
         }
 
         .group-selector-icon {
-            width: 22px;
-            height: 22px;
+            width: 20px;
+            height: 20px;
             color: var(--primary);
             flex-shrink: 0;
         }
@@ -248,27 +234,31 @@
             width: 18px;
             height: 18px;
             color: var(--gray-400);
-            transition: transform 0.2s;
+            transition: transform 0.3s;
         }
 
         .group-selector-btn:hover .chevron {
             color: var(--primary);
-            transform: translateY(2px);
         }
 
+        .group-selector.open .chevron {
+            transform: rotate(180deg);
+        }
+
+        /* Group Dropdown */
         .group-dropdown {
             position: absolute;
-            top: calc(100% + 0.5rem);
+            top: calc(100% + 0.75rem);
             right: 0;
             background: white;
             border: 1px solid var(--gray-200);
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            min-width: 280px;
+            min-width: 300px;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1100;
         }
 
@@ -288,35 +278,37 @@
 
         .group-dropdown-title {
             font-size: 0.75rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--gray-500);
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
 
         .group-count {
-            background: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
-            padding: 0.25rem 0.5rem;
+            padding: 0.25rem 0.625rem;
             border-radius: 10px;
             font-size: 0.6875rem;
-            font-weight: 600;
+            font-weight: 700;
         }
 
         .group-dropdown-list {
             max-height: 320px;
             overflow-y: auto;
+            padding: 0.5rem;
         }
 
         .group-dropdown-item {
             display: flex;
             align-items: center;
             gap: 0.875rem;
-            padding: 0.875rem 1.25rem;
+            padding: 0.875rem 1rem;
             text-decoration: none;
             color: var(--gray-900);
-            transition: all 0.2s;
-            border-bottom: 1px solid var(--gray-50);
+            transition: var(--transition);
+            border-radius: 10px;
+            margin-bottom: 0.25rem;
         }
 
         .group-dropdown-item:hover {
@@ -324,7 +316,7 @@
         }
 
         .group-dropdown-item.active {
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
         }
 
@@ -333,16 +325,16 @@
         }
 
         .group-dropdown-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             background: var(--gray-200);
             color: var(--gray-700);
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            font-size: 0.75rem;
+            font-size: 0.875rem;
             flex-shrink: 0;
         }
 
@@ -355,11 +347,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 0.125rem;
+            gap: 0.25rem;
         }
 
         .group-dropdown-text strong {
-            font-size: 0.875rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
         }
 
         .group-dropdown-text small {
@@ -367,10 +360,305 @@
             color: var(--gray-500);
         }
 
-        /* MAIN CONTENT */
-        .main-content {
-            min-height: calc(100vh - 160px);
-            padding-bottom: 2rem;
+        /* ========== MOBILE STYLES ========== */
+        /* Mobile Toggle Button - Hidden by default */
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 0.5rem;
+            background: transparent;
+            border: none;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .mobile-toggle span {
+            width: 22px;
+            height: 2.5px;
+            background: var(--gray-700);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 2px;
+        }
+
+        .mobile-toggle.active span:nth-child(1) {
+            transform: rotate(45deg) translate(5px, 5px);
+            background: var(--primary);
+        }
+
+        .mobile-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .mobile-toggle.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(6px, -6px);
+            background: var(--primary);
+        }
+
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+            backdrop-filter: blur(4px);
+            display: none;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            display: block;
+        }
+
+        /* Mobile Menu Drawer */
+        .mobile-menu-drawer {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mobile-menu-drawer.active {
+            left: 0;
+        }
+
+        /* Header do Menu Mobile */
+        .mobile-menu-header {
+            padding: 1.5rem 1.25rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .mobile-menu-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .mobile-menu-subtitle {
+            font-size: 0.8125rem;
+            opacity: 0.9;
+        }
+
+        /* Navigation Items */
+        .mobile-menu-nav {
+            flex: 1;
+            padding: 1rem 0.75rem;
+        }
+
+        .mobile-menu-nav a {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1rem;
+            text-decoration: none;
+            color: var(--gray-700);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            border-radius: 10px;
+            margin-bottom: 0.375rem;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-nav a svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .mobile-menu-nav a:hover {
+            background: var(--gray-50);
+        }
+
+        .mobile-menu-nav a.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        }
+
+        /* Group Section Mobile */
+        .mobile-menu-group {
+            padding: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .mobile-menu-group-title {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+            padding: 0 0.5rem;
+        }
+
+        .mobile-group-item {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+            padding: 0.875rem;
+            text-decoration: none;
+            color: var(--gray-900);
+            transition: var(--transition);
+            border-radius: 10px;
+            margin-bottom: 0.375rem;
+        }
+
+        .mobile-group-item:hover {
+            background: var(--gray-50);
+        }
+
+        .mobile-group-item.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+        }
+
+        .mobile-group-item.active .mobile-group-text small {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .mobile-group-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gray-200);
+            color: var(--gray-700);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .mobile-group-item.active .mobile-group-avatar {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+        }
+
+        .mobile-group-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .mobile-group-text strong {
+            font-size: 0.9375rem;
+            font-weight: 600;
+        }
+
+        .mobile-group-text small {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* Logout Mobile */
+        .mobile-menu-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .mobile-btn-logout {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 1rem;
+            background: #fef2f2;
+            color: var(--error);
+            text-decoration: none;
+            font-weight: 600;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .mobile-btn-logout svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .mobile-btn-logout:hover {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .navbar .container {
+                padding: 0.5rem 1rem;
+                gap: 0.75rem;
+            }
+
+            /* Esconde menu desktop no mobile */
+            .navbar-menu {
+                display: none !important;
+            }
+
+            /* Mostra toggle button no mobile */
+            .mobile-toggle {
+                display: flex;
+            }
+
+            /* Ajusta navbar right no mobile */
+            .navbar-right {
+                gap: 0.5rem;
+            }
+
+            .notification-btn {
+                width: 40px;
+                height: 40px;
+            }
+
+            .notification-btn svg {
+                width: 18px;
+                height: 18px;
+            }
+
+            .notification-badge {
+                top: -4px;
+                right: -4px;
+                min-width: 16px;
+                height: 16px;
+                font-size: 0.5625rem;
+            }
+
+            /* Esconde group selector no mobile */
+            .group-selector {
+                display: none;
+            }
+
+            /* Mostra mobile menu components quando ativos */
+            .mobile-menu-overlay.active,
+            .mobile-menu-drawer.active {
+                display: block;
+            }
+
+            .mobile-menu-drawer.active {
+                display: flex;
+            }
         }
 
         /* Toast Notifications */
@@ -390,18 +678,16 @@
             border-radius: 12px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
             padding: 1.25rem 1.5rem;
-            min-width: 320px;
+            min-width: 350px;
             max-width: 450px;
             display: flex;
             align-items: flex-start;
             gap: 1rem;
-            animation: slideInRight 0.3s ease-out forwards;
+            animation: slideInRight 0.4s ease-out forwards;
             pointer-events: auto;
             border-left: 4px solid;
             position: relative;
             overflow: hidden;
-            padding-top: 20px;
-
         }
 
         .toast.removing {
@@ -409,15 +695,15 @@
         }
 
         .toast-success {
-            border-left-color: #10b981;
+            border-left-color: var(--success);
         }
 
         .toast-error {
-            border-left-color: #ef4444;
+            border-left-color: var(--error);
         }
 
         .toast-info {
-            border-left-color: #3b82f6;
+            border-left-color: var(--info);
         }
 
         .toast-icon {
@@ -428,22 +714,21 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-top: 0.125rem;
         }
 
         .toast-success .toast-icon {
             background: #d1fae5;
-            color: #10b981;
+            color: var(--success);
         }
 
         .toast-error .toast-icon {
             background: #fee2e2;
-            color: #ef4444;
+            color: var(--error);
         }
 
         .toast-info .toast-icon {
             background: #dbeafe;
-            color: #3b82f6;
+            color: var(--info);
         }
 
         .toast-content {
@@ -474,8 +759,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 4px;
-            transition: all 0.2s;
+            border-radius: 6px;
+            transition: var(--transition);
             flex-shrink: 0;
         }
 
@@ -495,167 +780,33 @@
         }
 
         .toast-success .toast-progress {
-            color: #10b981;
+            color: var(--success);
         }
 
         .toast-error .toast-progress {
-            color: #ef4444;
+            color: var(--error);
         }
 
         .toast-info .toast-progress {
-            color: #3b82f6;
+            color: var(--info);
         }
 
         @keyframes slideInRight {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(400px); opacity: 0; }
         }
 
         @keyframes shrink {
-            from {
-                width: 100%;
-            }
-
-            to {
-                width: 0%;
-            }
-        }
-
-        /* Mobile Toggle */
-        .mobile-toggle {
-            display: none;
-            flex-direction: column;
-            gap: 4px;
-            cursor: pointer;
-            padding: 0.5rem;
-            background: transparent;
-            border: none;
-        }
-
-        .mobile-toggle span {
-            width: 24px;
-            height: 2px;
-            background: var(--gray-600);
-            transition: all 0.3s;
-            border-radius: 2px;
-        }
-
-        /* RESPONSIVE */
-        @media (max-width: 1200px) {
-            .navbar-menu li a {
-                padding: 0.5rem 0.75rem;
-                font-size: 0.8125rem;
-            }
-        }
-
-        @media (max-width: 1024px) {
-            .navbar-menu li a {
-                padding: 0.5rem 0.625rem;
-                font-size: 0.8125rem;
-            }
-
-            .navbar-menu li a svg {
-                width: 16px;
-                height: 16px;
-            }
-
-            .group-selector-btn {
-                min-width: 160px;
-                padding: 0.5rem 0.875rem;
-            }
+            from { width: 100%; }
+            to { width: 0%; }
         }
 
         @media (max-width: 768px) {
-            .navbar .container {
-                padding: 0.75rem 1rem;
-                gap: 1rem;
-            }
-
-            .logo {
-                max-height: 60px;
-            }
-
-            .group-selector-label {
-                display: none;
-            }
-
-            .group-selector-btn {
-                min-width: auto;
-                padding: 0.5rem 0.75rem;
-            }
-
-            .group-selector-text span {
-                max-width: 90px;
-            }
-
-            .navbar-menu {
-                display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                right: 0;
-                background: white;
-                flex-direction: column;
-                padding: 1rem;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                gap: 0.5rem;
-                border-top: 1px solid var(--gray-200);
-            }
-
-            .navbar-menu.mobile-open {
-                display: flex;
-            }
-
-            .navbar-menu li a {
-                width: 100%;
-                justify-content: flex-start;
-                padding: 0.75rem 1rem;
-            }
-
-            .mobile-toggle {
-                display: flex;
-            }
-
-            .group-dropdown {
-                right: 1rem;
-                left: auto;
-                min-width: 240px;
-            }
-
-            .navbar-right {
-                gap: 0.5rem;
-            }
-
-            .notification-btn {
-                width: 36px;
-                height: 36px;
-            }
-
-            .notification-btn svg {
-                width: 18px;
-                height: 18px;
-            }
-
-            /* Toast mobile */
             .toast-container {
                 top: 4rem;
                 right: 1rem;
@@ -665,6 +816,27 @@
             .toast {
                 min-width: auto;
                 max-width: 100%;
+                padding: 1rem 1.25rem;
+            }
+        }
+
+        /* PWA/Standalone Mode */
+        @media (display-mode: standalone) {
+            body {
+                padding-top: env(safe-area-inset-top);
+            }
+
+            .navbar {
+                padding-top: env(safe-area-inset-top);
+            }
+        }
+
+        /* Reduce Motion */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
@@ -703,12 +875,14 @@
     <?php if (isset($_SESSION['user_id'])): ?>
         <nav class="navbar">
             <div class="container">
-                <div class="navbar-brand">
-                    <a href="/dashboard">
-                        <img src="/assets/images/logoOficial.png" alt="Amigo do Bolso" class="logo">
-                    </a>
-                </div>
+                <!-- Mobile Toggle Button -->
+                <button class="mobile-toggle" id="mobileToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
 
+                <!-- Desktop Menu -->
                 <ul class="navbar-menu" id="navMenu">
                     <li>
                         <a href="/dashboard" class="<?= $_SERVER['REQUEST_URI'] === '/dashboard' ? 'active' : '' ?>">
@@ -782,7 +956,6 @@
                 </ul>
 
                 <div class="navbar-right">
-                    <!-- Botão de Notificações -->
                     <a href="/notificacoes" class="notification-btn" title="Notificações">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -795,10 +968,9 @@
                         <?php endif; ?>
                     </a>
 
-                    <!-- Group Selector -->
                     <?php if (!empty($userGroups)): ?>
                         <div class="group-selector">
-                            <button class="group-selector-btn" onclick="toggleGroupDropdown(event)">
+                            <button class="group-selector-btn" id="groupSelectorBtn">
                                 <svg class="group-selector-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
                                     <circle cx="9" cy="7" r="4" />
@@ -839,36 +1011,162 @@
                             </div>
                         </div>
                     <?php endif; ?>
-
-                    <button class="mobile-toggle" onclick="toggleMobileMenu()">
-                        <span></span>
-                        <span></span>
-                        <span></span>
-                    </button>
                 </div>
             </div>
         </nav>
 
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileOverlay"></div>
+
+        <!-- Mobile Menu Drawer -->
+        <div class="mobile-menu-drawer" id="mobileDrawer">
+            <div class="mobile-menu-header">
+                <div class="mobile-menu-title">Amigo do Bolso</div>
+            </div>
+
+            <div class="mobile-menu-nav">
+                <a href="/dashboard" class="<?= $_SERVER['REQUEST_URI'] === '/dashboard' ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7" />
+                        <rect x="14" y="3" width="7" height="7" />
+                        <rect x="14" y="14" width="7" height="7" />
+                        <rect x="3" y="14" width="7" height="7" />
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/transacoes" class="<?= strpos($_SERVER['REQUEST_URI'], '/transacoes') !== false ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23" />
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                    </svg>
+                    Transações
+                </a>
+                <a href="/cartoes" class="<?= strpos($_SERVER['REQUEST_URI'], '/cartoes') !== false ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                        <line x1="1" y1="10" x2="23" y2="10" />
+                    </svg>
+                    Cartões
+                </a>
+                <a href="/beneficios" class="<?= strpos($_SERVER['REQUEST_URI'], '/beneficios') !== false ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                        <line x1="7" y1="7" x2="7.01" y2="7" />
+                    </svg>
+                    Benefícios
+                </a>
+                <a href="/metas" class="<?= strpos($_SERVER['REQUEST_URI'], '/metas') !== false ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <circle cx="12" cy="12" r="6" />
+                        <circle cx="12" cy="12" r="2" />
+                    </svg>
+                    Metas
+                </a>
+                <a href="/grupos/detalhes" class="<?= strpos($_SERVER['REQUEST_URI'], '/grupos') !== false ? 'active' : '' ?>">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Grupo
+                </a>
+            </div>
+
+            <?php if (!empty($userGroups)): ?>
+                <div class="mobile-menu-group">
+                    <div class="mobile-menu-group-title">Meus Grupos (<?= count($userGroups) ?>)</div>
+                    <?php foreach ($userGroups as $group): ?>
+                        <a href="/grupos/trocar/<?= $group['id'] ?>"
+                            class="mobile-group-item <?= $group['id'] == ($currentGroupId ?? 0) ? 'active' : '' ?>">
+                            <div class="mobile-group-avatar">
+                                <?= strtoupper(substr($group['name'], 0, 2)) ?>
+                            </div>
+                            <div class="mobile-group-text">
+                                <strong><?= htmlspecialchars($group['name']) ?></strong>
+                                <small><?= $group['member_count'] ?? 0 ?> membro(s)</small>
+                            </div>
+                            <?php if ($group['id'] == ($currentGroupId ?? 0)): ?>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                            <?php endif; ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+
+            <div class="mobile-menu-footer">
+                <a href="/auth/logout" class="mobile-btn-logout">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Sair
+                </a>
+            </div>
+        </div>
+
         <script>
-            function toggleGroupDropdown(event) {
-                event.stopPropagation();
-                const dropdown = document.getElementById('groupDropdown');
-                dropdown.classList.toggle('show');
-            }
+            // Mobile Menu Functions
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mobileOverlay = document.getElementById('mobileOverlay');
+            const mobileDrawer = document.getElementById('mobileDrawer');
 
             function toggleMobileMenu() {
-                const menu = document.getElementById('navMenu');
-                menu.classList.toggle('mobile-open');
+                mobileToggle.classList.toggle('active');
+                mobileOverlay.classList.toggle('active');
+                mobileDrawer.classList.toggle('active');
+                
+                // Previne scroll do body quando menu está aberto
+                if (mobileDrawer.classList.contains('active')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+
+            function closeMobileMenu() {
+                mobileToggle.classList.remove('active');
+                mobileOverlay.classList.remove('active');
+                mobileDrawer.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+
+            // Group Dropdown Functions
+            const groupSelectorBtn = document.getElementById('groupSelectorBtn');
+            const groupDropdown = document.getElementById('groupDropdown');
+
+            function toggleGroupDropdown(event) {
+                event.stopPropagation();
+                groupDropdown.classList.toggle('show');
+            }
+
+            // Event Listeners
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', toggleMobileMenu);
+            }
+
+            if (mobileOverlay) {
+                mobileOverlay.addEventListener('click', closeMobileMenu);
+            }
+
+            if (groupSelectorBtn && groupDropdown) {
+                groupSelectorBtn.addEventListener('click', toggleGroupDropdown);
             }
 
             // Fechar dropdown ao clicar fora
             window.addEventListener('click', function(e) {
-                if (!e.target.closest('.group-selector')) {
-                    const dropdown = document.getElementById('groupDropdown');
-                    if (dropdown) {
-                        dropdown.classList.remove('show');
-                    }
+                if (groupDropdown && !e.target.closest('.group-selector')) {
+                    groupDropdown.classList.remove('show');
                 }
+            });
+
+            // Fechar menu mobile ao navegar
+            document.querySelectorAll('.mobile-menu-nav a, .mobile-group-item').forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
             });
 
             // Sistema de Toast Notifications
@@ -892,25 +1190,24 @@
                 };
 
                 toast.innerHTML = `
-                <div class="toast-icon">
-                    ${icons[type] || icons.info}
-                </div>
-                <div class="toast-content">
-                    <div class="toast-title">${titles[type]}</div>
-                    <div class="toast-message">${message}</div>
-                </div>
-                <button class="toast-close" onclick="removeToast(this)">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
-                    </svg>
-                </button>
-                <div class="toast-progress"></div>
-            `;
+                    <div class="toast-icon">
+                        ${icons[type] || icons.info}
+                    </div>
+                    <div class="toast-content">
+                        <div class="toast-title">${titles[type]}</div>
+                        <div class="toast-message">${message}</div>
+                    </div>
+                    <button class="toast-close" onclick="removeToast(this)">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                    <div class="toast-progress"></div>
+                `;
 
                 container.appendChild(toast);
 
-                // Auto remover após 5 segundos
                 setTimeout(() => {
                     removeToast(toast);
                 }, 5000);
@@ -931,30 +1228,33 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="toast-container"></div>
 
-    <main class="main-content">
-        <?php if (isset($_SESSION['success'])): ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    showToast('<?= addslashes($_SESSION['success']) ?>', 'success');
-                });
-            </script>
-            <?php unset($_SESSION['success']); ?>
-        <?php endif; ?>
+    <?php if (isset($_SESSION['success'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('<?= addslashes($_SESSION['success']) ?>', 'success');
+            });
+        </script>
+        <?php unset($_SESSION['success']); ?>
+    <?php endif; ?>
 
-        <?php if (isset($_SESSION['error'])): ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    showToast('<?= addslashes($_SESSION['error']) ?>', 'error');
-                });
-            </script>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
+    <?php if (isset($_SESSION['error'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('<?= addslashes($_SESSION['error']) ?>', 'error');
+            });
+        </script>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
 
-        <?php if (isset($_SESSION['info'])): ?>
-            <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    showToast('<?= addslashes($_SESSION['info']) ?>', 'info');
-                });
-            </script>
-            <?php unset($_SESSION['info']); ?>
-        <?php endif; ?>
+    <?php if (isset($_SESSION['info'])): ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                showToast('<?= addslashes($_SESSION['info']) ?>', 'info');
+            });
+        </script>
+        <?php unset($_SESSION['info']); ?>
+    <?php endif; ?>
+
+</body>
+
+</html>

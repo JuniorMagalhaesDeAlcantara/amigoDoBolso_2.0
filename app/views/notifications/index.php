@@ -88,124 +88,254 @@
 </div>
 
 <style>
+    /* ==================== NOTIFICAÇÕES - CSS RESPONSIVO PROFISSIONAL ==================== */
+
+    /* Card Header */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .card-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .header-actions {
         display: flex;
         gap: 0.75rem;
+        flex-wrap: wrap;
     }
 
+    /* Botões do Header */
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: var(--gray-700);
+        border: 2px solid var(--gray-300);
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--gray-400);
+        background: var(--gray-50);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    /* Empty State */
     .empty-state {
         text-align: center;
-        padding: 3rem 1.5rem;
+        padding: 4rem 2rem;
     }
 
     .empty-icon {
         font-size: 4rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
         opacity: 0.3;
+        animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            opacity: 0.3;
+        }
+
+        50% {
+            opacity: 0.5;
+        }
     }
 
     .empty-state h3 {
-        color: #333;
-        margin-bottom: 0.5rem;
-        font-size: 1.25rem;
+        color: var(--gray-900);
+        margin-bottom: 0.75rem;
+        font-size: 1.5rem;
+        font-weight: 600;
     }
 
     .empty-state p {
-        color: #666;
-        font-size: 0.95rem;
+        color: var(--gray-500);
+        font-size: 1rem;
+        line-height: 1.6;
+        max-width: 480px;
+        margin: 0 auto;
     }
 
+    /* Notifications List */
     .notifications-list {
         display: flex;
         flex-direction: column;
-        gap: 1rem;
+        gap: 1.25rem;
     }
 
     .notification-card {
         background: white;
-        border-radius: 12px;
-        padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s;
+        border-radius: 14px;
+        padding: 1.75rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .notification-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
+        border-radius: 50%;
+        pointer-events: none;
     }
 
     .notification-card.unread {
-        background: #f0f9ff;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
+        border: 1px solid rgba(102, 126, 234, 0.1);
     }
 
     .notification-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
     .notification-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
     }
 
     .notification-priority {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        padding: 0.375rem 0.875rem;
         border-radius: 20px;
         color: white;
-        font-size: 0.75rem;
+        font-size: 0.6875rem;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.5px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     }
 
     .notification-time {
-        font-size: 0.875rem;
-        color: #6b7280;
+        font-size: 0.8125rem;
+        color: var(--gray-500);
+        font-weight: 500;
     }
 
     .notification-content {
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
     }
 
     .notification-title {
-        font-size: 1.1rem;
+        font-size: 1.125rem;
         font-weight: 700;
-        color: #1f2937;
-        margin-bottom: 0.5rem;
+        color: var(--gray-900);
+        margin-bottom: 0.625rem;
+        line-height: 1.4;
     }
 
     .notification-message {
-        font-size: 0.95rem;
-        color: #4b5563;
+        font-size: 0.9375rem;
+        color: var(--gray-600);
         line-height: 1.6;
         margin: 0;
     }
 
     .notification-actions {
         display: flex;
-        gap: 0.5rem;
+        gap: 0.625rem;
         flex-wrap: wrap;
+        padding-top: 0.75rem;
+        border-top: 1px solid var(--gray-200);
     }
 
     .btn-notification {
-        padding: 0.5rem 1rem;
-        border: 2px solid #667eea;
+        padding: 0.625rem 1.125rem;
+        border: 2px solid var(--primary);
         background: white;
-        color: #667eea;
-        border-radius: 6px;
+        color: var(--primary);
+        border-radius: 8px;
         font-weight: 600;
-        font-size: 0.875rem;
+        font-size: 0.8125rem;
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.3s;
+        transition: var(--transition);
         display: inline-flex;
         align-items: center;
-        gap: 0.25rem;
+        gap: 0.375rem;
+        font-family: inherit;
     }
 
     .btn-notification:hover {
-        background: #667eea;
+        background: var(--primary);
         color: white;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-notification:active {
+        transform: translateY(0);
     }
 
     .btn-mark-read {
@@ -216,35 +346,178 @@
     .btn-mark-read:hover {
         background: #10b981;
         color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     .btn-delete {
         border-color: #ef4444;
         color: #ef4444;
-        padding: 0.5rem 0.75rem;
+        padding: 0.625rem 0.875rem;
     }
 
     .btn-delete:hover {
         background: #ef4444;
         color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
+    /* ==================== TABLET RESPONSIVO ==================== */
+    @media (max-width: 1024px) {
+        .notification-card {
+            padding: 1.5rem;
+        }
+
+        .notifications-list {
+            gap: 1rem;
+        }
+    }
+
+    /* ==================== MOBILE RESPONSIVO ==================== */
     @media (max-width: 768px) {
+        .card-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h1 {
+            font-size: 1.5rem;
+        }
+
         .header-actions {
             flex-direction: column;
+            gap: 0.625rem;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+            padding: 0.875rem 1.25rem;
+        }
+
+        .notifications-list {
+            gap: 1rem;
+        }
+
+        .notification-card {
+            padding: 1.25rem;
+        }
+
+        .notification-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+
+        .notification-priority {
+            font-size: 0.625rem;
+            padding: 0.3125rem 0.75rem;
+        }
+
+        .notification-time {
+            font-size: 0.75rem;
+        }
+
+        .notification-title {
+            font-size: 1rem;
+        }
+
+        .notification-message {
+            font-size: 0.875rem;
+        }
+
+        .notification-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn-notification {
+            width: 100%;
+            justify-content: center;
+            padding: 0.75rem 1rem;
+        }
+
+        .empty-state {
+            padding: 3rem 1.5rem;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+        }
+
+        .empty-state h3 {
+            font-size: 1.25rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9375rem;
+        }
+    }
+
+    /* ==================== MOBILE SMALL ==================== */
+    @media (max-width: 640px) {
+        .card-header h1 {
+            font-size: 1.375rem;
         }
 
         .notification-card {
             padding: 1rem;
         }
 
-        .notification-actions {
-            flex-direction: column;
+        .notification-title {
+            font-size: 0.9375rem;
+        }
+
+        .notification-message {
+            font-size: 0.8125rem;
         }
 
         .btn-notification {
-            width: 100%;
-            justify-content: center;
+            font-size: 0.75rem;
+            padding: 0.625rem 0.875rem;
+        }
+    }
+
+    /* ==================== EXTRA SMALL ==================== */
+    @media (max-width: 375px) {
+        .card-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .notification-priority {
+            font-size: 0.5625rem;
+        }
+    }
+
+    /* ==================== PWA STANDALONE ==================== */
+    @media (display-mode: standalone) {
+        .card-header {
+            padding-top: env(safe-area-inset-top);
+        }
+    }
+
+    /* ==================== REDUCE MOTION ==================== */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* ==================== HIGH CONTRAST ==================== */
+    @media (prefers-contrast: high) {
+        .notification-card {
+            border: 2px solid currentColor;
+        }
+
+        .btn-notification {
+            border-width: 3px;
         }
     }
 </style>

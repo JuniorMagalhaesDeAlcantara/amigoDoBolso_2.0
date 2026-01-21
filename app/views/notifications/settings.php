@@ -21,10 +21,10 @@
                 </div>
                 <div class="setting-control">
                     <label class="toggle">
-                        <input type="checkbox" 
-                               name="enable_app_notifications" 
-                               id="enable_app_notifications"
-                               <?= $settings['enable_app_notifications'] ? 'checked' : '' ?>>
+                        <input type="checkbox"
+                            name="enable_app_notifications"
+                            id="enable_app_notifications"
+                            <?= $settings['enable_app_notifications'] ? 'checked' : '' ?>>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -45,10 +45,10 @@
                 </div>
                 <div class="setting-control">
                     <label class="toggle">
-                        <input type="checkbox" 
-                               name="enable_email_notifications" 
-                               id="enable_email_notifications"
-                               <?= $settings['enable_email_notifications'] ? 'checked' : '' ?>>
+                        <input type="checkbox"
+                            name="enable_email_notifications"
+                            id="enable_email_notifications"
+                            <?= $settings['enable_email_notifications'] ? 'checked' : '' ?>>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -66,10 +66,10 @@
                     </div>
                     <div class="setting-control">
                         <label class="toggle">
-                            <input type="checkbox" 
-                                   name="email_notify_3days" 
-                                   id="email_notify_3days"
-                                   <?= $settings['email_notify_3days'] ? 'checked' : '' ?>>
+                            <input type="checkbox"
+                                name="email_notify_3days"
+                                id="email_notify_3days"
+                                <?= $settings['email_notify_3days'] ? 'checked' : '' ?>>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -84,10 +84,10 @@
                     </div>
                     <div class="setting-control">
                         <label class="toggle">
-                            <input type="checkbox" 
-                                   name="email_notify_1day" 
-                                   id="email_notify_1day"
-                                   <?= $settings['email_notify_1day'] ? 'checked' : '' ?>>
+                            <input type="checkbox"
+                                name="email_notify_1day"
+                                id="email_notify_1day"
+                                <?= $settings['email_notify_1day'] ? 'checked' : '' ?>>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -102,10 +102,10 @@
                     </div>
                     <div class="setting-control">
                         <label class="toggle">
-                            <input type="checkbox" 
-                                   name="email_notify_today" 
-                                   id="email_notify_today"
-                                   <?= $settings['email_notify_today'] ? 'checked' : '' ?>>
+                            <input type="checkbox"
+                                name="email_notify_today"
+                                id="email_notify_today"
+                                <?= $settings['email_notify_today'] ? 'checked' : '' ?>>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -120,10 +120,10 @@
                     </div>
                     <div class="setting-control">
                         <label class="toggle">
-                            <input type="checkbox" 
-                                   name="email_notify_overdue" 
-                                   id="email_notify_overdue"
-                                   <?= $settings['email_notify_overdue'] ? 'checked' : '' ?>>
+                            <input type="checkbox"
+                                name="email_notify_overdue"
+                                id="email_notify_overdue"
+                                <?= $settings['email_notify_overdue'] ? 'checked' : '' ?>>
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -145,10 +145,10 @@
                 </div>
                 <div class="setting-control">
                     <label class="toggle">
-                        <input type="checkbox" 
-                               name="email_monthly_report" 
-                               id="email_monthly_report"
-                               <?= $settings['email_monthly_report'] ? 'checked' : '' ?>>
+                        <input type="checkbox"
+                            name="email_monthly_report"
+                            id="email_monthly_report"
+                            <?= $settings['email_monthly_report'] ? 'checked' : '' ?>>
                         <span class="toggle-slider"></span>
                     </label>
                 </div>
@@ -180,6 +180,55 @@
 </div>
 
 <style>
+    /* ==================== CONFIGURAÇÕES DE NOTIFICAÇÕES - CSS RESPONSIVO ==================== */
+
+    /* Card Header */
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .card-header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-secondary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: white;
+        color: var(--gray-700);
+        border: 2px solid var(--gray-300);
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-secondary:hover {
+        border-color: var(--gray-400);
+        background: var(--gray-50);
+        transform: translateY(-1px);
+    }
+
+    /* Settings Form */
     .settings-form {
         display: flex;
         flex-direction: column;
@@ -187,30 +236,44 @@
     }
 
     .settings-section {
-        padding: 1.5rem;
+        background: white;
+        border-radius: 14px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 1px solid var(--gray-200);
     }
 
     .settings-section h2 {
-        color: #1f2937;
+        color: var(--gray-900);
         margin-bottom: 0.5rem;
-        font-size: 1.25rem;
+        font-size: 1.375rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .section-description {
-        color: #6b7280;
-        margin-bottom: 1.5rem;
-        font-size: 0.95rem;
+        color: var(--gray-500);
+        margin-bottom: 1.75rem;
+        font-size: 0.9375rem;
+        line-height: 1.5;
     }
 
     .setting-item {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem;
-        background: #f9fafb;
-        border-radius: 8px;
+        padding: 1.25rem;
+        background: var(--gray-50);
+        border-radius: 10px;
         margin-bottom: 1rem;
-        gap: 1rem;
+        gap: 1.5rem;
+        transition: var(--transition);
+    }
+
+    .setting-item:hover {
+        background: var(--gray-100);
     }
 
     .setting-item:last-child {
@@ -223,16 +286,18 @@
 
     .setting-info label {
         display: block;
-        color: #1f2937;
+        color: var(--gray-900);
         font-size: 1rem;
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.375rem;
         cursor: pointer;
+        font-weight: 600;
     }
 
     .setting-info p {
-        color: #6b7280;
+        color: var(--gray-600);
         font-size: 0.875rem;
         margin: 0;
+        line-height: 1.5;
     }
 
     .setting-control {
@@ -263,6 +328,7 @@
         background-color: #cbd5e1;
         border-radius: 28px;
         transition: 0.3s;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .toggle-slider:before {
@@ -275,43 +341,53 @@
         background-color: white;
         border-radius: 50%;
         transition: 0.3s;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .toggle input:checked + .toggle-slider {
-        background-color: #667eea;
+    .toggle input:checked+.toggle-slider {
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
     }
 
-    .toggle input:checked + .toggle-slider:before {
+    .toggle input:checked+.toggle-slider:before {
         transform: translateX(24px);
+    }
+
+    .toggle:active .toggle-slider:before {
+        width: 24px;
     }
 
     /* Email Options */
     .email-options {
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 2px solid #e5e7eb;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 2px solid var(--gray-200);
     }
 
     .email-options h3 {
-        color: #374151;
+        color: var(--gray-700);
         font-size: 1rem;
-        margin-bottom: 1rem;
+        margin-bottom: 1.25rem;
+        font-weight: 600;
     }
 
     /* Form Select */
     .form-select {
-        padding: 0.5rem 1rem;
-        border: 2px solid #d1d5db;
-        border-radius: 6px;
-        font-size: 0.95rem;
+        padding: 0.625rem 1rem;
+        border: 2px solid var(--gray-300);
+        border-radius: 8px;
+        font-size: 0.9375rem;
         background: white;
         cursor: pointer;
-        transition: all 0.3s;
+        transition: var(--transition);
+        font-family: inherit;
+        color: var(--gray-900);
+        min-width: 120px;
     }
 
     .form-select:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
     }
 
     /* Form Actions */
@@ -319,17 +395,91 @@
         display: flex;
         justify-content: flex-end;
         gap: 1rem;
+        padding-top: 1rem;
     }
 
-    .form-actions .btn {
-        min-width: 200px;
+    .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.875rem 2rem;
+        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+        font-family: inherit;
+        white-space: nowrap;
+        min-width: 220px;
     }
 
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+    }
+
+    .btn-primary:active {
+        transform: translateY(0);
+    }
+
+    /* ==================== TABLET RESPONSIVO ==================== */
+    @media (max-width: 1024px) {
+        .settings-section {
+            padding: 1.5rem;
+        }
+
+        .setting-item {
+            padding: 1rem;
+        }
+    }
+
+    /* ==================== MOBILE RESPONSIVO ==================== */
     @media (max-width: 768px) {
+        .card-header {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header h1 {
+            font-size: 1.5rem;
+        }
+
+        .btn-secondary {
+            width: 100%;
+            justify-content: center;
+            padding: 0.875rem 1.25rem;
+        }
+
+        .settings-form {
+            gap: 1.25rem;
+        }
+
+        .settings-section {
+            padding: 1.25rem;
+        }
+
+        .settings-section h2 {
+            font-size: 1.125rem;
+        }
+
+        .section-description {
+            font-size: 0.875rem;
+            margin-bottom: 1.25rem;
+        }
+
         .setting-item {
             flex-direction: column;
             align-items: flex-start;
-            gap: 0.75rem;
+            gap: 1rem;
+            padding: 1rem;
         }
 
         .setting-control {
@@ -342,8 +492,96 @@
             flex-direction: column;
         }
 
-        .form-actions .btn {
+        .btn-primary {
             width: 100%;
+            min-width: 100%;
+        }
+
+        .form-select {
+            width: 100%;
+        }
+    }
+
+    /* ==================== MOBILE SMALL ==================== */
+    @media (max-width: 640px) {
+        .card-header h1 {
+            font-size: 1.375rem;
+        }
+
+        .settings-section {
+            padding: 1rem;
+        }
+
+        .settings-section h2 {
+            font-size: 1rem;
+        }
+
+        .setting-item {
+            padding: 0.875rem;
+        }
+
+        .setting-info label {
+            font-size: 0.9375rem;
+        }
+
+        .setting-info p {
+            font-size: 0.8125rem;
+        }
+    }
+
+    /* ==================== EXTRA SMALL ==================== */
+    @media (max-width: 375px) {
+        .card-header h1 {
+            font-size: 1.25rem;
+        }
+
+        .toggle {
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-slider:before {
+            height: 18px;
+            width: 18px;
+        }
+
+        .toggle input:checked+.toggle-slider:before {
+            transform: translateX(22px);
+        }
+    }
+
+    /* ==================== PWA STANDALONE ==================== */
+    @media (display-mode: standalone) {
+        .card-header {
+            padding-top: env(safe-area-inset-top);
+        }
+    }
+
+    /* ==================== REDUCE MOTION ==================== */
+    @media (prefers-reduced-motion: reduce) {
+
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+
+    /* ==================== HIGH CONTRAST ==================== */
+    @media (prefers-contrast: high) {
+        .settings-section {
+            border: 2px solid currentColor;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            border: 2px solid currentColor;
+        }
+
+        .form-select {
+            border-width: 3px;
         }
     }
 </style>
@@ -354,15 +592,59 @@
     const emailOptions = document.getElementById('emailOptions');
 
     function toggleEmailOptions() {
-        if (emailToggle.checked) {
-            emailOptions.style.display = 'block';
-        } else {
-            emailOptions.style.display = 'none';
+        if (emailToggle && emailOptions) {
+            if (emailToggle.checked) {
+                emailOptions.style.display = 'block';
+            } else {
+                emailOptions.style.display = 'none';
+            }
         }
     }
 
-    emailToggle.addEventListener('change', toggleEmailOptions);
-    toggleEmailOptions(); // Executa ao carregar
+    // Inicializa ao carregar
+    if (emailToggle) {
+        emailToggle.addEventListener('change', toggleEmailOptions);
+        toggleEmailOptions();
+    }
+
+    // FIX: Garante que todos os checkboxes sejam enviados corretamente
+    document.querySelector('.settings-form').addEventListener('submit', function(e) {
+        // Para cada checkbox desmarcado, adiciona um input hidden com valor "0"
+        const checkboxes = this.querySelectorAll('input[type="checkbox"]');
+
+        checkboxes.forEach(function(checkbox) {
+            // Remove inputs hidden antigos deste checkbox
+            const oldHidden = document.querySelector(`input[type="hidden"][name="${checkbox.name}"]`);
+            if (oldHidden) {
+                oldHidden.remove();
+            }
+
+            // Se o checkbox estiver desmarcado, adiciona um hidden com valor "0"
+            if (!checkbox.checked) {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.name = checkbox.name;
+                hidden.value = '0';
+                checkbox.parentNode.appendChild(hidden);
+            }
+        });
+    });
+
+    // Feedback visual ao salvar
+    document.querySelector('.btn-primary').addEventListener('click', function(e) {
+        const btn = this;
+        const originalText = btn.innerHTML;
+
+        // Não previne o submit, apenas dá feedback
+        btn.innerHTML = '⏳ Salvando...';
+        btn.disabled = true;
+
+        // Restaura após 2 segundos (caso não recarregue a página)
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }, 2000);
+    });
 </script>
 
 <?php include VIEWS . '/layouts/footer.php'; ?>

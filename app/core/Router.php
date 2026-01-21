@@ -67,10 +67,32 @@ class Router
             $this->controller = 'GruposController';
             array_shift($url);
 
-            if (isset($url[0])) {
-                $this->method = $url[0];
-                array_shift($url);
+            if (isset($url[0]) && !empty($url[0])) {
+                $action = $url[0];
+                
+                // Mapeia as ações permitidas
+                $allowedActions = [
+                    'criar',
+                    'entrar',
+                    'detalhes',
+                    'trocar',
+                    'selecionar',
+                    'editar',
+                    'deletar',
+                    'sair'
+                ];
+
+                if (in_array($action, $allowedActions)) {
+                    $this->method = $action;
+                    array_shift($url);
+                    
+                    error_log("Router - Método grupos detectado: {$this->method}");
+                } else {
+                    error_log("Router - Ação de grupo inválida: {$action}");
+                    $this->method = 'detalhes';
+                }
             } else {
+                // Se não especificar nada, vai para detalhes
                 $this->method = 'detalhes';
             }
         }
@@ -101,7 +123,7 @@ class Router
             }
         }
 
-        error_log("Router - Controller: {$this->controller}, Method: {$this->method}");
+        error_log("Router - Controller: {$this->controller}, Method: {$this->method}, Params: " . print_r($url, true));
 
         // Carrega o controller
         $controllerFile = CONTROLLERS . '/' . $this->controller . '.php';

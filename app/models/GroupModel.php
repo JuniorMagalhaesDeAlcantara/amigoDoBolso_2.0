@@ -134,10 +134,87 @@ class GroupModel extends Model
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
     public function getAll()
     {
         $sql = "SELECT id, name, email, created_at FROM {$this->table} ORDER BY name ASC";
         $stmt = $this->db->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Remove todos os membros de um grupo
+     */
+    public function removeAllMembers($groupId)
+    {
+        $sql = "DELETE FROM group_members WHERE group_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$groupId]);
+    }
+
+    /**
+     * Remove um membro específico do grupo
+     */
+    public function removeMember($groupId, $userId)
+    {
+        $sql = "DELETE FROM group_members WHERE group_id = ? AND user_id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$groupId, $userId]);
+    }
+
+    /**
+     * Atualiza informações do grupo
+     */
+    public function update($id, $data)
+    {
+        $fields = [];
+        $values = [];
+
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = ?";
+            $values[] = $value;
+        }
+
+        $values[] = $id;
+
+        $sql = "UPDATE {$this->table} SET " . implode(', ', $fields) . " WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute($values);
+    }
+
+    /**
+     * Deleta um grupo
+     */
+    public function delete($id)
+    {
+        $sql = "DELETE FROM {$this->table} WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
+
+    /**
+     * Conta membros do grupo
+     */
+    public function getMemberCount($groupId)
+    {
+        $sql = "SELECT COUNT(*) as count FROM group_members WHERE group_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$groupId]);
+        $result = $stmt->fetch();
+        return $result['count'] ?? 0;
+    }
+
+    /**
+     * Verifica se é o dono do grupo
+     */
+    public function isOwner($groupId, $userId)
+    {
+        $sql = "SELECT owner_id FROM {$this->table} WHERE id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$groupId]);
+        $group = $stmt->fetch();
+
+        return $group && $group['owner_id'] == $userId;
     }
 }

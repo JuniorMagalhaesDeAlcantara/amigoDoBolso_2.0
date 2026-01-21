@@ -18,16 +18,21 @@
         --gray-700: #374151;
         --gray-800: #1f2937;
         --gray-900: #111827;
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-        --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     /* ========== ANIMATIONS ========== */
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     @keyframes fadeInDown {
@@ -35,6 +40,7 @@
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -46,6 +52,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -57,6 +64,7 @@
             opacity: 0;
             transform: translateX(-10px);
         }
+
         to {
             opacity: 1;
             transform: translateX(0);
@@ -64,13 +72,25 @@
     }
 
     @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
     }
 
     @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
     }
 
     /* ========== CONTAINER ========== */
@@ -122,6 +142,7 @@
         display: flex;
         gap: 0.75rem;
         flex-shrink: 0;
+        flex-wrap: wrap;
     }
 
     /* ========== BUTTONS ========== */
@@ -170,7 +191,6 @@
         background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         color: white;
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
-        width: 100%;
     }
 
     .btn-primary:hover {
@@ -178,10 +198,50 @@
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
     }
 
+    .btn-danger {
+        background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+    }
+
+    .btn-danger:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+    }
+
+    .btn-warning {
+        background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+    }
+
+    .btn-warning:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(245, 158, 11, 0.35);
+    }
+
     .btn-primary:active,
     .btn-success:active,
-    .btn-secondary:active {
+    .btn-secondary:active,
+    .btn-danger:active,
+    .btn-warning:active {
         transform: translateY(0);
+    }
+
+    /* ========== MANAGEMENT ACTIONS ========== */
+    .management-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+        background: var(--gray-50);
+        border-radius: 12px;
+        border: 2px solid var(--gray-200);
+        animation: fadeInUp 0.5s ease-out 0.15s both;
+    }
+
+    .management-actions .btn {
+        flex: 1;
     }
 
     /* ========== GROUP DETAILS ========== */
@@ -207,7 +267,7 @@
     .detail-item:hover {
         background: white;
         border-color: var(--gray-300);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
         transform: translateY(-2px);
     }
 
@@ -226,7 +286,7 @@
         left: -200%;
         width: 200%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
         animation: shimmer 3s infinite;
     }
 
@@ -256,7 +316,7 @@
         color: white;
     }
 
-    .detail-item > span {
+    .detail-item>span {
         font-size: 1rem;
         font-weight: 600;
         color: var(--gray-900);
@@ -276,9 +336,9 @@
         color: white;
         letter-spacing: 3px;
         padding: 0.75rem 1.25rem;
-        background: rgba(255,255,255,0.2);
+        background: rgba(255, 255, 255, 0.2);
         border-radius: 10px;
-        border: 2px dashed rgba(255,255,255,0.6);
+        border: 2px dashed rgba(255, 255, 255, 0.6);
         backdrop-filter: blur(10px);
     }
 
@@ -290,11 +350,11 @@
         font-size: 0.875rem;
         font-weight: 700;
         transition: var(--transition);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
 
     .btn-copy:hover {
-        background: rgba(255,255,255,0.95);
+        background: rgba(255, 255, 255, 0.95);
         transform: scale(1.05);
     }
 
@@ -435,6 +495,10 @@
         animation: fadeInUp 0.5s ease-out 0.5s both;
     }
 
+    .form-actions .btn {
+        width: 100%;
+    }
+
     /* ========== RESPONSIVE - TABLET ========== */
     @media (max-width: 1024px) {
         .container-small {
@@ -475,6 +539,10 @@
             width: 100%;
         }
 
+        .management-actions {
+            flex-direction: column;
+        }
+
         .detail-item {
             flex-direction: column;
             align-items: flex-start;
@@ -482,7 +550,7 @@
             padding: 1.25rem;
         }
 
-        .detail-item > span {
+        .detail-item>span {
             font-size: 0.9375rem;
         }
 
@@ -539,6 +607,10 @@
             font-size: 0.875rem;
         }
 
+        .management-actions {
+            padding: 1rem;
+        }
+
         .detail-item {
             padding: 1rem;
         }
@@ -592,6 +664,7 @@
 
     /* ========== ACCESSIBILITY ========== */
     @media (prefers-reduced-motion: reduce) {
+
         *,
         *::before,
         *::after {
@@ -612,37 +685,70 @@
             <div class="header-actions">
                 <a href="/grupos/criar" class="btn btn-success">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 5v14M5 12h14"/>
+                        <path d="M12 5v14M5 12h14" />
                     </svg>
                     Criar Novo Grupo
                 </a>
                 <a href="/grupos/entrar" class="btn btn-secondary">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/>
+                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3" />
                     </svg>
                     Entrar em Grupo
                 </a>
             </div>
         </div>
-        
+
+        <!-- Ações de Gerenciamento do Grupo -->
+        <?php if ($group['owner_id'] == $_SESSION['user_id']): ?>
+            <div class="management-actions">
+                <a href="/grupos/editar/<?= $group['id'] ?>" class="btn btn-primary">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                    </svg>
+                    Editar Grupo
+                </a>
+                <a href="/grupos/deletar/<?= $group['id'] ?>" class="btn btn-danger" onclick="return confirm('Tem certeza que deseja deletar este grupo? Esta ação não pode ser desfeita!')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        <line x1="10" y1="11" x2="10" y2="17" />
+                        <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                    Deletar Grupo
+                </a>
+            </div>
+        <?php else: ?>
+            <div class="management-actions">
+                <a href="/grupos/sair/<?= $group['id'] ?>" class="btn btn-warning" onclick="return confirm('Tem certeza que deseja sair deste grupo?')">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" y1="12" x2="9" y2="12" />
+                    </svg>
+                    Sair do Grupo
+                </a>
+            </div>
+        <?php endif; ?>
+
         <div class="group-details">
             <div class="detail-item">
                 <div class="detail-label">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
                     </svg>
                     <strong>Nome do Grupo:</strong>
                 </div>
                 <span><?= htmlspecialchars($group['name']) ?></span>
             </div>
-            
+
             <div class="detail-item highlight">
                 <div class="detail-label">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                     </svg>
                     <strong>Código de Convite:</strong>
                 </div>
@@ -650,33 +756,33 @@
                     <span class="invite-code-display"><?= $group['invite_code'] ?></span>
                     <button onclick="copyInviteCode('<?= $group['invite_code'] ?>')" class="btn btn-copy">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                         </svg>
                         Copiar
                     </button>
                 </div>
             </div>
-            
+
             <div class="detail-item">
                 <div class="detail-label">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                        <path d="M16 2v4M8 2v4M3 10h18"/>
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <path d="M16 2v4M8 2v4M3 10h18" />
                     </svg>
                     <strong>Criado em:</strong>
                 </div>
                 <span><?= date('d/m/Y', strtotime($group['created_at'])) ?></span>
             </div>
         </div>
-        
+
         <hr>
-        
+
         <div class="section-header">
             <h3>👥 Membros do Grupo</h3>
             <span class="member-count"><?= count($members) ?> membro(s)</span>
         </div>
-        
+
         <div class="members-list">
             <?php foreach ($members as $member): ?>
                 <div class="member-card">
@@ -692,8 +798,8 @@
                     <div class="member-meta">
                         <span class="member-date">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                                <path d="M16 2v4M8 2v4M3 10h18"/>
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <path d="M16 2v4M8 2v4M3 10h18" />
                             </svg>
                             <?= date('d/m/Y', strtotime($member['joined_at'])) ?>
                         </span>
@@ -701,11 +807,11 @@
                 </div>
             <?php endforeach; ?>
         </div>
-        
+
         <div class="form-actions">
             <a href="/dashboard" class="btn btn-primary">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
                 Voltar ao Dashboard
             </a>
@@ -714,49 +820,49 @@
 </div>
 
 <script>
-function copyInviteCode(code) {
-    navigator.clipboard.writeText(code).then(() => {
-        const btn = event.target.closest('button');
-        const originalHTML = btn.innerHTML;
-        
-        btn.innerHTML = `
+    function copyInviteCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = event.target.closest('button');
+            const originalHTML = btn.innerHTML;
+
+            btn.innerHTML = `
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="20 6 9 17 4 12"/>
             </svg>
             Copiado!
         `;
-        btn.classList.add('copied');
-        
-        setTimeout(() => {
-            btn.innerHTML = originalHTML;
-            btn.classList.remove('copied');
-        }, 2000);
-    }).catch(() => {
-        alert('Código: ' + code);
-    });
-}
+            btn.classList.add('copied');
 
-// ===== PREVINE ZOOM EM iOS =====
-if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-    const viewport = document.querySelector('meta[name="viewport"]');
-    if (viewport) {
-        viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.classList.remove('copied');
+            }, 2000);
+        }).catch(() => {
+            alert('Código: ' + code);
+        });
     }
-}
 
-// ===== ADICIONA CLASSE AO BODY QUANDO EM MODO PWA =====
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    document.body.classList.add('pwa-mode');
-}
+    // ===== PREVINE ZOOM EM iOS =====
+    if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+        const viewport = document.querySelector('meta[name="viewport"]');
+        if (viewport) {
+            viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        }
+    }
 
-// ===== ANIMAÇÃO DOS MEMBER CARDS =====
-document.addEventListener('DOMContentLoaded', function() {
-    const memberCards = document.querySelectorAll('.member-card');
-    
-    memberCards.forEach((card, index) => {
-        card.style.animation = `fadeInUp 0.5s ease-out ${0.5 + (index * 0.08)}s both`;
+    // ===== ADICIONA CLASSE AO BODY QUANDO EM MODO PWA =====
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        document.body.classList.add('pwa-mode');
+    }
+
+    // ===== ANIMAÇÃO DOS MEMBER CARDS =====
+    document.addEventListener('DOMContentLoaded', function() {
+        const memberCards = document.querySelectorAll('.member-card');
+
+        memberCards.forEach((card, index) => {
+            card.style.animation = `fadeInUp 0.5s ease-out ${0.5 + (index * 0.08)}s both`;
+        });
     });
-});
 </script>
 
 <?php include VIEWS . '/layouts/footer.php'; ?>

@@ -30,10 +30,10 @@ class EmailHelper
             $mail->Password   = 'W0r2tf5pz@';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
-            
+
             // ✅ Debug (remover em produção)
             $mail->SMTPDebug  = 0; // 0 = off, 2 = debug completo
-            
+
             // ✅ Charset UTF-8
             $mail->CharSet = 'UTF-8';
 
@@ -50,13 +50,12 @@ class EmailHelper
             $mail->send();
             error_log("[EMAIL] ✓ Email enviado com sucesso para {$to}");
             return true;
-            
         } catch (Exception $e) {
             error_log("[EMAIL] ✗ Falha ao enviar email para {$to} | Erro: {$mail->ErrorInfo}");
             return false;
         }
     }
-   
+
     /**
      * Envia notificação de fatura de cartão
      */
@@ -226,5 +225,43 @@ class EmailHelper
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
         $host = $_SERVER['HTTP_HOST'] ?? 'amigodobolso.jmadev.com.br';
         return "{$protocol}://{$host}";
+    }
+
+    /**
+     * Envia email de recuperação de senha
+     */
+    public static function sendPasswordReset($to, $recipientName, $resetLink)
+    {
+        $subject = '🔑 Recuperação de Senha - Amigo do Bolso';
+
+        $message = "
+        <h2 style='color: #667eea;'>🔑 Recuperação de Senha</h2>
+        
+        <p>Olá, <strong>{$recipientName}</strong>!</p>
+        
+        <p>Recebemos uma solicitação para redefinir a senha da sua conta.</p>
+        
+        <div style='text-align: center; margin: 30px 0;'>
+            <a href='{$resetLink}' style='display: inline-block; padding: 15px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600;'>
+                Redefinir Senha
+            </a>
+        </div>
+        
+        <p style='font-size: 14px; color: #6b7280;'>Ou copie este link:</p>
+        <p style='word-break: break-all; background: #f9fafb; padding: 10px; border-radius: 5px; font-size: 13px;'>
+            {$resetLink}
+        </p>
+        
+        <div style='background: #fef2f2; padding: 15px; border-radius: 8px; border-left: 4px solid #ef4444; margin: 20px 0;'>
+            <p style='margin: 0 0 10px 0; color: #991b1b; font-weight: 600;'>⚠️ Importante:</p>
+            <ul style='margin: 10px 0; padding-left: 20px; color: #991b1b;'>
+                <li>Este link expira em 1 hora</li>
+                <li>Se não solicitou, ignore este email</li>
+                <li>Nunca compartilhe este link</li>
+            </ul>
+        </div>
+    ";
+
+        return self::send($to, $subject, $message, $recipientName);
     }
 }

@@ -28,12 +28,22 @@ class Router
             $this->controller = 'AuthController';
             array_shift($url);
 
-            // Define o método (login, register, logout)
+            // Define o método (login, register, logout, forgot-password, reset-password)
             if (isset($url[0]) && !empty($url[0])) {
                 $method = $url[0];
 
+                // Converte kebab-case para camelCase
+                if (strpos($method, '-') !== false) {
+                    $parts = explode('-', $method);
+                    $method = $parts[0];
+                    for ($i = 1; $i < count($parts); $i++) {
+                        $method .= ucfirst($parts[$i]);
+                    }
+                }
+
                 // Valida se o método existe
-                if (in_array($method, ['login', 'register', 'logout'])) {
+                $allowedMethods = ['login', 'register', 'logout', 'forgotPassword', 'resetPassword'];
+                if (in_array($method, $allowedMethods)) {
                     $this->method = $method;
                     error_log("Router - Método auth detectado: {$method}");
                 }

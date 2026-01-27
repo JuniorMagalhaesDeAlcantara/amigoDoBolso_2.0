@@ -291,3 +291,27 @@ CREATE TABLE notification_email_log (
     UNIQUE KEY unique_notification (user_id, notification_type, related_type, related_id, reference_date),
     INDEX idx_user_date (user_id, reference_date)
 );
+
+--- Tabela de Reset de Senha
+CREATE TABLE password_resets (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    used_at DATETIME NULL DEFAULT NULL,
+
+    UNIQUE KEY uq_token (token),
+    KEY idx_user_id (user_id),
+    KEY idx_expires_at (expires_at),
+
+    CONSTRAINT fk_password_resets_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+CREATE INDEX idx_token_expires ON password_resets(token, expires_at);
+CREATE INDEX idx_user_expires ON password_resets(user_id, expires_at);

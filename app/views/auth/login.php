@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -27,9 +28,9 @@
             --border: #e5e7eb;
             --error: #ef4444;
             --error-bg: #fef2f2;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-            --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -331,7 +332,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s;
         }
 
@@ -362,7 +363,7 @@
             content: '';
             width: 18px;
             height: 18px;
-            border: 2.5px solid rgba(255,255,255,0.3);
+            border: 2.5px solid rgba(255, 255, 255, 0.3);
             border-top-color: white;
             border-radius: 50%;
             display: inline-block;
@@ -371,8 +372,30 @@
             vertical-align: middle;
         }
 
+        /* Adicione no CSS */
+        .forgot-password-link {
+            display: inline-block;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .forgot-password-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .forgot-password-link:active {
+            transform: scale(0.98);
+        }
+
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         .form-footer {
@@ -407,6 +430,7 @@
                 opacity: 0;
                 transform: translateY(24px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -418,6 +442,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -430,6 +455,7 @@
                 max-height: 0;
                 transform: translateY(-12px);
             }
+
             to {
                 opacity: 1;
                 max-height: 200px;
@@ -528,7 +554,8 @@
 
             input {
                 padding: 0.875rem 1rem;
-                font-size: 16px; /* Previne zoom em iOS */
+                font-size: 16px;
+                /* Previne zoom em iOS */
                 border-radius: 10px;
             }
 
@@ -579,6 +606,7 @@
 
         /* Reduce Motion */
         @media (prefers-reduced-motion: reduce) {
+
             *,
             *::before,
             *::after {
@@ -600,6 +628,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Mobile Header - Aparece apenas no mobile -->
     <div class="mobile-header">
@@ -613,11 +642,11 @@
                 <div class="logo-wrapper">
                     <img src="/assets/images/logoOficial.png" alt="Amigo do Bolso" class="logo">
                 </div>
-                
+
                 <p class="tagline">
                     Controle financeiro colaborativo para você e sua família alcançarem suas metas juntos
                 </p>
-                
+
                 <div class="features">
                     <div class="feature">
                         <span class="feature-icon">✓</span>
@@ -663,10 +692,10 @@
                 <form method="POST" action="/auth/login" id="loginForm">
                     <div class="form-group">
                         <label for="email">Email</label>
-                        <input 
-                            type="email" 
-                            id="email" 
-                            name="email" 
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
                             placeholder="seu@email.com"
                             required
                             autofocus
@@ -678,24 +707,29 @@
                     <div class="form-group">
                         <label for="password">Senha</label>
                         <div class="input-wrapper">
-                            <input 
-                                type="password" 
-                                id="password" 
-                                name="password" 
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
                                 placeholder="Digite sua senha"
                                 required
                                 autocomplete="current-password">
-                            <button 
-                                type="button" 
-                                class="toggle-password" 
+                            <button
+                                type="button"
+                                class="toggle-password"
                                 onclick="togglePassword()"
                                 aria-label="Mostrar ou ocultar senha"
                                 tabindex="-1">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" id="eyeIcon">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                    <circle cx="12" cy="12" r="3" />
                                 </svg>
                             </button>
+                        </div>
+                        <div style="text-align: right; margin-top: 0.5rem;">
+                            <a href="/auth/forgot-password" style="color: var(--primary); text-decoration: none; font-size: 0.875rem; font-weight: 500; transition: var(--transition);">
+                                Esqueceu a senha?
+                            </a>
                         </div>
                     </div>
 
@@ -716,7 +750,7 @@
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eyeIcon');
-            
+
             if (passwordInput.type === 'password') {
                 passwordInput.type = 'text';
                 eyeIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
@@ -729,7 +763,7 @@
         // Loading state no submit
         const loginForm = document.getElementById('loginForm');
         const submitBtn = document.getElementById('submitBtn');
-        
+
         loginForm.addEventListener('submit', function(e) {
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
@@ -753,4 +787,5 @@
         }
     </script>
 </body>
+
 </html>

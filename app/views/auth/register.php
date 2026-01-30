@@ -8,6 +8,33 @@
     <meta name="description" content="Amigo do Bolso - Crie sua conta gratuita">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+      <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Amigo Bolso">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/assets/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/icons/icon-72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/assets/icons/icon-96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/assets/icons/icon-128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/icons/icon-144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/assets/icons/icon-384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/assets/icons/icon-512.png">
+
+    <!-- Registrar Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('✅ PWA instalado!', reg))
+                    .catch(err => console.log('❌ Erro PWA:', err));
+            });
+        }
+    </script>
     <title>Cadastro - Amigo do Bolso</title>
     <style>
         * {
@@ -60,7 +87,6 @@
             width: 100%;
         }
 
-        /* Desktop - Left Side Branding */
         .branding-side {
             flex: 1;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
@@ -68,11 +94,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 3rem 2rem;
+            padding: 1.5rem;
             color: white;
             position: relative;
             overflow: hidden;
-            min-height: 400px;
         }
 
         .branding-side::before {
@@ -108,31 +133,31 @@
         }
 
         .logo-wrapper {
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
             animation: fadeInUp 0.6s ease-out;
         }
 
         .logo {
             width: 100%;
-            max-width: 280px;
+            max-width: 260px;
             height: auto;
-            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
             display: block;
             margin: 0 auto;
         }
 
         .tagline {
-            font-size: 1.0625rem;
-            line-height: 1.6;
+            font-size: 0.9375rem;
+            line-height: 1.55;
             opacity: 0.95;
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
             font-weight: 400;
             animation: fadeInUp 0.6s ease-out 0.15s both;
         }
 
         .features {
             display: grid;
-            gap: 0.875rem;
+            gap: 0.625rem;
             text-align: left;
             max-width: 360px;
             margin: 0 auto;
@@ -142,10 +167,10 @@
         .feature {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: 0.9375rem;
+            gap: 0.625rem;
+            font-size: 0.8125rem;
             opacity: 0.92;
-            padding: 0.375rem 0;
+            padding: 0.1875rem 0;
             transition: var(--transition);
         }
 
@@ -155,8 +180,8 @@
         }
 
         .feature-icon {
-            width: 22px;
-            height: 22px;
+            width: 18px;
+            height: 18px;
             background: rgba(255, 255, 255, 0.22);
             border-radius: 50%;
             display: flex;
@@ -164,26 +189,24 @@
             justify-content: center;
             flex-shrink: 0;
             font-weight: 700;
-            font-size: 0.6875rem;
+            font-size: 0.5625rem;
             backdrop-filter: blur(10px);
         }
 
-        /* Mobile - Logo no topo */
         .mobile-header {
             display: none;
             text-align: center;
-            padding: 2rem 1.5rem 1rem;
+            padding: 1.25rem 1.25rem 0.75rem;
             background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
         }
 
         .mobile-logo {
-            width: 140px;
+            max-width: 200px;
             height: auto;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
             animation: fadeInDown 0.5s ease-out;
         }
 
-        /* Desktop - Right Side Form */
         .form-side {
             flex: 1;
             display: flex;
@@ -203,11 +226,11 @@
         }
 
         .form-header {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-title {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
@@ -216,27 +239,30 @@
 
         .form-subtitle {
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 0.9375rem;
+            line-height: 1.5;
+        }
+
+        .alert {
+            padding: 0.875rem 1rem;
+            margin-bottom: 1.25rem;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            animation: slideDown 0.4s ease-out;
             line-height: 1.5;
         }
 
         .alert {
             background: var(--error-bg);
             border-left: 4px solid var(--error);
-            padding: 1rem 1.125rem;
-            margin-bottom: 1.5rem;
-            border-radius: 10px;
             color: #991b1b;
-            font-size: 0.9375rem;
-            display: flex;
-            align-items: flex-start;
-            gap: 0.875rem;
-            animation: slideDown 0.4s ease-out;
-            line-height: 1.5;
         }
 
         .alert-icon {
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             flex-shrink: 0;
             margin-top: 1px;
         }
@@ -251,17 +277,17 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
             color: var(--text-primary);
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
             letter-spacing: 0.005em;
@@ -279,7 +305,7 @@
         input,
         select {
             width: 100%;
-            padding: 0.9375rem 1rem;
+            padding: 0.875rem 1rem;
             border: 2px solid var(--border);
             border-radius: 12px;
             font-size: 1rem;
@@ -362,7 +388,7 @@
 
         .helper-text {
             display: block;
-            font-size: 0.8125rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
             margin-top: 0.375rem;
             line-height: 1.4;
@@ -370,16 +396,16 @@
 
         .btn-submit {
             width: 100%;
-            padding: 1rem;
+            padding: 0.9375rem;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 1.0625rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 0.75rem;
+            margin-top: 0.5rem;
             box-shadow: var(--shadow-md);
             font-family: inherit;
             letter-spacing: 0.01em;
@@ -443,11 +469,11 @@
 
         .form-footer {
             text-align: center;
-            margin-top: 2rem;
-            padding-top: 2rem;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
             border-top: 1px solid var(--border);
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 0.9375rem;
         }
 
         .form-footer a {
@@ -467,7 +493,6 @@
             transform: scale(0.98);
         }
 
-        /* Animations */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -506,7 +531,6 @@
             }
         }
 
-        /* Tablet */
         @media (max-width: 1024px) {
             .branding-side::before {
                 width: 400px;
@@ -517,9 +541,24 @@
                 width: 300px;
                 height: 300px;
             }
+
+            .logo {
+                max-width: 220px;
+            }
+
+            .tagline {
+                font-size: 0.875rem;
+            }
+
+            .features {
+                gap: 0.5rem;
+            }
+
+            .feature {
+                font-size: 0.75rem;
+            }
         }
 
-        /* Mobile - Layout Vertical */
         @media (max-width: 968px) {
             .container {
                 flex-direction: column;
@@ -534,7 +573,7 @@
             }
 
             .form-side {
-                padding: 2rem 1.5rem;
+                padding: 1.5rem 1.5rem;
                 background: var(--background);
             }
 
@@ -546,31 +585,30 @@
             }
 
             .form-title {
-                font-size: 1.75rem;
+                font-size: 1.5rem;
             }
 
             .form-subtitle {
-                font-size: 0.9375rem;
+                font-size: 0.875rem;
             }
 
             .form-row {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
+                gap: 1.25rem;
             }
         }
 
-        /* Mobile Portrait */
         @media (max-width: 640px) {
             .mobile-header {
-                padding: 1.5rem 1.25rem 0.75rem;
+                padding: 1rem 1rem 0.5rem;
             }
 
             .mobile-logo {
-                width: 120px;
+                max-width: 180px;
             }
 
             .form-side {
-                padding: 1.5rem 1rem;
+                padding: 1rem 1rem;
             }
 
             .form-container {
@@ -579,63 +617,61 @@
             }
 
             .form-header {
-                margin-bottom: 1.5rem;
+                margin-bottom: 1.25rem;
             }
 
             .form-title {
-                font-size: 1.5rem;
+                font-size: 1.375rem;
             }
 
             .form-subtitle {
-                font-size: 0.875rem;
+                font-size: 0.8125rem;
             }
 
             .form-group {
-                margin-bottom: 1.25rem;
+                margin-bottom: 1.125rem;
             }
 
             .form-row {
-                margin-bottom: 1.25rem;
+                margin-bottom: 1.125rem;
             }
 
             label {
-                font-size: 0.875rem;
+                font-size: 0.8125rem;
             }
 
             input,
             select {
-                padding: 0.875rem 1rem;
+                padding: 0.8125rem 0.9375rem;
                 font-size: 16px;
-                /* Previne zoom em iOS */
                 border-radius: 10px;
             }
 
             .btn-submit {
-                padding: 0.9375rem;
-                font-size: 1rem;
+                padding: 0.875rem;
+                font-size: 0.9375rem;
                 border-radius: 10px;
             }
 
             .form-footer {
-                font-size: 0.9375rem;
-                margin-top: 1.5rem;
-                padding-top: 1.5rem;
+                font-size: 0.875rem;
+                margin-top: 1.25rem;
+                padding-top: 1.25rem;
             }
 
             .alert {
-                padding: 0.875rem 1rem;
-                font-size: 0.875rem;
+                padding: 0.75rem 0.875rem;
+                font-size: 0.8125rem;
             }
 
             .helper-text {
-                font-size: 0.75rem;
+                font-size: 0.6875rem;
             }
         }
 
-        /* Extra Small Devices */
         @media (max-width: 375px) {
             .mobile-logo {
-                width: 110px;
+                max-width: 160px;
             }
 
             .form-container {
@@ -643,11 +679,10 @@
             }
 
             .form-title {
-                font-size: 1.375rem;
+                font-size: 1.25rem;
             }
         }
 
-        /* PWA/Standalone Mode */
         @media (display-mode: standalone) {
             body {
                 padding-top: env(safe-area-inset-top);
@@ -655,11 +690,10 @@
             }
 
             .mobile-header {
-                padding-top: calc(env(safe-area-inset-top) + 1.5rem);
+                padding-top: calc(env(safe-area-inset-top) + 1rem);
             }
         }
 
-        /* Reduce Motion */
         @media (prefers-reduced-motion: reduce) {
 
             *,
@@ -671,7 +705,6 @@
             }
         }
 
-        /* High Contrast Mode */
         @media (prefers-contrast: high) {
             .btn-submit {
                 border: 2px solid white;
@@ -686,13 +719,11 @@
 </head>
 
 <body>
-    <!-- Mobile Header - Aparece apenas no mobile -->
     <div class="mobile-header">
         <img src="/assets/images/logoOficial.png" alt="Amigo do Bolso" class="mobile-logo">
     </div>
 
     <div class="container">
-        <!-- Desktop - Left Side Branding (oculto no mobile) -->
         <div class="branding-side">
             <div class="brand-content">
                 <div class="logo-wrapper">
@@ -724,7 +755,6 @@
             </div>
         </div>
 
-        <!-- Right Side - Form -->
         <div class="form-side">
             <div class="form-container">
                 <div class="form-header">
@@ -732,26 +762,7 @@
                     <p class="form-subtitle">Preencha seus dados para começar a usar gratuitamente</p>
                 </div>
 
-                <!-- Alert de erro (exemplo - remover se não usar PHP) -->
-                <!-- <div class="alert">
-                    <span class="alert-icon">⚠️</span>
-                    <div>
-                        <strong>Erro no cadastro</strong><br>
-                        Este email já está cadastrado. Tente fazer login ou use outro email.
-                    </div>
-                </div> -->
-
-                <!-- Alert de sucesso (exemplo) -->
-                <!-- <div class="alert alert-success">
-                    <span class="alert-icon">✓</span>
-                    <div>
-                        <strong>Conta criada com sucesso!</strong><br>
-                        Você será redirecionado em instantes...
-                    </div>
-                </div> -->
-
                 <form method="POST" action="/auth/register" id="registerForm">
-                    <!-- Nome completo -->
                     <div class="form-group">
                         <label for="name">
                             Nome completo
@@ -768,7 +779,6 @@
                             spellcheck="false">
                     </div>
 
-                    <!-- Email -->
                     <div class="form-group">
                         <label for="email">
                             Email
@@ -786,7 +796,6 @@
                         <small class="helper-text">Usaremos este email para contato e login</small>
                     </div>
 
-                    <!-- Senha e Confirmar Senha - Grid em Desktop, Stack em Mobile -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="password">
@@ -863,7 +872,6 @@
     </div>
 
     <script>
-        // Toggle senha
         function togglePassword(inputId, iconId) {
             const passwordInput = document.getElementById(inputId);
             const eyeIcon = document.getElementById(iconId);
@@ -877,7 +885,6 @@
             }
         }
 
-        // Indicador de força da senha
         document.getElementById('password').addEventListener('input', function(e) {
             const password = e.target.value;
             const strengthBar = document.getElementById('strengthBar');
@@ -895,7 +902,6 @@
             }
         });
 
-        // Validação e loading state no submit
         const registerForm = document.getElementById('registerForm');
         const submitBtn = document.getElementById('submitBtn');
 
@@ -909,13 +915,11 @@
                 return false;
             }
 
-            // Loading state
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
             submitBtn.textContent = 'Criando conta';
         });
 
-        // Previne zoom em iOS ao focar inputs
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             const inputs = document.querySelectorAll('input, select');
             inputs.forEach(input => {
@@ -925,7 +929,6 @@
             });
         }
 
-        // Detecta se está em modo standalone (PWA)
         if (window.matchMedia('(display-mode: standalone)').matches) {
             console.log('Executando como PWA');
             document.body.classList.add('pwa-mode');

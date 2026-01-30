@@ -3,10 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#667eea">
     <meta name="description" content="Amigo do Bolso - Redefinir Senha">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+      <!-- PWA Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Amigo Bolso">
+
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="/assets/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/assets/icons/icon-72.png">
+    <link rel="apple-touch-icon" sizes="96x96" href="/assets/icons/icon-96.png">
+    <link rel="apple-touch-icon" sizes="128x128" href="/assets/icons/icon-128.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/assets/icons/icon-144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/assets/icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="/assets/icons/icon-192.png">
+    <link rel="apple-touch-icon" sizes="384x384" href="/assets/icons/icon-384.png">
+    <link rel="apple-touch-icon" sizes="512x512" href="/assets/icons/icon-512.png">
+
+    <!-- Registrar Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(reg => console.log('✅ PWA instalado!', reg))
+                    .catch(err => console.log('❌ Erro PWA:', err));
+            });
+        }
+    </script>
     <title>Redefinir Senha - Amigo do Bolso</title>
     <style>
         * {
@@ -38,25 +65,24 @@
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             background: var(--background);
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
+            height: 100vh;
             display: flex;
             flex-direction: column;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
         html {
-            height: -webkit-fill-available;
+            height: 100%;
+            overflow: hidden;
         }
 
         .container {
             display: flex;
-            flex: 1;
-            min-height: 100vh;
-            min-height: -webkit-fill-available;
+            height: 100vh;
             width: 100%;
+            overflow: hidden;
         }
 
         .branding-side {
@@ -66,11 +92,10 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 3rem 2rem;
+            padding: 1.5rem;
             color: white;
             position: relative;
             overflow: hidden;
-            min-height: 400px;
         }
 
         .branding-side::before {
@@ -106,24 +131,24 @@
         }
 
         .logo-wrapper {
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
             animation: fadeInUp 0.6s ease-out;
         }
 
         .logo {
             width: 100%;
-            max-width: 280px;
+            max-width: 260px;
             height: auto;
-            filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.2));
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.15));
             display: block;
             margin: 0 auto;
         }
 
         .tagline {
-            font-size: 1.0625rem;
-            line-height: 1.6;
+            font-size: 0.9375rem;
+            line-height: 1.55;
             opacity: 0.95;
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
             font-weight: 400;
             animation: fadeInUp 0.6s ease-out 0.15s both;
         }
@@ -131,14 +156,14 @@
         .mobile-header {
             display: none;
             text-align: center;
-            padding: 2rem 1.5rem 1rem;
+            padding: 1.25rem 1.25rem 0.75rem;
             background: linear-gradient(180deg, var(--primary) 0%, var(--secondary) 100%);
         }
 
         .mobile-logo {
-            width: 140px;
+            max-width: 200px;
             height: auto;
-            filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+            filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.1));
             animation: fadeInDown 0.5s ease-out;
         }
 
@@ -157,15 +182,14 @@
             width: 100%;
             max-width: 440px;
             animation: fadeInUp 0.6s ease-out 0.2s both;
-            padding: 1rem 0;
         }
 
         .form-header {
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
         }
 
         .form-title {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
             color: var(--text-primary);
             margin-bottom: 0.5rem;
@@ -174,18 +198,18 @@
 
         .form-subtitle {
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 0.9375rem;
             line-height: 1.5;
         }
 
         .alert {
-            padding: 1rem 1.125rem;
-            margin-bottom: 1.5rem;
+            padding: 0.875rem 1rem;
+            margin-bottom: 1.25rem;
             border-radius: 10px;
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
             display: flex;
             align-items: flex-start;
-            gap: 0.875rem;
+            gap: 0.75rem;
             animation: slideDown 0.4s ease-out;
             line-height: 1.5;
         }
@@ -197,13 +221,13 @@
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.25rem;
         }
 
         label {
             display: block;
             color: var(--text-primary);
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
             font-weight: 600;
             margin-bottom: 0.5rem;
             letter-spacing: 0.005em;
@@ -215,7 +239,7 @@
 
         input {
             width: 100%;
-            padding: 0.9375rem 1rem;
+            padding: 0.875rem 1rem;
             border: 2px solid var(--border);
             border-radius: 12px;
             font-size: 1rem;
@@ -267,7 +291,7 @@
             padding: 0.875rem 1rem;
             background: #f9fafb;
             border-radius: 10px;
-            font-size: 0.875rem;
+            font-size: 0.8125rem;
         }
 
         .password-requirements-title {
@@ -296,16 +320,16 @@
 
         .btn-primary {
             width: 100%;
-            padding: 1rem;
+            padding: 0.9375rem;
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 1.0625rem;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 0.75rem;
+            margin-top: 0.5rem;
             box-shadow: var(--shadow-md);
             font-family: inherit;
             letter-spacing: 0.01em;
@@ -400,6 +424,34 @@
             }
         }
 
+        @media (max-width: 1024px) {
+            .branding-side::before {
+                width: 400px;
+                height: 400px;
+            }
+
+            .branding-side::after {
+                width: 300px;
+                height: 300px;
+            }
+
+            .logo {
+                max-width: 220px;
+            }
+
+            .tagline {
+                font-size: 0.875rem;
+            }
+
+            .features {
+                gap: 0.5rem;
+            }
+
+            .feature {
+                font-size: 0.75rem;
+            }
+        }
+
         @media (max-width: 968px) {
             .container {
                 flex-direction: column;
@@ -414,7 +466,7 @@
             }
 
             .form-side {
-                padding: 2rem 1.5rem;
+                padding: 1.5rem 1.5rem;
                 background: var(--background);
             }
 
@@ -426,29 +478,6 @@
             }
 
             .form-title {
-                font-size: 1.75rem;
-            }
-        }
-
-        @media (max-width: 640px) {
-            .mobile-header {
-                padding: 1.5rem 1.25rem 0.75rem;
-            }
-
-            .mobile-logo {
-                width: 120px;
-            }
-
-            .form-side {
-                padding: 1.5rem 1rem;
-            }
-
-            .form-container {
-                padding: 1.75rem 1.25rem;
-                border-radius: 16px;
-            }
-
-            .form-title {
                 font-size: 1.5rem;
             }
 
@@ -456,16 +485,94 @@
                 font-size: 0.875rem;
             }
 
-            input {
-                padding: 0.875rem 1rem;
+            .form-row {
+                grid-template-columns: 1fr;
+                gap: 1.25rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .mobile-header {
+                padding: 1rem 1rem 0.5rem;
+            }
+
+            .mobile-logo {
+                max-width: 180px;
+            }
+
+            .form-side {
+                padding: 1rem 1rem;
+            }
+
+            .form-container {
+                padding: 1.75rem 1.25rem;
+                border-radius: 16px;
+            }
+
+            .form-header {
+                margin-bottom: 1.25rem;
+            }
+
+            .form-title {
+                font-size: 1.375rem;
+            }
+
+            .form-subtitle {
+                font-size: 0.8125rem;
+            }
+
+            .form-group {
+                margin-bottom: 1.125rem;
+            }
+
+            .form-row {
+                margin-bottom: 1.125rem;
+            }
+
+            label {
+                font-size: 0.8125rem;
+            }
+
+            input,
+            select {
+                padding: 0.8125rem 0.9375rem;
                 font-size: 16px;
                 border-radius: 10px;
             }
 
-            .btn-primary {
-                padding: 0.9375rem;
-                font-size: 1rem;
+            .btn-submit {
+                padding: 0.875rem;
+                font-size: 0.9375rem;
                 border-radius: 10px;
+            }
+
+            .form-footer {
+                font-size: 0.875rem;
+                margin-top: 1.25rem;
+                padding-top: 1.25rem;
+            }
+
+            .alert {
+                padding: 0.75rem 0.875rem;
+                font-size: 0.8125rem;
+            }
+
+            .helper-text {
+                font-size: 0.6875rem;
+            }
+        }
+
+        @media (max-width: 375px) {
+            .mobile-logo {
+                max-width: 160px;
+            }
+
+            .form-container {
+                padding: 1.5rem 1rem;
+            }
+
+            .form-title {
+                font-size: 1.25rem;
             }
         }
 
@@ -476,17 +583,29 @@
             }
 
             .mobile-header {
-                padding-top: calc(env(safe-area-inset-top) + 1.5rem);
+                padding-top: calc(env(safe-area-inset-top) + 1rem);
             }
         }
 
         @media (prefers-reduced-motion: reduce) {
+
             *,
             *::before,
             *::after {
                 animation-duration: 0.01ms !important;
                 animation-iteration-count: 1 !important;
                 transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media (prefers-contrast: high) {
+            .btn-submit {
+                border: 2px solid white;
+            }
+
+            input:focus,
+            select:focus {
+                border-width: 3px;
             }
         }
     </style>
@@ -625,7 +744,6 @@
             const password = passwordInput.value;
             const confirm = confirmInput.value;
 
-            // Verifica comprimento
             if (password.length >= 6) {
                 reqLength.classList.add('valid');
                 reqLength.querySelector('svg').innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
@@ -634,7 +752,6 @@
                 reqLength.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"/>';
             }
 
-            // Verifica correspondência
             if (password && confirm && password === confirm) {
                 reqMatch.classList.add('valid');
                 reqMatch.querySelector('svg').innerHTML = '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
@@ -643,7 +760,6 @@
                 reqMatch.querySelector('svg').innerHTML = '<circle cx="12" cy="12" r="10"/>';
             }
 
-            // Habilita/desabilita botão
             submitBtn.disabled = !(password.length >= 6 && password === confirm);
         }
 
@@ -658,7 +774,6 @@
             submitBtn.textContent = 'Redefinindo';
         });
 
-        // Previne zoom em iOS
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
             const inputs = document.querySelectorAll('input');
             inputs.forEach(input => {
@@ -666,6 +781,11 @@
                     this.style.fontSize = '16px';
                 });
             });
+        }
+
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('Executando como PWA');
+            document.body.classList.add('pwa-mode');
         }
     </script>
 </body>

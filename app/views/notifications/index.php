@@ -1,170 +1,173 @@
 <?php include VIEWS . '/layouts/header.php'; ?>
 
-<div class="container">
-    <div class="card-header">
-        <h1>🔔 Notificações</h1>
-        <div class="header-actions">
-            <a href="/notificacoes/configuracoes" class="btn btn-secondary">⚙️ Configurações</a>
-            <?php if ($unreadCount > 0): ?>
-                <a href="/notificacoes/marcar-todas-lidas" class="btn btn-primary">✓ Marcar todas como lidas</a>
-            <?php endif; ?>
-        </div>
-    </div>
-
-    <?php if (empty($notifications)): ?>
-        <div class="card">
-            <div class="empty-state">
-                <div class="empty-icon">🔔</div>
-                <h3>Nenhuma notificação</h3>
-                <p>Você está em dia! Quando houver avisos importantes, eles aparecerão aqui.</p>
-            </div>
-        </div>
-    <?php else: ?>
-        <div class="notifications-list">
-            <?php foreach ($notifications as $notification):
-                $priorityColors = [
-                    'low' => '#10b981',
-                    'medium' => '#3b82f6',
-                    'high' => '#f59e0b',
-                    'urgent' => '#ef4444'
-                ];
-
-                $priorityLabels = [
-                    'low' => 'Informação',
-                    'medium' => 'Aviso',
-                    'high' => 'Importante',
-                    'urgent' => 'Urgente'
-                ];
-
-                $priorityColor = $priorityColors[$notification['priority']] ?? '#3b82f6';
-                $priorityLabel = $priorityLabels[$notification['priority']] ?? 'Aviso';
-
-                $isUnread = !$notification['is_read'];
-                $timeAgo = $this->getTimeAgo($notification['created_at']);
-            ?>
-                <div class="notification-card <?= $isUnread ? 'unread' : '' ?>"
-                    style="border-left: 4px solid <?= $priorityColor ?>">
-                    <div class="notification-header">
-                        <div class="notification-priority" style="background: <?= $priorityColor ?>">
-                            <?= $priorityLabel ?>
-                        </div>
-                        <div class="notification-time"><?= $timeAgo ?></div>
-                    </div>
-
-                    <div class="notification-content">
-                        <h3 class="notification-title"><?= htmlspecialchars($notification['title']) ?></h3>
-                        <p class="notification-message"><?= nl2br(htmlspecialchars($notification['message'])) ?></p>
-                    </div>
-
-                    <div class="notification-actions">
-                        <?php if ($notification['related_type'] === 'card' && $notification['related_id']): ?>
-                            <a href="/cartoes/extrato/<?= $notification['related_id'] ?>" class="btn-notification">
-                                📊 Ver Cartão
-                            </a>
-                        <?php endif; ?>
-
-                        <?php if ($notification['related_type'] === 'bill' && $notification['related_id']): ?>
-                            <a href="/contas-recorrentes" class="btn-notification">
-                                📄 Ver Boleto
-                            </a>
-                        <?php endif; ?>
-
-                        <?php if ($isUnread): ?>
-                            <a href="/notificacoes/marcar-lida/<?= $notification['id'] ?>" class="btn-notification btn-mark-read">
-                                ✓ Marcar como lida
-                            </a>
-                        <?php endif; ?>
-
-                        <a href="/notificacoes/deletar/<?= $notification['id'] ?>"
-                            class="btn-notification btn-delete"
-                            onclick="return confirm('Deseja deletar esta notificação?')">
-                            🗑️
-                        </a>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    <?php endif; ?>
-</div>
-
 <style>
-    /* ==================== NOTIFICAÇÕES - CSS RESPONSIVO PROFISSIONAL ==================== */
-
-    /* Card Header */
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        gap: 1.5rem;
-        flex-wrap: wrap;
+    :root {
+        --primary: #667eea;
+        --primary-hover: #5568d3;
+        --secondary: #764ba2;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-600: #4b5563;
+        --gray-700: #374151;
+        --gray-800: #1f2937;
+        --gray-900: #111827;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+        --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .card-header h1 {
-        font-size: 2rem;
+    /* ========== ANIMATIONS ========== */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
+    }
+
+    /* ========== CONTAINER ========== */
+    .container-small {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    /* ========== CARD ========== */
+    .card {
+        background: white;
+        border-radius: 16px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-sm);
+        border: 1px solid var(--gray-200);
+        animation: fadeInUp 0.5s ease-out;
+    }
+
+    /* ========== PAGE HEADER ========== */
+    .page-header-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2.5rem;
+        gap: 1.5rem;
+        animation: fadeInDown 0.5s ease-out 0.1s both;
+    }
+
+    .page-header-section h2 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1.875rem;
         font-weight: 700;
         color: var(--gray-900);
-        margin: 0;
-        letter-spacing: -0.02em;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.75rem;
+    }
+
+    .subtitle {
+        color: var(--gray-600);
+        margin: 0;
+        font-size: 1rem;
+        line-height: 1.5;
     }
 
     .header-actions {
         display: flex;
         gap: 0.75rem;
+        flex-shrink: 0;
         flex-wrap: wrap;
     }
 
-    /* Botões do Header */
-    .btn-secondary {
+    /* ========== BUTTONS ========== */
+    .btn {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
+        padding: 0.75rem 1.25rem;
+        border-radius: 10px;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: var(--transition);
+        cursor: pointer;
+        border: none;
+        white-space: nowrap;
+        font-family: inherit;
+    }
+
+    .btn-secondary {
         background: white;
         color: var(--gray-700);
         border: 2px solid var(--gray-300);
-        border-radius: 10px;
-        font-size: 0.9375rem;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: var(--transition);
-        font-family: inherit;
-        white-space: nowrap;
     }
 
     .btn-secondary:hover {
-        border-color: var(--gray-400);
         background: var(--gray-50);
-        transform: translateY(-1px);
-    }
-
-    .btn-secondary:active {
-        transform: translateY(0);
+        border-color: var(--gray-400);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
     }
 
     .btn-primary {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 0.5rem;
-        padding: 0.75rem 1.5rem;
-        background: linear-gradient(135deg, var(--primary) 0%, #764ba2 100%);
+        background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
         color: white;
-        border: none;
-        border-radius: 10px;
-        font-size: 0.9375rem;
-        font-weight: 600;
-        text-decoration: none;
-        cursor: pointer;
-        transition: var(--transition);
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
-        font-family: inherit;
-        white-space: nowrap;
     }
 
     .btn-primary:hover {
@@ -172,14 +175,16 @@
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
     }
 
-    .btn-primary:active {
+    .btn-primary:active,
+    .btn-secondary:active {
         transform: translateY(0);
     }
 
-    /* Empty State */
+    /* ========== EMPTY STATE ========== */
     .empty-state {
         text-align: center;
         padding: 4rem 2rem;
+        animation: fadeInUp 0.5s ease-out 0.2s both;
     }
 
     .empty-icon {
@@ -187,18 +192,6 @@
         margin-bottom: 1.5rem;
         opacity: 0.3;
         animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-
-        0%,
-        100% {
-            opacity: 0.3;
-        }
-
-        50% {
-            opacity: 0.5;
-        }
     }
 
     .empty-state h3 {
@@ -216,51 +209,39 @@
         margin: 0 auto;
     }
 
-    /* Notifications List */
+    /* ========== NOTIFICATIONS LIST ========== */
     .notifications-list {
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1rem;
+        animation: fadeInUp 0.5s ease-out 0.3s both;
     }
 
     .notification-card {
         background: white;
-        border-radius: 14px;
-        padding: 1.75rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        border: 2px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 1.5rem;
         transition: var(--transition);
         position: relative;
-        overflow: hidden;
-    }
-
-    .notification-card::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 100px;
-        height: 100px;
-        background: radial-gradient(circle, rgba(102, 126, 234, 0.05) 0%, transparent 70%);
-        border-radius: 50%;
-        pointer-events: none;
     }
 
     .notification-card.unread {
         background: linear-gradient(135deg, rgba(102, 126, 234, 0.03) 0%, rgba(255, 255, 255, 1) 100%);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.12);
-        border: 1px solid rgba(102, 126, 234, 0.1);
+        border-color: var(--primary);
     }
 
     .notification-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.15);
         transform: translateY(-3px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
     .notification-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
         gap: 1rem;
     }
 
@@ -281,17 +262,20 @@
         font-size: 0.8125rem;
         color: var(--gray-500);
         font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
 
     .notification-content {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1rem;
     }
 
     .notification-title {
         font-size: 1.125rem;
         font-weight: 700;
         color: var(--gray-900);
-        margin-bottom: 0.625rem;
+        margin-bottom: 0.5rem;
         line-height: 1.4;
     }
 
@@ -304,14 +288,14 @@
 
     .notification-actions {
         display: flex;
-        gap: 0.625rem;
+        gap: 0.5rem;
         flex-wrap: wrap;
-        padding-top: 0.75rem;
+        padding-top: 1rem;
         border-top: 1px solid var(--gray-200);
     }
 
     .btn-notification {
-        padding: 0.625rem 1.125rem;
+        padding: 0.625rem 1rem;
         border: 2px solid var(--primary);
         background: white;
         color: var(--primary);
@@ -352,7 +336,6 @@
     .btn-delete {
         border-color: #ef4444;
         color: #ef4444;
-        padding: 0.625rem 0.875rem;
     }
 
     .btn-delete:hover {
@@ -361,44 +344,44 @@
         box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
-    /* ==================== TABLET RESPONSIVO ==================== */
+    /* ========== RESPONSIVE - TABLET ========== */
     @media (max-width: 1024px) {
-        .notification-card {
+        .container-small {
             padding: 1.5rem;
         }
 
-        .notifications-list {
-            gap: 1rem;
+        .card {
+            padding: 2rem;
         }
     }
 
-    /* ==================== MOBILE RESPONSIVO ==================== */
+    /* ========== RESPONSIVE - MOBILE ========== */
     @media (max-width: 768px) {
-        .card-header {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
+        .container-small {
+            padding: 1rem;
         }
 
-        .card-header h1 {
+        .card {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
+        .page-header-section {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1.25rem;
+        }
+
+        .page-header-section h2 {
             font-size: 1.5rem;
         }
 
         .header-actions {
             flex-direction: column;
-            gap: 0.625rem;
         }
 
-        .btn-primary,
-        .btn-secondary {
+        .header-actions .btn {
             width: 100%;
-            justify-content: center;
-            padding: 0.875rem 1.25rem;
-        }
-
-        .notifications-list {
-            gap: 1rem;
         }
 
         .notification-card {
@@ -411,13 +394,36 @@
             gap: 0.5rem;
         }
 
-        .notification-priority {
-            font-size: 0.625rem;
-            padding: 0.3125rem 0.75rem;
+        .notification-actions {
+            flex-direction: column;
         }
 
-        .notification-time {
-            font-size: 0.75rem;
+        .btn-notification {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .empty-state {
+            padding: 3rem 1.5rem;
+        }
+    }
+
+    /* ========== MOBILE PORTRAIT ========== */
+    @media (max-width: 480px) {
+        .container-small {
+            padding: 0.875rem;
+        }
+
+        .card {
+            padding: 1.25rem;
+        }
+
+        .page-header-section h2 {
+            font-size: 1.375rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
         }
 
         .notification-title {
@@ -427,78 +433,17 @@
         .notification-message {
             font-size: 0.875rem;
         }
-
-        .notification-actions {
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .btn-notification {
-            width: 100%;
-            justify-content: center;
-            padding: 0.75rem 1rem;
-        }
-
-        .empty-state {
-            padding: 3rem 1.5rem;
-        }
-
-        .empty-icon {
-            font-size: 3rem;
-        }
-
-        .empty-state h3 {
-            font-size: 1.25rem;
-        }
-
-        .empty-state p {
-            font-size: 0.9375rem;
-        }
     }
 
-    /* ==================== MOBILE SMALL ==================== */
-    @media (max-width: 640px) {
-        .card-header h1 {
-            font-size: 1.375rem;
-        }
-
-        .notification-card {
-            padding: 1rem;
-        }
-
-        .notification-title {
-            font-size: 0.9375rem;
-        }
-
-        .notification-message {
-            font-size: 0.8125rem;
-        }
-
-        .btn-notification {
-            font-size: 0.75rem;
-            padding: 0.625rem 0.875rem;
-        }
-    }
-
-    /* ==================== EXTRA SMALL ==================== */
-    @media (max-width: 375px) {
-        .card-header h1 {
-            font-size: 1.25rem;
-        }
-
-        .notification-priority {
-            font-size: 0.5625rem;
-        }
-    }
-
-    /* ==================== PWA STANDALONE ==================== */
+    /* ========== PWA/STANDALONE MODE ========== */
     @media (display-mode: standalone) {
-        .card-header {
-            padding-top: env(safe-area-inset-top);
+        .container-small {
+            padding-top: calc(env(safe-area-inset-top) + 2rem);
+            padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
         }
     }
 
-    /* ==================== REDUCE MOTION ==================== */
+    /* ========== ACCESSIBILITY ========== */
     @media (prefers-reduced-motion: reduce) {
 
         *,
@@ -509,18 +454,108 @@
             transition-duration: 0.01ms !important;
         }
     }
-
-    /* ==================== HIGH CONTRAST ==================== */
-    @media (prefers-contrast: high) {
-        .notification-card {
-            border: 2px solid currentColor;
-        }
-
-        .btn-notification {
-            border-width: 3px;
-        }
-    }
 </style>
+
+<div class="container-small">
+    <div class="card">
+        <div class="page-header-section">
+            <div>
+                <h2>🔔 Notificações</h2>
+                <p class="subtitle">Acompanhe seus alertas e avisos importantes</p>
+            </div>
+            <div class="header-actions">
+                <a href="/notificacoes/configuracoes" class="btn btn-secondary">⚙️ Configurações</a>
+                <?php if ($unreadCount > 0): ?>
+                    <a href="/notificacoes/marcar-todas-lidas" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Marcar todas como lidas
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <?php if (empty($notifications)): ?>
+            <div class="empty-state">
+                <div class="empty-icon">🔔</div>
+                <h3>Nenhuma notificação</h3>
+                <p>Você está em dia! Quando houver avisos importantes, eles aparecerão aqui.</p>
+            </div>
+        <?php else: ?>
+            <div class="notifications-list">
+                <?php foreach ($notifications as $notification):
+                    $priorityColors = [
+                        'low' => '#10b981',
+                        'medium' => '#3b82f6',
+                        'high' => '#f59e0b',
+                        'urgent' => '#ef4444'
+                    ];
+
+                    $priorityLabels = [
+                        'low' => 'Informação',
+                        'medium' => 'Aviso',
+                        'high' => 'Importante',
+                        'urgent' => 'Urgente'
+                    ];
+
+                    $priorityColor = $priorityColors[$notification['priority']] ?? '#3b82f6';
+                    $priorityLabel = $priorityLabels[$notification['priority']] ?? 'Aviso';
+
+                    $isUnread = !$notification['is_read'];
+                    $timeAgo = $this->getTimeAgo($notification['created_at']);
+                ?>
+                    <div class="notification-card <?= $isUnread ? 'unread' : '' ?>"
+                        style="border-left: 4px solid <?= $priorityColor ?>">
+                        <div class="notification-header">
+                            <div class="notification-priority" style="background: <?= $priorityColor ?>">
+                                <?= $priorityLabel ?>
+                            </div>
+                            <div class="notification-time">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <polyline points="12 6 12 12 16 14" />
+                                </svg>
+                                <?= $timeAgo ?>
+                            </div>
+                        </div>
+
+                        <div class="notification-content">
+                            <h3 class="notification-title"><?= htmlspecialchars($notification['title']) ?></h3>
+                            <p class="notification-message"><?= nl2br(htmlspecialchars($notification['message'])) ?></p>
+                        </div>
+
+                        <div class="notification-actions">
+                            <?php if ($notification['related_type'] === 'card' && $notification['related_id']): ?>
+                                <a href="/cartoes/extrato/<?= $notification['related_id'] ?>" class="btn-notification">
+                                    📊 Ver Cartão
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if ($notification['related_type'] === 'bill' && $notification['related_id']): ?>
+                                <a href="/contas-recorrentes" class="btn-notification">
+                                    📄 Ver Boleto
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if ($isUnread): ?>
+                                <a href="/notificacoes/marcar-lida/<?= $notification['id'] ?>" class="btn-notification btn-mark-read">
+                                    ✓ Marcar como lida
+                                </a>
+                            <?php endif; ?>
+
+                            <a href="/notificacoes/deletar/<?= $notification['id'] ?>"
+                                class="btn-notification btn-delete"
+                                onclick="return confirm('Deseja deletar esta notificação?')">
+                                🗑️
+                            </a>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
 
 <?php
 // Helper function para tempo relativo

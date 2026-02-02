@@ -12,51 +12,47 @@ class CreditCardModel extends Model
         return $stmt->fetchAll();
     }
 
-   public function getCurrentMonthTotal($groupId, $month, $year)
-{
-    $sql = "
-        SELECT COALESCE(SUM(t.amount), 0) AS total
-        FROM transactions t
-        WHERE t.group_id = :group_id
-        AND t.credit_card_id IS NOT NULL
-        AND MONTH(t.transaction_date) = :month
-        AND YEAR(t.transaction_date) = :year
-    ";
+    /**
+     * Calcula total de todos os cartões do grupo no mês (considerando ciclo)
+     */
+    public function getCurrentMonthTotal($groupId, $month, $year)
+    {
+        $cards = $this->getByGroup($groupId);
+        $total = 0;
 
-    $stmt = $this->db->prepare($sql);
-    $stmt->execute([
-        'group_id' => $groupId,
-        'month' => $month,
-        'year' => $year
-    ]);
+        foreach ($cards as $card) {
+            // Usa a mesma lógica do getCardInvoiceTotal
+            $transactionModel = new TransactionModel();
+            $cardTotal = $transactionModel->getCardInvoiceTotal($card['id'], $month, $year);
+            $total += $cardTotal;
+        }
 
-    return $stmt->fetchColumn() ?? 0;
-}
-
+        return $total;
+    }
 
     /**
-     * Buscar cartões com fatura do mês atual
+     * Retorna cartões com fatura do mês atual (considerando ciclo)
+     */
+    /**
+     * Retorna cartões com fatura do mês atual (considerando ciclo)
      */
     public function getCardsWithCurrentBill($groupId, $month, $year)
     {
-        $sql = "SELECT 
-                    cc.*,
-                    COALESCE(SUM(t.amount), 0) as current_bill
-                FROM credit_cards cc
-                LEFT JOIN transactions t ON cc.id = t.credit_card_id
-                    AND MONTH(t.transaction_date) = :month
-                    AND YEAR(t.transaction_date) = :year
-                WHERE cc.group_id = :group_id
-                GROUP BY cc.id
-                ORDER BY cc.name";
+        $cards = $this->getByGroup($groupId);
+        $transactionModel = new TransactionModel();
 
-        $stmt = $this->db->prepare($sql);
-        $stmt->execute([
-            'group_id' => $groupId,
-            'month' => $month,
-            'year' => $year
-        ]);
+        foreach ($cards as &$card) {
+            // Calcula o total da fatura considerando o ciclo
+            $card['current_bill'] = $transactionModel->getCardInvoiceTotal($card['id'], $month, $year);
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            // Calcula percentual de uso
+            if (isset($card['credit_limit']) && $card['credit_limit'] > 0) {
+                $card['usage_percent'] = ($card['current_bill'] / $card['credit_limit']) * 100;
+            } else {
+                $card['usage_percent'] = 0;
+            }
+        }
+
+        return $cards;
     }
 }

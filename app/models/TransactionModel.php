@@ -345,18 +345,56 @@ class TransactionModel extends Model
      */
     public function getByCard($cardId, $month, $year)
     {
-        $sql = "SELECT t.*, c.name as category_name, c.color, u.name as user_name
-                FROM {$this->table} t
-                INNER JOIN categories c ON t.category_id = c.id
-                INNER JOIN users u ON t.user_id = u.id
-                WHERE t.credit_card_id = ?
-                AND MONTH(t.transaction_date) = ? 
-                AND YEAR(t.transaction_date) = ?
-                ORDER BY t.transaction_date ASC";
+        // Busca informações do cartão
+        $creditCardModel = new CreditCardModel();
+        $card = $creditCardModel->findById($cardId);
+
+        if (!$card) {
+            return [];
+        }
+
+        $closingDay = $card['closing_day'];
+
+        // Calcula período da fatura (mesmo cálculo do getCardInvoiceTotal)
+        $previousMonth = $month - 1;
+        $previousYear = $year;
+
+        if ($previousMonth < 1) {
+            $previousMonth = 12;
+            $previousYear--;
+        }
+
+        $startDate = sprintf('%04d-%02d-%02d', $previousYear, $previousMonth, $closingDay);
+        $startDateTime = new DateTime($startDate);
+        $startDateTime->modify('+1 day');
+
+        $endDate = sprintf('%04d-%02d-%02d', $year, $month, $closingDay);
+
+        $sql = "
+        SELECT 
+            t.*,
+            c.name as category_name,
+            c.color,
+            cc.name as card_name,
+            u.name as user_name
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        LEFT JOIN credit_cards cc ON t.credit_card_id = cc.id
+        LEFT JOIN users u ON t.user_id = u.id
+        WHERE t.credit_card_id = :card_id
+        AND t.transaction_date > :start_date
+        AND t.transaction_date <= :end_date
+        ORDER BY t.transaction_date DESC, t.created_at DESC
+    ";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$cardId, $month, $year]);
-        return $stmt->fetchAll();
+        $stmt->execute([
+            ':card_id' => $cardId,
+            ':start_date' => $startDateTime->format('Y-m-d'),
+            ':end_date' => $endDate
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
@@ -383,18 +421,55 @@ class TransactionModel extends Model
      */
     public function getCardInvoiceTotal($cardId, $month, $year)
     {
-        $sql = "SELECT SUM(amount) as total
-                FROM {$this->table}
-                WHERE credit_card_id = ?
-                AND MONTH(transaction_date) = ? 
-                AND YEAR(transaction_date) = ?
-                AND type = 'despesa'";
+        // Busca informações do cartão para pegar o dia de fechamento
+        $creditCardModel = new CreditCardModel();
+        $card = $creditCardModel->findById($cardId);
+
+        if (!$card) {
+            return 0;
+        }
+
+        $closingDay = $card['closing_day'];
+
+        // Calcula o período da fatura
+        // A fatura de um mês X engloba compras entre o fechamento do mês X-1 e o fechamento do mês X
+
+        // Data de fechamento do mês ANTERIOR
+        $previousMonth = $month - 1;
+        $previousYear = $year;
+
+        if ($previousMonth < 1) {
+            $previousMonth = 12;
+            $previousYear--;
+        }
+
+        // Data inicial: dia após o fechamento do mês anterior
+        $startDate = sprintf('%04d-%02d-%02d', $previousYear, $previousMonth, $closingDay);
+        $startDateTime = new DateTime($startDate);
+        $startDateTime->modify('+1 day');
+
+        // Data final: dia de fechamento do mês atual
+        $endDate = sprintf('%04d-%02d-%02d', $year, $month, $closingDay);
+
+        // Query que busca transações do cartão dentro do período da fatura
+        $sql = "
+        SELECT COALESCE(SUM(amount), 0) as total
+        FROM transactions
+        WHERE credit_card_id = :card_id
+        AND transaction_date > :start_date
+        AND transaction_date <= :end_date
+        AND type = 'despesa'
+    ";
 
         $stmt = $this->db->prepare($sql);
-        $stmt->execute([$cardId, $month, $year]);
-        $result = $stmt->fetch();
+        $stmt->execute([
+            ':card_id' => $cardId,
+            ':start_date' => $startDateTime->format('Y-m-d'),
+            ':end_date' => $endDate
+        ]);
 
-        return $result['total'] ?? 0;
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return floatval($result['total'] ?? 0);
     }
 
     /**
@@ -419,16 +494,16 @@ class TransactionModel extends Model
     public function getMonthlyEvolution($groupId, $months = 6)
     {
         $sql = "SELECT 
-                    DATE_FORMAT(transaction_date, '%b') as month,
-                    MONTH(transaction_date) as month_num,
-                    YEAR(transaction_date) as year,
-                    SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
-                    SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expense
-                FROM transactions
-                WHERE group_id = :group_id
-                AND transaction_date >= DATE_SUB(CURRENT_DATE, INTERVAL :months MONTH)
-                GROUP BY YEAR(transaction_date), MONTH(transaction_date)
-                ORDER BY year, month_num";
+                DATE_FORMAT(MIN(transaction_date), '%b') as month,
+                MONTH(transaction_date) as month_num,
+                YEAR(transaction_date) as year,
+                SUM(CASE WHEN type = 'receita' THEN amount ELSE 0 END) as income,
+                SUM(CASE WHEN type = 'despesa' THEN amount ELSE 0 END) as expense
+            FROM transactions
+            WHERE group_id = :group_id
+            AND transaction_date >= DATE_SUB(CURRENT_DATE, INTERVAL :months MONTH)
+            GROUP BY YEAR(transaction_date), MONTH(transaction_date)
+            ORDER BY year, month_num";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([

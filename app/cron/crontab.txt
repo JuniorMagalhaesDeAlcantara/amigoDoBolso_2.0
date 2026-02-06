@@ -1,0 +1,52 @@
+# ===============================================
+# CRONTAB - Sistema de Finanças
+# ===============================================
+# Para instalar: crontab < crontab.txt
+# Para visualizar: crontab -l
+# Para editar: crontab -e
+# ===============================================
+
+# Formato: minuto hora dia mês dia-da-semana comando
+# * * * * * comando
+# | | | | |
+# | | | | +-- Dia da semana (0-7, 0 e 7 = domingo)
+# | | | +---- Mês (1-12)
+# | | +------ Dia do mês (1-31)
+# | +-------- Hora (0-23)
+# +---------- Minuto (0-59)
+
+# ===============================================
+# 1. PROCESSAMENTO DE FATURAS VENCIDAS
+# ===============================================
+# Executa DIARIAMENTE às 00:05 (5 minutos após meia-noite)
+# Verifica se alguma fatura venceu ontem e move saldo devedor
+5 0 * * * /usr/bin/php /caminho/completo/para/seu/projeto/cron/process_invoices.php >> /var/log/invoice_cron.log 2>&1
+
+# ===============================================
+# 2. NOTIFICAÇÕES (Seu cron existente)
+# ===============================================
+# Executa DIARIAMENTE às 08:00 da manhã
+# Envia notificações de vencimento de faturas, relatórios, etc.
+0 8 * * * /usr/bin/php /caminho/completo/para/seu/projeto/cron/notifications.php >> /var/log/notification_cron.log 2>&1
+
+# ===============================================
+# 3. LIMPEZA DE NOTIFICAÇÕES ANTIGAS (Opcional)
+# ===============================================
+# Executa TODO DOMINGO às 03:00
+# Remove notificações antigas do banco
+0 3 * * 0 /usr/bin/php /caminho/completo/para/seu/projeto/cron/cleanup.php >> /var/log/cleanup_cron.log 2>&1
+
+# ===============================================
+# NOTAS IMPORTANTES:
+# ===============================================
+# 1. Substitua "/caminho/completo/para/seu/projeto" pelo caminho real
+# 2. Certifique-se que o diretório /var/log existe e tem permissões
+# 3. Alternativa: use ~/logs/ para logs na home do usuário
+# 4. Para testar manualmente: php /caminho/process_invoices.php
+# 5. Verifique logs em caso de erro
+# ===============================================
+
+# Exemplos de horários alternativos:
+# A cada 6 horas: 0 */6 * * *
+# Toda segunda-feira às 09:00: 0 9 * * 1
+# Primeiro dia do mês às 00:00: 0 0 1 * *

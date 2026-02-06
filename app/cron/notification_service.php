@@ -53,6 +53,7 @@ class NotificationService
         try {
             $this->processCardNotifications();
             $this->processMonthlyReports();
+            $this->processOverdueInvoices();
             $this->cleanOldNotifications();
             $this->processRecurringExpenses();
 
@@ -430,7 +431,93 @@ class NotificationService
     {
         echo "[CRON] {$message}\n";
     }
+    // ===============================
+    // FATURAS VENCIDAS (NOVO)
+    // ===============================
+    private function processOverdueInvoices()
+    {
+        $this->log("--- Processando faturas vencidas ---");
+
+        $creditCardModel = new CreditCardModel();
+        $invoiceModel = new CreditCardInvoiceModel();
+        $transactionModel = new TransactionModel();
+
+        $today = new DateTime();
+        $currentMonth = (int)$today->format('n');
+        $currentYear = (int)$today->format('Y');
+        $currentDay = (int)$today->format('d');
+
+        // Busca todos os cartões
+        $cards = $this->getAllCards();
+        $this->log("Cartões encontrados: " . count($cards));
+
+        $processedCount = 0;
+
+        foreach ($cards as $card) {
+            $dueDay = $card['due_day'];
+
+            // Se HOJE é o dia SEGUINTE ao vencimento
+            if ($currentDay === ($dueDay + 1) || ($dueDay === 31 && $currentDay === 1)) {
+
+                // Mês da fatura que está vencendo
+                $invoiceMonth = $currentMonth;
+                $invoiceYear = $currentYear;
+
+                // Se vencimento era dia 31 e hoje é dia 1, verifica mês anterior
+                if ($dueDay === 31 && $currentDay === 1) {
+                    $invoiceMonth--;
+                    if ($invoiceMonth < 1) {
+                        $invoiceMonth = 12;
+                        $invoiceYear--;
+                    }
+                }
+
+                $invoice = $invoiceModel->findInvoice($card['id'], $invoiceMonth, $invoiceYear);
+
+                // Se existe fatura
+                if ($invoice) {
+                    $totalAmount = $invoice['total_amount'];
+                    $paidAmount = $invoice['paid_amount'];
+                    $remainingAmount = $totalAmount - $paidAmount;
+
+                    // Se ainda tem saldo devedor E não foi movido
+                    if ($remainingAmount > 0 && !$invoice['overdue_moved_to_next']) {
+
+                        $this->log("  ⚠️ Cartão '{$card['name']}' - Fatura {$invoiceMonth}/{$invoiceYear} venceu com saldo de R$ {$remainingAmount}");
+
+                        // Lança saldo devedor na próxima fatura
+                        $debtTransactionId = $invoiceModel->moveOverdueToNextInvoice(
+                            $card['id'],
+                            $invoiceMonth,
+                            $invoiceYear,
+                            $remainingAmount,
+                            $invoice['paid_by']
+                        );
+
+                        $this->log("  ✅ Saldo movido para próxima fatura (transação #{$debtTransactionId})");
+                        $processedCount++;
+                    }
+                }
+            }
+        }
+
+        $this->log("Faturas vencidas processadas: {$processedCount}");
+    }
+
+    private function getAllCards()
+    {
+        try {
+            $db = Database::getInstance()->getConnection();
+            $stmt = $db->query("SELECT * FROM credit_cards ORDER BY id");
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (Exception $e) {
+            $this->log("ERRO ao buscar cartões: " . $e->getMessage());
+            return [];
+        }
+    }
 }
+
+
 
 // ===============================
 // EXECUÇÃO

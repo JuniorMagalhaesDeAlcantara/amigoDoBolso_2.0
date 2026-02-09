@@ -73,7 +73,7 @@ class CartoesController extends Controller
                 'group_id' => $groupId,
                 'bank' => filter_input(INPUT_POST, 'bank', FILTER_SANITIZE_STRING),
                 'name' => filter_input(INPUT_POST, 'name', FILTER_SANITIZE_STRING),
-                'holder_name' => filter_input(INPUT_POST, 'holder_name', FILTER_SANITIZE_STRING), // NOVO
+                'holder_name' => filter_input(INPUT_POST, 'holder_name', FILTER_SANITIZE_STRING),
                 'last_digits' => filter_input(INPUT_POST, 'last_digits', FILTER_SANITIZE_STRING),
                 'closing_day' => filter_input(INPUT_POST, 'closing_day', FILTER_VALIDATE_INT),
                 'due_day' => filter_input(INPUT_POST, 'due_day', FILTER_VALIDATE_INT),
@@ -188,5 +188,109 @@ class CartoesController extends Controller
             12 => 'Dezembro'
         ];
         return $months[(int)$month];
+    }
+
+    /**
+     * Paga fatura do cartão
+     */
+    public function pagarFatura($cardId)
+    {
+        $groupId = $_SESSION['current_group_id'] ?? null;
+
+        if (!$groupId) {
+            $this->redirect('/dashboard');
+            return;
+        }
+
+        $card = $this->creditCardModel->findById($cardId);
+
+        if (!$card || $card['group_id'] != $groupId) {
+            $this->redirect('/cartoes');
+            return;
+        }
+
+        // Pega mês e ano da URL ou usa atual
+        $month = $_GET['month'] ?? date('n');
+        $year = $_GET['year'] ?? date('Y');
+
+        $invoiceModel = new CreditCardInvoiceModel();
+
+        // ✅ CORREÇÃO: Recalcula o total ATUAL da fatura
+        $invoiceTotal = $this->transactionModel->getCardInvoiceTotal($cardId, $month, $year);
+        
+        // ✅ CORREÇÃO: Busca quanto JÁ FOI PAGO
+        $invoice = $invoiceModel->findInvoice($cardId, $month, $year);
+        $alreadyPaid = $invoice ? $invoice['paid_amount'] : 0;
+        
+        // ✅ CORREÇÃO: Calcula o SALDO DEVEDOR (quanto ainda falta pagar)
+        $remainingAmount = $invoiceTotal - $alreadyPaid;
+
+        // Se não há saldo a pagar
+        if ($remainingAmount <= 0) {
+            $_SESSION['success'] = 'Esta fatura já está totalmente paga!';
+            $this->redirect("/cartoes/extrato/{$cardId}?month={$month}&year={$year}");
+            return;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            try {
+                $paymentType = $_POST['payment_type'] ?? 'total';
+                
+                // ✅ CORREÇÃO: Se escolher "total", paga o SALDO DEVEDOR, não o total original
+                $paidAmount = $paymentType === 'custom'
+                    ? floatval($_POST['custom_amount'] ?? 0)
+                    : $remainingAmount; // MUDOU AQUI!
+
+                // Validações
+                if ($paidAmount <= 0) {
+                    throw new Exception("Valor de pagamento inválido");
+                }
+                
+                if ($paidAmount > $remainingAmount) {
+                    throw new Exception("Valor não pode ser maior que o saldo devedor de R$ " . 
+                        number_format($remainingAmount, 2, ',', '.'));
+                }
+
+                // Registra o pagamento
+                $invoiceModel->payInvoice(
+                    $cardId,
+                    $month,
+                    $year,
+                    $invoiceTotal,
+                    $paidAmount,
+                    $_SESSION['user_id']
+                );
+
+                // ✅ CORREÇÃO: Recalcula novamente para ver se ficou saldo
+                $newRemainingAmount = $remainingAmount - $paidAmount;
+
+                // Mensagens diferenciadas
+                if ($newRemainingAmount > 0) {
+                    $_SESSION['warning'] = "Pagamento de R$ " . 
+                        number_format($paidAmount, 2, ',', '.') . 
+                        " registrado com sucesso! Saldo restante: R$ " .
+                        number_format($newRemainingAmount, 2, ',', '.') .
+                        ". Este saldo poderá ser pago antes do vencimento ou será movido para a próxima fatura automaticamente.";
+                } else {
+                    $_SESSION['success'] = 'Fatura paga integralmente!';
+                }
+
+                $this->redirect("/cartoes/extrato/{$cardId}?month={$month}&year={$year}");
+            } catch (Exception $e) {
+                $_SESSION['error'] = $e->getMessage();
+                $this->redirect("/cartoes/extrato/{$cardId}?month={$month}&year={$year}");
+            }
+        } else {
+            // ✅ CORREÇÃO: Envia o saldo devedor para a view, não o total
+            $this->view('cartoes/confirmar-pagamento', [
+                'card' => $card,
+                'invoiceTotal' => $invoiceTotal,
+                'alreadyPaid' => $alreadyPaid,
+                'remainingAmount' => $remainingAmount, // NOVO!
+                'month' => $month,
+                'year' => $year,
+                'monthName' => $this->getMonthName($month)
+            ]);
+        }
     }
 }

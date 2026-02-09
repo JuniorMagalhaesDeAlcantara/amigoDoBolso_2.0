@@ -315,3 +315,29 @@ COLLATE=utf8mb4_unicode_ci;
 
 CREATE INDEX idx_token_expires ON password_resets(token, expires_at);
 CREATE INDEX idx_user_expires ON password_resets(user_id, expires_at);
+
+-- Tabela de Faturas de Cartão de Crédito
+CREATE TABLE credit_card_invoices (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    credit_card_id INT NOT NULL,
+    month INT NOT NULL,
+    year INT NOT NULL,
+    total_amount DECIMAL(10,2) NOT NULL,
+    paid_at DATETIME NOT NULL,
+    paid_by INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (credit_card_id) REFERENCES credit_cards(id) ON DELETE CASCADE,
+    FOREIGN KEY (paid_by) REFERENCES users(id),
+    UNIQUE KEY unique_invoice (credit_card_id, month, year)
+);
+
+-- Adicionar colunas para controle de pagamento na tabela credit_card_invoices
+ALTER TABLE credit_card_invoices 
+ADD COLUMN paid_amount DECIMAL(10,2) NOT NULL AFTER total_amount,
+ADD COLUMN remaining_amount DECIMAL(10,2) DEFAULT 0 AFTER paid_amount;
+
+--- Adicionar colunas para controle de faturas vencidas na tabela credit_card_invoices
+ALTER TABLE credit_card_invoices
+ADD COLUMN is_overdue BOOLEAN DEFAULT 0 AFTER paid_by,
+ADD COLUMN overdue_moved_to_next BOOLEAN DEFAULT 0 AFTER is_overdue,
+ADD COLUMN overdue_transaction_id INT NULL AFTER overdue_moved_to_next;

@@ -111,7 +111,7 @@ class BenefitCardModel extends Model
     }
 
     /**
-     * Calcula o gasto do mês atual
+     * Calcula o gasto do mês atual (apenas transações pagas)
      */
     public function getMonthlyExpense($benefitCardId, $month = null, $year = null)
     {
@@ -119,10 +119,11 @@ class BenefitCardModel extends Model
         if (!$year) $year = date('Y');
 
         $sql = "SELECT COALESCE(SUM(amount), 0) as total
-                FROM transactions 
-                WHERE benefit_card_id = ? 
-                AND MONTH(transaction_date) = ?
-                AND YEAR(transaction_date) = ?";
+            FROM transactions 
+            WHERE benefit_card_id = ? 
+            AND paid = 1
+            AND MONTH(transaction_date) = ?
+            AND YEAR(transaction_date) = ?";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$benefitCardId, $month, $year]);

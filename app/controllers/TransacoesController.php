@@ -61,20 +61,21 @@ class TransacoesController extends Controller
         }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $paymentMethod = filter_input(INPUT_POST, 'payment_method', FILTER_SANITIZE_STRING);
+            // Usa htmlspecialchars ao invés de FILTER_SANITIZE_STRING
+            $paymentMethod = htmlspecialchars(trim($_POST['payment_method'] ?? ''), ENT_QUOTES, 'UTF-8');
             $isRecurring = isset($_POST['is_recurring']) && $_POST['is_recurring'] === '1';
 
-            // NÃO CONVERTA AQUI - deixe como string
-            $amount = filter_input(INPUT_POST, 'amount', FILTER_SANITIZE_STRING);
+            // Valor como string (será convertido depois)
+            $amount = htmlspecialchars(trim($_POST['amount'] ?? ''), ENT_QUOTES, 'UTF-8');
 
             $data = [
                 'group_id' => $groupId,
                 'user_id' => $_SESSION['user_id'],
                 'category_id' => filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT),
-                'description' => filter_input(INPUT_POST, 'description', FILTER_SANITIZE_STRING),
-                'amount' => $amount, // Passa como string
-                'type' => filter_input(INPUT_POST, 'type', FILTER_SANITIZE_STRING),
-                'transaction_date' => filter_input(INPUT_POST, 'transaction_date', FILTER_SANITIZE_STRING),
+                'description' => htmlspecialchars(trim($_POST['description'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                'amount' => $amount,
+                'type' => htmlspecialchars(trim($_POST['type'] ?? ''), ENT_QUOTES, 'UTF-8'),
+                'transaction_date' => htmlspecialchars(trim($_POST['transaction_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
                 'payment_method' => $paymentMethod
             ];
 
@@ -103,6 +104,9 @@ class TransacoesController extends Controller
                 // Adiciona benefit_card_id aos dados
                 $data['benefit_card_id'] = $benefitCardId;
 
+                // IMPORTANTE: Marca como PAGA automaticamente
+                $data['paid'] = 1;
+
                 // Cria a transação
                 $this->transactionModel->create($data);
 
@@ -127,7 +131,7 @@ class TransacoesController extends Controller
 
             // Se for recorrente
             if ($isRecurring) {
-                $data['paid'] = 0; // ← ADICIONAR: Garante que inicia como pendente
+                $data['paid'] = 0; // Garante que inicia como pendente
                 $recurrenceMonths = filter_input(INPUT_POST, 'recurrence_months', FILTER_VALIDATE_INT) ?? 1;
                 $this->transactionModel->createRecurring($data, $recurrenceMonths);
             } else {
@@ -162,15 +166,15 @@ class TransacoesController extends Controller
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Converte valor
-            $amount = filter_input(INPUT_POST, 'amount', FILTER_SANITIZE_STRING);
+            $amount = htmlspecialchars(trim($_POST['amount'] ?? ''), ENT_QUOTES, 'UTF-8');
             $amount = str_replace(['.', ','], ['', '.'], $amount);
             $amount = floatval($amount);
 
             $data = [
                 'category_id' => filter_input(INPUT_POST, 'category_id', FILTER_VALIDATE_INT),
-                'description' => filter_input(INPUT_POST, 'description', FILTER_SANITIZE_STRING),
+                'description' => htmlspecialchars(trim($_POST['description'] ?? ''), ENT_QUOTES, 'UTF-8'),
                 'amount' => $amount,
-                'transaction_date' => filter_input(INPUT_POST, 'transaction_date', FILTER_SANITIZE_STRING),
+                'transaction_date' => htmlspecialchars(trim($_POST['transaction_date'] ?? ''), ENT_QUOTES, 'UTF-8'),
             ];
 
             // Verifica se deve atualizar todas as relacionadas

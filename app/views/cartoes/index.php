@@ -17,9 +17,9 @@
         --gray-700: #374151;
         --gray-800: #1f2937;
         --gray-900: #111827;
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-        --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -45,6 +45,7 @@
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -75,6 +76,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -95,8 +97,15 @@
     }
 
     @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
     }
 
     .empty-state h3 {
@@ -154,9 +163,9 @@
         right: 0;
         bottom: 0;
         background: linear-gradient(135deg,
-            rgba(255, 255, 255, 0.1) 0%,
-            rgba(255, 255, 255, 0) 50%,
-            rgba(0, 0, 0, 0.1) 100%);
+                rgba(255, 255, 255, 0.1) 0%,
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 0, 0, 0.1) 100%);
         pointer-events: none;
     }
 
@@ -209,10 +218,10 @@
         right: 4px;
         bottom: 4px;
         background: repeating-linear-gradient(45deg,
-            transparent,
-            transparent 2px,
-            rgba(0, 0, 0, 0.1) 2px,
-            rgba(0, 0, 0, 0.1) 4px);
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.1) 2px,
+                rgba(0, 0, 0, 0.1) 4px);
         border-radius: 3px;
     }
 
@@ -432,6 +441,18 @@
 
     .btn-primary:active {
         transform: translateY(0);
+    }
+
+    .btn-pay-action {
+        background: linear-gradient(135deg, var(--secondary) 0%, #059669 100%);
+        color: white;
+        border: none;
+    }
+
+    .btn-pay-action:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
     }
 
     /* ========== RESPONSIVE - TABLET ========== */
@@ -727,6 +748,20 @@
                         </div>
 
                         <div class="card-actions">
+                            <?php
+                            $invoiceModel = new CreditCardInvoiceModel();
+                            $currentMonth = date('n');
+                            $currentYear = date('Y');
+                            $isPaid = $invoiceModel->isInvoicePaid($card['id'], $currentMonth, $currentYear);
+                            ?>
+
+                            <?php if ($card['current_invoice'] > 0 && !$isPaid): ?>
+                                <a href="/cartoes/pagar-fatura/<?= $card['id'] ?>?month=<?= $currentMonth ?>&year=<?= $currentYear ?>"
+                                    class="btn-action btn-pay-action">
+                                    💳 Pagar Fatura
+                                </a>
+                            <?php endif; ?>
+
                             <a href="/cartoes/extrato/<?= $card['id'] ?>" class="btn-action btn-primary-action">
                                 📊 Ver Extrato
                             </a>

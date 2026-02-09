@@ -18,9 +18,9 @@
         --gray-700: #374151;
         --gray-800: #1f2937;
         --gray-900: #111827;
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-        --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -42,6 +42,7 @@
             opacity: 0;
             transform: translateY(-20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -64,6 +65,37 @@
 
     .btn-back:hover {
         background: rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-pay-invoice {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 2rem;
+        background: white;
+        color: var(--secondary);
+        border: 2px solid white;
+        border-radius: 10px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: var(--transition);
+        font-size: 1rem;
+    }
+
+    .btn-pay-invoice:hover {
+        background: rgba(255, 255, 255, 0.9);
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    
+    .btn-pay-invoice.partial {
+        background: var(--warning);
+        color: white;
+        border-color: var(--warning);
+    }
+    
+    .btn-pay-invoice.partial:hover {
+        background: #d97706;
     }
 
     .card-info-compact {
@@ -158,6 +190,7 @@
             opacity: 0;
             transform: translateY(20px);
         }
+
         to {
             opacity: 1;
             transform: translateY(0);
@@ -241,6 +274,22 @@
         font-size: 1.875rem;
         font-weight: 800;
         font-family: 'Courier New', monospace;
+    }
+    
+    .payment-status {
+        margin-top: 0.75rem;
+        font-size: 0.875rem;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .payment-status.full {
+        background: rgba(16, 185, 129, 0.3);
+    }
+    
+    .payment-status.partial {
+        background: rgba(245, 158, 11, 0.3);
     }
 
     /* ========== TABELA ========== */
@@ -391,8 +440,15 @@
     }
 
     @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-10px);
+        }
     }
 
     /* ========== PRÓXIMAS FATURAS ========== */
@@ -643,7 +699,7 @@
     <!-- Header Compacto -->
     <div class="extrato-header">
         <a href="/cartoes" class="btn-back">← Voltar</a>
-        
+
         <div class="card-info-compact">
             <div class="card-main">
                 <div class="card-icon">💳</div>
@@ -652,14 +708,14 @@
                     <p class="card-number">Final <?= htmlspecialchars($card['last_digits']) ?></p>
                 </div>
             </div>
-            
+
             <div class="card-dates-compact">
                 <span>📅 Fecha dia <?= $card['closing_day'] ?></span>
                 <span>💰 Vence dia <?= $card['due_day'] ?></span>
             </div>
 
             <?php if ($card['credit_limit']): ?>
-                <?php 
+                <?php
                 $available = $card['credit_limit'] - $invoiceTotal;
                 $percentUsed = ($invoiceTotal / $card['credit_limit']) * 100;
                 ?>
@@ -675,18 +731,36 @@
             <?php endif; ?>
         </div>
     </div>
-    
+
     <!-- Fatura do Mês -->
     <div class="fatura-card">
         <div class="fatura-header">
             <div class="fatura-nav">
-                <a href="/cartoes/extrato/<?= $card['id'] ?>?month=<?= $month == 1 ? 12 : $month - 1 ?>&year=<?= $month == 1 ? $year - 1 : $year ?>" 
-                   class="btn-nav">◄</a>
+                <a href="/cartoes/extrato/<?= $card['id'] ?>?month=<?= $month == 1 ? 12 : $month - 1 ?>&year=<?= $month == 1 ? $year - 1 : $year ?>"
+                    class="btn-nav">◄</a>
                 <h2><?= $monthName ?>/<?= $year ?></h2>
-                <a href="/cartoes/extrato/<?= $card['id'] ?>?month=<?= $month == 12 ? 1 : $month + 1 ?>&year=<?= $month == 12 ? $year + 1 : $year ?>" 
-                   class="btn-nav">►</a>
+                <a href="/cartoes/extrato/<?= $card['id'] ?>?month=<?= $month == 12 ? 1 : $month + 1 ?>&year=<?= $month == 12 ? $year + 1 : $year ?>"
+                    class="btn-nav">►</a>
             </div>
+
+            <?php
+            $invoiceModel = new CreditCardInvoiceModel();
+            $invoice = $invoiceModel->findInvoice($card['id'], $month, $year);
             
+            // ✅ LÓGICA CORRIGIDA
+            $remainingAmount = 0;
+            
+            if ($invoice) {
+                // Se existe registro de pagamento
+                $remainingAmount = $invoiceTotal - $invoice['paid_amount'];
+                $isFullyPaid = $remainingAmount <= 0;
+            } else {
+                // Sem registro = fatura não paga
+                $remainingAmount = $invoiceTotal;
+                $isFullyPaid = false;
+            }
+            ?>
+
             <div class="fatura-summary">
                 <div class="summary-item">
                     <span class="label">Vencimento</span>
@@ -695,14 +769,36 @@
                 <div class="summary-item total">
                     <span class="label">Total da Fatura</span>
                     <span class="value-total">R$ <?= number_format($invoiceTotal, 2, ',', '.') ?></span>
+
+                    <?php if ($invoice): ?>
+                        <?php if ($isFullyPaid): ?>
+                            <div class="payment-status full">
+                                ✓ Paga integralmente em <?= date('d/m/Y', strtotime($invoice['paid_at'])) ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="payment-status partial">
+                                ⚠️ Pago: R$ <?= number_format($invoice['paid_amount'], 2, ',', '.') ?><br>
+                                Restante: R$ <?= number_format($remainingAmount, 2, ',', '.') ?>
+                            </div>
+                        <?php endif; ?>
+                    <?php endif; ?>
                 </div>
                 <div class="summary-item">
                     <span class="label">Lançamentos</span>
                     <span class="value"><?= count($transactions) ?></span>
                 </div>
             </div>
+
+            <?php if (!$isFullyPaid && $invoiceTotal > 0): ?>
+                <div style="margin-top: 1.5rem; text-align: center;">
+                    <a href="/cartoes/pagar-fatura/<?= $card['id'] ?>?month=<?= $month ?>&year=<?= $year ?>"
+                        class="btn-pay-invoice <?= $invoice ? 'partial' : '' ?>">
+                        💳 <?= $invoice ? 'Pagar Saldo Restante' : 'Pagar Esta Fatura' ?>
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
-        
+
         <!-- Lançamentos -->
         <?php if (empty($transactions)): ?>
             <div class="empty-state-compact">
@@ -717,7 +813,7 @@
                     <div class="col-parcela">Parcela</div>
                     <div class="col-valor">Valor</div>
                 </div>
-                
+
                 <?php foreach ($transactions as $t): ?>
                     <div class="table-row">
                         <div class="col-data">
@@ -742,7 +838,7 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
-                
+
                 <div class="table-footer">
                     <div class="footer-label">Total</div>
                     <div class="footer-valor">R$ <?= number_format($invoiceTotal, 2, ',', '.') ?></div>
@@ -750,12 +846,12 @@
             </div>
         <?php endif; ?>
     </div>
-    
+
     <!-- Próximas Faturas -->
     <?php if (!empty($upcomingByMonth)): ?>
         <div class="proximas-faturas">
             <h3>🔮 Próximas Faturas</h3>
-            
+
             <div class="faturas-grid">
                 <?php foreach ($upcomingByMonth as $monthData): ?>
                     <div class="futura-card">

@@ -62,12 +62,18 @@ class TransactionModel extends Model
     public function getMonthlyBalance($groupId, $month, $year)
     {
         $sql = "SELECT 
-            SUM(CASE WHEN type = 'receita' AND paid = 1 THEN amount ELSE 0 END) as total_income,
-            SUM(CASE WHEN type = 'despesa' AND paid = 1 THEN amount ELSE 0 END) as total_expense
-        FROM transactions
-        WHERE group_id = :group_id
-        AND MONTH(transaction_date) = :month
-        AND YEAR(transaction_date) = :year";
+        SUM(CASE WHEN type = 'receita' AND paid = 1 THEN amount ELSE 0 END) as total_income,
+        SUM(CASE 
+            WHEN type = 'despesa' 
+            AND paid = 1 
+            AND payment_method NOT IN ('credito', 'vr', 'va') 
+            THEN amount 
+            ELSE 0 
+        END) as total_expense
+    FROM transactions
+    WHERE group_id = :group_id
+    AND MONTH(transaction_date) = :month
+    AND YEAR(transaction_date) = :year";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
@@ -76,7 +82,15 @@ class TransactionModel extends Model
             'year' => $year
         ]);
 
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $balance = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // ADICIONA: Faturas de cartão PAGAS no mês
+        $invoiceModel = new CreditCardInvoiceModel();
+        $paidInvoices = $invoiceModel->getPaidInMonth($groupId, $month, $year);
+
+        $balance['total_expense'] += $paidInvoices;
+
+        return $balance;
     }
 
     public function getSpendingByCategory($groupId, $month, $year)

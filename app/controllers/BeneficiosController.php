@@ -229,4 +229,68 @@ class BeneficiosController extends Controller
             ]);
         }
     }
+
+    /**
+     * Extrato detalhado do benefício
+     */
+    public function extrato($id)
+    {
+        $groupId = $_SESSION['current_group_id'] ?? null;
+
+        if (!$groupId) {
+            $this->redirect('/dashboard');
+            return;
+        }
+
+        $benefit = $this->benefitCardModel->findById($id);
+
+        if (!$benefit || $benefit['group_id'] != $groupId) {
+            $this->redirect('/beneficios');
+            return;
+        }
+
+        // Pega mês e ano da URL ou usa atual
+        $month = $_GET['month'] ?? date('n');
+        $year = $_GET['year'] ?? date('Y');
+
+        // Busca transações do benefício no período
+        $transactions = $this->transactionModel->getByBenefit($id, $month, $year);
+
+        // Calcula total gasto no mês
+        $monthlyExpense = $this->benefitCardModel->getMonthlyExpense($id, $month, $year);
+
+        // Nome do mês
+        $monthName = $this->getMonthName($month);
+
+        $this->view('beneficios/extrato', [
+            'benefit' => $benefit,
+            'transactions' => $transactions,
+            'monthlyExpense' => $monthlyExpense,
+            'month' => $month,
+            'year' => $year,
+            'monthName' => $monthName
+        ]);
+    }
+
+    /**
+     * Helper para nome do mês em português
+     */
+    private function getMonthName($month)
+    {
+        $months = [
+            1 => 'Janeiro',
+            2 => 'Fevereiro',
+            3 => 'Março',
+            4 => 'Abril',
+            5 => 'Maio',
+            6 => 'Junho',
+            7 => 'Julho',
+            8 => 'Agosto',
+            9 => 'Setembro',
+            10 => 'Outubro',
+            11 => 'Novembro',
+            12 => 'Dezembro'
+        ];
+        return $months[(int)$month];
+    }
 }

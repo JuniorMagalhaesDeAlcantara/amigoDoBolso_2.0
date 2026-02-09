@@ -79,7 +79,7 @@ class Router
 
             if (isset($url[0]) && !empty($url[0])) {
                 $action = $url[0];
-                
+
                 // Mapeia as ações permitidas
                 $allowedActions = [
                     'criar',
@@ -95,7 +95,7 @@ class Router
                 if (in_array($action, $allowedActions)) {
                     $this->method = $action;
                     array_shift($url);
-                    
+
                     error_log("Router - Método grupos detectado: {$this->method}");
                 } else {
                     error_log("Router - Ação de grupo inválida: {$action}");
@@ -104,6 +104,32 @@ class Router
             } else {
                 // Se não especificar nada, vai para detalhes
                 $this->method = 'detalhes';
+            }
+        }
+
+        // Rotas de cartões
+        elseif ($url[0] === 'cartoes') {
+            $this->controller = 'CartoesController';
+            array_shift($url);
+
+            if (isset($url[0]) && !empty($url[0])) {
+                $action = $url[0];
+
+                // Converte kebab-case para camelCase
+                if (strpos($action, '-') !== false) {
+                    $parts = explode('-', $action);
+                    $action = $parts[0];
+                    for ($i = 1; $i < count($parts); $i++) {
+                        $action .= ucfirst($parts[$i]);
+                    }
+                }
+
+                $this->method = $action;
+                array_shift($url);
+
+                error_log("Router - Método cartões detectado: {$this->method}");
+            } else {
+                $this->method = 'index';
             }
         }
         // Outras rotas

@@ -96,18 +96,19 @@ class TransactionModel extends Model
     public function getSpendingByCategory($groupId, $month, $year)
     {
         $sql = "SELECT 
-                    c.name as category_name,
-                    c.color,
-                    SUM(t.amount) as total,
-                    COUNT(t.id) as count
-                FROM {$this->table} t
-                INNER JOIN categories c ON t.category_id = c.id
-                WHERE t.group_id = ? 
-                AND t.type = 'despesa'
-                AND MONTH(t.transaction_date) = ? 
-                AND YEAR(t.transaction_date) = ?
-                GROUP BY c.id, c.name, c.color
-                ORDER BY total DESC";
+                c.name as category_name,
+                c.color,
+                SUM(t.amount) as total,
+                COUNT(t.id) as count
+            FROM {$this->table} t
+            INNER JOIN categories c ON t.category_id = c.id
+            WHERE t.group_id = ? 
+            AND t.type = 'despesa'
+            AND t.payment_method NOT IN ('credito', 'vr', 'va')
+            AND MONTH(t.transaction_date) = ? 
+            AND YEAR(t.transaction_date) = ?
+            GROUP BY c.id, c.name, c.color
+            ORDER BY total DESC";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$groupId, $month, $year]);

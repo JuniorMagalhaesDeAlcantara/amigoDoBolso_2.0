@@ -33,9 +33,6 @@ class CreditCardModel extends Model
     /**
      * Retorna cartões com fatura do mês atual (considerando ciclo)
      */
-    /**
-     * Retorna cartões com fatura do mês atual (considerando ciclo)
-     */
     public function getCardsWithCurrentBill($groupId, $month, $year)
     {
         $cards = $this->getByGroup($groupId);

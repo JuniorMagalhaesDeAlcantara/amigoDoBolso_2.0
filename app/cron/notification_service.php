@@ -21,6 +21,7 @@ require_once BASE_PATH . '/app/models/CreditCardModel.php';
 require_once BASE_PATH . '/app/models/TransactionModel.php';
 require_once BASE_PATH . '/app/models/GroupModel.php';
 require_once BASE_PATH . '/app/models/UserModel.php';
+require_once BASE_PATH . '/app/models/CreditCardInvoiceModel.php';
 
 // ✅ Helper
 require_once BASE_PATH . '/app/helpers/EmailHelper.php';

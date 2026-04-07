@@ -132,6 +132,20 @@ class Router
                 $this->method = 'index';
             }
         }
+
+        // Adicionar ANTES do bloco "elseif (isset($url[0]) && !empty($url[0]))"
+        elseif ($url[0] === 'relatorios') {
+            $this->controller = 'RelatoriosController';
+            array_shift($url);
+
+            if (isset($url[0]) && !empty($url[0])) {
+                $this->method = $url[0]; // gerar ou analyze
+                array_shift($url);
+            } else {
+                $this->method = 'gerar';
+            }
+        }
+
         // Outras rotas
         elseif (isset($url[0]) && !empty($url[0])) {
             $controllerName = ucfirst($url[0]) . 'Controller';

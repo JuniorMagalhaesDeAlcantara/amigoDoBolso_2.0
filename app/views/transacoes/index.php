@@ -17,9 +17,9 @@
         --gray-700: #374151;
         --gray-800: #1f2937;
         --gray-900: #111827;
-        --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
-        --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
-        --shadow-lg: 0 10px 25px rgba(0,0,0,0.15);
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.12);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
         --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -478,11 +478,11 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    input:checked + .toggle-slider {
+    input:checked+.toggle-slider {
         background-color: var(--secondary);
     }
 
-    input:checked + .toggle-slider:before {
+    input:checked+.toggle-slider:before {
         transform: translateX(22px);
     }
 
@@ -493,7 +493,7 @@
         white-space: nowrap;
     }
 
-    input:checked ~ .toggle-label {
+    input:checked~.toggle-label {
         color: var(--secondary);
     }
 
@@ -752,7 +752,7 @@
             width: 18px;
         }
 
-        input:checked + .toggle-slider:before {
+        input:checked+.toggle-slider:before {
             transform: translateX(20px);
         }
 
@@ -1123,7 +1123,7 @@
                                         <span class="toggle-label"><?= $transaction['paid'] ? 'Pago' : 'Pendente' ?></span>
                                     </div>
                                 <?php endif; ?>
-                                
+
                                 <a href="/transacoes/editar/<?= $transaction['id'] ?>" class="btn-action btn-edit" title="Editar">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -1149,187 +1149,93 @@
 </div>
 
 <script>
-function togglePaymentStatus(transactionId, isPaid) {
-    const formData = new FormData();
-    formData.append('transaction_id', transactionId);
-    formData.append('paid', isPaid ? '1' : '0');
+    function togglePaymentStatus(transactionId, isPaid) {
+        const formData = new FormData();
+        formData.append('transaction_id', transactionId);
+        formData.append('paid', isPaid ? '1' : '0');
 
-    fetch('/transacoes/togglePaid', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.text())
-    .then(text => {
-        const cleanText = text.replace(/^\uFEFF/, '').trim();
-        const data = JSON.parse(cleanText);
+        fetch('/transacoes/togglePaid', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(text => {
+                const cleanText = text.replace(/^\uFEFF/, '').trim();
+                const data = JSON.parse(cleanText);
 
-        if (data.success) {
-            showToast(
-                isPaid ? 'Transação marcada como paga!' : 'Transação marcada como pendente',
-                'success'
-            );
+                if (data.success) {
+                    showToast(
+                        isPaid ? 'Transação marcada como paga!' : 'Transação marcada como pendente',
+                        'success'
+                    );
 
-            const item = event.target.closest('.transaction-item');
-            if (isPaid) {
-                item.classList.remove('pending');
-            } else {
-                item.classList.add('pending');
-            }
+                    const item = event.target.closest('.transaction-item');
+                    if (isPaid) {
+                        item.classList.remove('pending');
+                    } else {
+                        item.classList.add('pending');
+                    }
 
-            updatePendingBadge(item, isPaid);
-        } else {
-            showToast('Erro ao atualizar status', 'error');
-            event.target.checked = !isPaid;
-        }
-    })
-    .catch(error => {
-        console.error('Erro:', error);
-        showToast('Erro ao atualizar status', 'error');
-        event.target.checked = !isPaid;
-    });
-}
+                    updatePendingBadge(item, isPaid);
+                } else {
+                    showToast('Erro ao atualizar status', 'error');
+                    event.target.checked = !isPaid;
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                showToast('Erro ao atualizar status', 'error');
+                event.target.checked = !isPaid;
+            });
+    }
 
-function updatePendingBadge(item, isPaid) {
-    const badges = item.querySelector('.transaction-badges');
-    const existingBadge = badges.querySelector('.badge-pending');
+    function updatePendingBadge(item, isPaid) {
+        const badges = item.querySelector('.transaction-badges');
+        const existingBadge = badges.querySelector('.badge-pending');
 
-    if (!isPaid && !existingBadge) {
-        const badge = document.createElement('span');
-        badge.className = 'badge badge-pending';
-        badge.innerHTML = `
+        if (!isPaid && !existingBadge) {
+            const badge = document.createElement('span');
+            badge.className = 'badge badge-pending';
+            badge.innerHTML = `
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10"/>
                 <polyline points="12 6 12 12 16 14"/>
             </svg>
             Pendente
         `;
-        badges.insertBefore(badge, badges.firstChild);
-    } else if (isPaid && existingBadge) {
-        existingBadge.remove();
+            badges.insertBefore(badge, badges.firstChild);
+        } else if (isPaid && existingBadge) {
+            existingBadge.remove();
+        }
     }
-}
 
-function generateReport() {
-    const month = document.getElementById('month').value;
-    const year = document.getElementById('year').value;
-    const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-        'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
+    // Substitua a função generateReport() existente por esta:
 
-    const cards = document.querySelectorAll('.summary-card .card-value');
-    const receitas = cards[0]?.textContent.replace('R$ ', '') || '0,00';
-    const despesas = cards[1]?.textContent.replace('R$ ', '') || '0,00';
-    const saldo = cards[2]?.textContent.replace('R$ ', '') || '0,00';
+    function generateReport() {
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
 
-    const printWindow = window.open('', '', 'width=900,height=700');
+        // Redirecionar para a página de relatório com IA
+        window.location.href = `/relatorios/gerar?month=${month}&year=${year}`;
+    }
 
-    printWindow.document.write(`
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Relatório - ${monthNames[month-1]}/${year}</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; padding: 2rem; color: #333; line-height: 1.6; }
-        .header { text-align: center; margin-bottom: 2.5rem; border-bottom: 4px solid #667eea; padding-bottom: 1.5rem; }
-        .header h1 { color: #667eea; font-size: 2.5rem; margin-bottom: 0.5rem; font-weight: 700; }
-        .header .period { color: #374151; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .header .generated { color: #6b7280; font-size: 0.875rem; }
-        .summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
-        .summary-item { background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); padding: 1.5rem; border-radius: 12px; border-left: 5px solid #667eea; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .summary-item.income { border-left-color: #10b981; background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); }
-        .summary-item.expense { border-left-color: #ef4444; background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); }
-        .summary-item.balance { border-left-color: #667eea; background: linear-gradient(135deg, #eef2ff 0%, #e0e7ff 100%); }
-        .summary-label { display: block; font-size: 0.875rem; color: #6b7280; margin-bottom: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .summary-value { display: block; font-size: 1.75rem; font-weight: 800; color: #1f2937; }
-        .actions { text-align: center; margin: 2rem 0 3rem; }
-        .btn { padding: 0.875rem 2rem; margin: 0 0.5rem; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9375rem; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.2); }
-        .btn-print { background: #667eea; color: white; }
-        .btn-download { background: #10b981; color: white; }
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 8px; overflow: hidden; }
-        th { background: #667eea; color: white; padding: 1rem; text-align: left; font-size: 0.875rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-        td { padding: 0.875rem 1rem; border-bottom: 1px solid #e5e7eb; font-size: 0.9375rem; }
-        tr:nth-child(even) { background: #f9fafb; }
-        tr:hover { background: #f3f4f6; }
-        .receita { color: #10b981; font-weight: 700; }
-        .despesa { color: #ef4444; font-weight: 700; }
-        .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 3px solid #e5e7eb; text-align: center; color: #6b7280; font-size: 0.875rem; }
-        @media print { .no-print, .btn { display: none; } body { padding: 1rem; } }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>📊 Relatório Financeiro</h1>
-        <p class="period">${monthNames[month-1]} de ${year}</p>
-        <p class="generated">Gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p>
-    </div>
-    
-    <div class="summary">
-        <div class="summary-item income">
-            <span class="summary-label">💚 Receitas</span>
-            <span class="summary-value">R$ ${receitas}</span>
-        </div>
-        <div class="summary-item expense">
-            <span class="summary-label">💸 Despesas</span>
-            <span class="summary-value">R$ ${despesas}</span>
-        </div>
-        <div class="summary-item balance">
-            <span class="summary-label">💰 Saldo</span>
-            <span class="summary-value">${saldo}</span>
-        </div>
-    </div>
-    
-    <div class="actions no-print">
-        <button class="btn btn-print" onclick="window.print()">🖨️ Imprimir</button>
-        <button class="btn btn-download" onclick="alert('Para salvar em PDF, use Ctrl+P e selecione Salvar como PDF no destino.'); window.print();">📥 Salvar PDF</button>
-    </div>
-    
-    <table>
-        <thead>
-            <tr>
-                <th>Data</th>
-                <th>Descrição</th>
-                <th>Categoria</th>
-                <th>Tipo</th>
-                <th style="text-align: right;">Valor</th>
-            </tr>
-        </thead>
-        <tbody>
-            ${Array.from(document.querySelectorAll('.transaction-item')).map(item => {
-                const dateElement = item.querySelector('.badge-date');
-                const date = dateElement ? dateElement.textContent.trim().replace(/\s+/g, ' ') : '';
-                const description = item.querySelector('.transaction-info h4')?.textContent.trim() || '';
-                const categoryElement = item.querySelector('.badge-category');
-                const category = categoryElement ? categoryElement.textContent.trim().replace(/\s+/g, ' ') : '';
-                const value = item.querySelector('.transaction-value')?.textContent.trim() || '';
-                const type = value.startsWith('+') ? 'Receita' : 'Despesa';
-                const typeClass = value.startsWith('+') ? 'receita' : 'despesa';
-                
-                return `
-                    <tr>
-                        <td>${date}</td>
-                        <td>${description}</td>
-                        <td>${category}</td>
-                        <td>${type}</td>
-                        <td class="${typeClass}" style="text-align: right; font-weight: bold;">${value}</td>
-                    </tr>
-                `;
-            }).join('')}
-        </tbody>
-    </table>
-    
-    <div class="footer">
-        <p><strong>Amigo do Bolso - Sistema de Gestão Financeira</strong></p>
-        <p>Relatório gerado automaticamente • Todos os valores em Reais (R$)</p>
-    </div>
-</body>
-</html>
-    `);
+    // OU, se preferir manter o relatório simples e adicionar um novo botão para IA:
 
-    printWindow.document.close();
-}
+    // Adicione este botão no header-actions:
+    /*
+    <button onclick="generateAIReport()" class="btn btn-secondary">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+        </svg>
+        Análise IA
+    </button>
+    */
+
+    function generateAIReport() {
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        window.location.href = `/relatorios/gerar?month=${month}&year=${year}`;
+    }
 </script>
 
 <?php include VIEWS . '/layouts/footer.php'; ?>

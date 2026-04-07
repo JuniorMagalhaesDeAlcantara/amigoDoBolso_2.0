@@ -622,4 +622,21 @@ class TransactionModel extends Model
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getOverdue($groupId)
+    {
+        $sql = "SELECT t.*, c.name as category_name, c.color, u.name as user_name
+            FROM transactions t
+            INNER JOIN categories c ON t.category_id = c.id
+            INNER JOIN users u ON t.user_id = u.id
+            WHERE t.group_id = :group_id
+            AND t.paid = 0
+            AND t.type = 'despesa'
+            AND t.transaction_date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
+            ORDER BY t.transaction_date ASC";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['group_id' => $groupId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }

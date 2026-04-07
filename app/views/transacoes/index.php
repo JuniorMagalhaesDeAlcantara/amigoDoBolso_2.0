@@ -586,6 +586,147 @@
         line-height: 1.6;
     }
 
+    /* ========== OVERDUE ========== */
+    .overdue-card {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+
+    .overdue-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.5rem;
+        background: linear-gradient(90deg, rgba(239, 68, 68, 0.08) 0%, transparent 100%);
+        border-bottom: 1px solid rgba(239, 68, 68, 0.15);
+    }
+
+    .overdue-title {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        color: var(--danger);
+    }
+
+    .overdue-count {
+        background: var(--danger);
+        color: white;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.125rem 0.5rem;
+        border-radius: 20px;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    .overdue-toggle {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--danger);
+        padding: 0.25rem;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        transition: var(--transition);
+    }
+
+    .overdue-toggle:hover {
+        background: rgba(239, 68, 68, 0.1);
+    }
+
+    .overdue-toggle.collapsed svg {
+        transform: rotate(-90deg);
+    }
+
+    .overdue-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .overdue-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--gray-100);
+        transition: var(--transition);
+    }
+
+    .overdue-item:last-child {
+        border-bottom: none;
+    }
+
+    .overdue-item:hover {
+        background: var(--gray-50);
+    }
+
+    .overdue-item-info {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .overdue-item-desc {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .overdue-item-meta {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .badge-overdue-days {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--danger);
+        padding: 0.25rem 0.625rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .overdue-item-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-shrink: 0;
+    }
+
+    .overdue-value {
+        font-size: 1.125rem;
+        font-weight: 800;
+        color: var(--danger);
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        .overdue-item {
+            flex-wrap: wrap;
+            padding: 0.875rem 1rem;
+        }
+
+        .overdue-item-right {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+
     /* ========== RESPONSIVE - TABLET ========== */
     @media (max-width: 1024px) {
         .container {
@@ -986,6 +1127,63 @@
         </div>
     </div>
 
+    <?php if (!empty($overdueTransactions)): ?>
+        <div class="overdue-card">
+            <div class="overdue-header">
+                <div class="overdue-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    Despesas em atraso
+                    <span class="overdue-count"><?= count($overdueTransactions) ?></span>
+                </div>
+                <button class="overdue-toggle" onclick="toggleOverdue(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="6 9 12 15 18 9" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="overdue-list">
+                <?php foreach ($overdueTransactions as $t): ?>
+                    <div class="overdue-item" id="overdue-item-<?= $t['id'] ?>">
+                        <div class="overdue-item-info">
+                            <span class="overdue-item-desc"><?= htmlspecialchars($t['description']) ?></span>
+                            <div class="overdue-item-meta">
+                                <span class="badge badge-date">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" />
+                                        <path d="M16 2v4M8 2v4M3 10h18" />
+                                    </svg>
+                                    <?= date('d/m/Y', strtotime($t['transaction_date'])) ?>
+                                </span>
+                                <span class="badge badge-category" style="--cat-color: <?= $t['color'] ?>">
+                                    <?= $t['category_name'] ?>
+                                </span>
+                                <?php
+                                $diasAtraso = (int) floor((time() - strtotime($t['transaction_date'])) / 86400);
+                                ?>
+                                <span class="badge badge-overdue-days">
+                                    <?= $diasAtraso ?> dia<?= $diasAtraso !== 1 ? 's' : '' ?> em atraso
+                                </span>
+                            </div>
+                        </div>
+                        <div class="overdue-item-right">
+                            <span class="overdue-value">R$ <?= number_format($t['amount'], 2, ',', '.') ?></span>
+                            <label class="toggle-switch" title="Marcar como paga">
+                                <input type="checkbox"
+                                    onchange="toggleOverduePaid(<?= $t['id'] ?>, this)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <!-- Lista de Transações -->
     <div class="transactions-card">
         <?php if (empty($transactions)): ?>
@@ -1117,7 +1315,7 @@
                                             <input
                                                 type="checkbox"
                                                 <?= $transaction['paid'] ? 'checked' : '' ?>
-                                                onchange="togglePaymentStatus(<?= $transaction['id'] ?>, this.checked)">
+                                                onchange="togglePaymentStatus(<?= $transaction['id'] ?>, this.checked, this)">
                                             <span class="toggle-slider"></span>
                                         </label>
                                         <span class="toggle-label"><?= $transaction['paid'] ? 'Pago' : 'Pendente' ?></span>
@@ -1149,7 +1347,7 @@
 </div>
 
 <script>
-    function togglePaymentStatus(transactionId, isPaid) {
+    function togglePaymentStatus(transactionId, isPaid, checkboxEl) {
         const formData = new FormData();
         formData.append('transaction_id', transactionId);
         formData.append('paid', isPaid ? '1' : '0');
@@ -1160,32 +1358,30 @@
             })
             .then(response => response.text())
             .then(text => {
-                const cleanText = text.replace(/^\uFEFF/, '').trim();
-                const data = JSON.parse(cleanText);
+                // Extrai apenas o JSON ignorando qualquer output antes/depois
+                const match = text.match(/\{.*\}/s);
+                if (!match) throw new Error('Resposta inválida');
+
+                const data = JSON.parse(match[0]);
 
                 if (data.success) {
-                    showToast(
-                        isPaid ? 'Transação marcada como paga!' : 'Transação marcada como pendente',
-                        'success'
-                    );
+                    showToast(isPaid ? 'Transação marcada como paga!' : 'Transação marcada como pendente', 'success');
 
-                    const item = event.target.closest('.transaction-item');
+                    const item = checkboxEl.closest('.transaction-item');
                     if (isPaid) {
                         item.classList.remove('pending');
                     } else {
                         item.classList.add('pending');
                     }
-
                     updatePendingBadge(item, isPaid);
                 } else {
                     showToast('Erro ao atualizar status', 'error');
-                    event.target.checked = !isPaid;
+                    checkboxEl.checked = !isPaid;
                 }
             })
-            .catch(error => {
-                console.error('Erro:', error);
+            .catch(() => {
                 showToast('Erro ao atualizar status', 'error');
-                event.target.checked = !isPaid;
+                checkboxEl.checked = !isPaid;
             });
     }
 
@@ -1235,6 +1431,53 @@
         const month = document.getElementById('month').value;
         const year = document.getElementById('year').value;
         window.location.href = `/relatorios/gerar?month=${month}&year=${year}`;
+    }
+
+    function toggleOverdueToggle(btn) {
+        const list = btn.closest('.overdue-card').querySelector('.overdue-list');
+        const isCollapsed = list.style.display === 'none';
+        list.style.display = isCollapsed ? 'flex' : 'none';
+        btn.classList.toggle('collapsed', !isCollapsed);
+    }
+
+    function toggleOverduePaid(transactionId, checkbox) {
+        const formData = new FormData();
+        formData.append('transaction_id', transactionId);
+        formData.append('paid', '1');
+
+        fetch('/transacoes/togglePaid', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.text())
+            .then(text => {
+                const data = JSON.parse(text.replace(/^\uFEFF/, '').trim());
+                if (data.success) {
+                    const item = document.getElementById('overdue-item-' + transactionId);
+                    item.style.transition = 'all 0.4s ease';
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        item.remove();
+                        // Atualiza o contador
+                        const card = document.querySelector('.overdue-card');
+                        const remaining = card.querySelectorAll('.overdue-item').length;
+                        if (remaining === 0) {
+                            card.remove();
+                        } else {
+                            card.querySelector('.overdue-count').textContent = remaining;
+                        }
+                    }, 400);
+                    showToast('Despesa marcada como paga!', 'success');
+                } else {
+                    checkbox.checked = false;
+                    showToast('Erro ao atualizar', 'error');
+                }
+            })
+            .catch(() => {
+                checkbox.checked = false;
+                showToast('Erro ao atualizar', 'error');
+            });
     }
 </script>
 

@@ -21,33 +21,30 @@ class TransacoesController extends Controller
     public function index()
     {
         $month = $_GET['month'] ?? date('m');
-        $year = $_GET['year'] ?? date('Y');
+        $year  = $_GET['year']  ?? date('Y');
         $status = $_GET['status'] ?? 'all';
 
         $groupId = $_SESSION['current_group_id'];
 
-        // Busca transações com filtro de status
         $transactions = $this->transactionModel->getByMonthAndStatus($groupId, $month, $year, $status);
+        $balance      = $this->transactionModel->getMonthlyBalance($groupId, $month, $year);
+        $overdueTransactions = $this->transactionModel->getOverdue($groupId); // ← novo
 
-        // Busca o balanço do mês (receitas e despesas)
-        $balance = $this->transactionModel->getMonthlyBalance($groupId, $month, $year);
-
-        // Calcula total de faturas de cartões de crédito
         $creditCardModel = new CreditCardModel();
         $cards = $creditCardModel->getByGroup($groupId);
         $creditCardTotal = 0;
-
         foreach ($cards as $card) {
             $creditCardTotal += $this->transactionModel->getCardInvoiceTotal($card['id'], $month, $year);
         }
 
         $this->view('transacoes/index', [
-            'transactions' => $transactions,
-            'balance' => $balance,
-            'creditCardTotal' => $creditCardTotal,
-            'month' => $month,
-            'year' => $year,
-            'status' => $status
+            'transactions'       => $transactions,
+            'overdueTransactions' => $overdueTransactions, // ← novo
+            'balance'            => $balance,
+            'creditCardTotal'    => $creditCardTotal,
+            'month'              => $month,
+            'year'               => $year,
+            'status'             => $status
         ]);
     }
 
@@ -279,5 +276,6 @@ class TransacoesController extends Controller
             'success' => true,
             'message' => $paid === '1' ? 'Transação marcada como paga' : 'Transação marcada como pendente'
         ]);
+        exit;
     }
 }

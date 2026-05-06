@@ -40,7 +40,6 @@
     window.dispatchEvent(new Event('resize'));
 </script>
 
-<script src="/js/main.js"></script>
 </body>
 
 </html>

@@ -26,18 +26,37 @@
 
     /* ========== ANIMATIONS ========== */
     @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
     }
 
     @keyframes fadeInDown {
-        from { opacity: 0; transform: translateY(-20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* ========== CONTAINER ========== */
@@ -255,11 +274,11 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .toggle input:checked + .toggle-slider {
+    .toggle input:checked+.toggle-slider {
         background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
     }
 
-    .toggle input:checked + .toggle-slider:before {
+    .toggle input:checked+.toggle-slider:before {
         transform: translateX(24px);
     }
 
@@ -327,44 +346,57 @@
 
     /* ========== RESPONSIVE - TABLET ========== */
     @media (max-width: 1024px) {
-        .container-small { padding: 1.5rem; }
-        .card { padding: 2rem; }
+        .container-small {
+            padding: 1.5rem;
+        }
+
+        .card {
+            padding: 2rem;
+        }
     }
 
     /* ========== RESPONSIVE - MOBILE ========== */
     @media (max-width: 768px) {
-        .container-small { padding: 1rem; }
-        .card { padding: 1.5rem; border-radius: 12px; }
-        
+        .container-small {
+            padding: 1rem;
+        }
+
+        .card {
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+
         .page-header-section {
             flex-direction: column;
             align-items: stretch;
             gap: 1.25rem;
         }
-        
-        .page-header-section h2 { font-size: 1.5rem; }
-        
+
+        .page-header-section h2 {
+            font-size: 1.5rem;
+        }
+
         .header-actions {
             flex-direction: column;
         }
-        
+
         .header-actions .btn {
             width: 100%;
         }
-        
+
         .setting-item {
             flex-direction: column;
             align-items: flex-start;
             gap: 1rem;
             padding: 1.25rem;
         }
-        
+
         .setting-control {
             width: 100%;
             display: flex;
             justify-content: flex-end;
         }
-        
+
         .form-select {
             width: 100%;
         }
@@ -372,13 +404,33 @@
 
     /* ========== MOBILE PORTRAIT ========== */
     @media (max-width: 480px) {
-        .container-small { padding: 0.875rem; }
-        .card { padding: 1.25rem; }
-        .page-header-section h2 { font-size: 1.375rem; }
-        .subtitle { font-size: 0.875rem; }
-        .section-title { font-size: 1.125rem; }
-        .setting-info label { font-size: 0.9375rem; }
-        .setting-info p { font-size: 0.8125rem; }
+        .container-small {
+            padding: 0.875rem;
+        }
+
+        .card {
+            padding: 1.25rem;
+        }
+
+        .page-header-section h2 {
+            font-size: 1.375rem;
+        }
+
+        .subtitle {
+            font-size: 0.875rem;
+        }
+
+        .section-title {
+            font-size: 1.125rem;
+        }
+
+        .setting-info label {
+            font-size: 0.9375rem;
+        }
+
+        .setting-info p {
+            font-size: 0.8125rem;
+        }
     }
 
     /* ========== PWA/STANDALONE MODE ========== */
@@ -391,7 +443,10 @@
 
     /* ========== ACCESSIBILITY ========== */
     @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
+
+        *,
+        *::before,
+        *::after {
             animation-duration: 0.01ms !important;
             animation-iteration-count: 1 !important;
             transition-duration: 0.01ms !important;
@@ -409,7 +464,7 @@
             <div class="header-actions">
                 <a href="/notificacoes" class="btn btn-secondary">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                        <path d="M19 12H5M12 19l-7-7 7-7" />
                     </svg>
                     Voltar
                 </a>
@@ -542,6 +597,25 @@
                     </div>
                 </div>
             </div>
+            <hr>
+
+            <!-- Notificações Push -->
+            <div class="settings-section">
+                <h3 class="section-title">🔔 Notificações Push</h3>
+                <p class="section-description">Notificações no seu celular mesmo com o app fechado</p>
+
+                <div class="setting-item" id="pushPermissionItem">
+                    <div class="setting-info">
+                        <label><strong>Ativar notificações push</strong></label>
+                        <p id="pushStatus">Verificando permissão...</p>
+                    </div>
+                    <div class="setting-control">
+                        <button type="button" class="btn btn-secondary" id="pushBtn" onclick="gerenciarPush()">
+                            Verificando...
+                        </button>
+                    </div>
+                </div>
+            </div>
 
             <hr>
 
@@ -590,9 +664,9 @@
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                        <polyline points="17 21 17 13 7 13 7 21"/>
-                        <polyline points="7 3 7 8 15 8"/>
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                        <polyline points="17 21 17 13 7 13 7 21" />
+                        <polyline points="7 3 7 8 15 8" />
                     </svg>
                     Salvar Configurações
                 </button>
@@ -602,39 +676,180 @@
 </div>
 
 <script>
-    // Controla visibilidade das opções de e-mail
+    // ============================================
+    // FIREBASE - inicializa só 1x
+    // ============================================
+    if (!firebase.apps.length) {
+        firebase.initializeApp({
+            apiKey: "AIzaSyBRyYFh6MbYy-oXrFpvSymCtPcnVvP2q44",
+            authDomain: "amigo-do-bolso-24d64.firebaseapp.com",
+            projectId: "amigo-do-bolso-24d64",
+            messagingSenderId: "597454835871",
+            appId: "1:597454835871:web:118cbcf789b4b0279e92aa"
+        });
+    }
+
+    // ============================================
+    // PUSH - registro do token
+    // ============================================
+    async function registrarPushToken() {
+        try {
+            if (!('serviceWorker' in navigator)) return false;
+
+            const messaging = firebase.messaging();
+            const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+            await navigator.serviceWorker.ready;
+
+            const token = await messaging.getToken({
+                vapidKey: "BHusHiJYULf8omROq0M592NOKVPixo1IXWaYeUVelU7uHIrB-9CF2haygaZ7u9djskRTqPNEwaIZpv3ipjGRVPk",
+                serviceWorkerRegistration: registration
+            });
+
+            if (!token) {
+                console.warn('Token veio vazio');
+                return false;
+            }
+
+            const res = await fetch('/notificacoes/salvarToken', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    token
+                })
+            });
+
+            const data = await res.json();
+            console.log('Token salvo:', data);
+            return data.success ?? false;
+
+        } catch (err) {
+            console.error('Erro ao registrar token:', err);
+            return false;
+        }
+    }
+
+    // ============================================
+    // PUSH - verifica status atual
+    // ============================================
+    async function verificarStatusPush() {
+        const btn = document.getElementById('pushBtn');
+        const status = document.getElementById('pushStatus');
+
+        if (!btn || !status) return;
+
+        if (!('Notification' in window)) {
+            status.textContent = '❌ Seu navegador não suporta notificações push';
+            btn.disabled = true;
+            return;
+        }
+
+        const permission = Notification.permission;
+        const desativado = localStorage.getItem('push_desativado') === '1';
+
+        if (permission === 'denied') {
+            status.textContent = '🚫 Bloqueado — ative nas configurações do celular';
+            btn.textContent = 'Como ativar?';
+            btn.className = 'btn btn-secondary';
+        } else if (permission === 'granted' && !desativado) {
+            status.textContent = '✅ Notificações push ativadas';
+            btn.textContent = 'Desativar';
+            btn.className = 'btn btn-secondary';
+        } else {
+            status.textContent = 'Receba alertas mesmo com o app fechado';
+            btn.textContent = 'Ativar Push';
+            btn.className = 'btn btn-primary';
+        }
+    }
+
+    // ============================================
+    // PUSH - ação do botão (apenas 1x!)
+    // ============================================
+    async function gerenciarPush() {
+        const btn = document.getElementById('pushBtn');
+        const status = document.getElementById('pushStatus');
+        const permission = Notification.permission;
+        const desativado = localStorage.getItem('push_desativado') === '1';
+
+        if (permission === 'denied') {
+            alert(
+                'Notificações bloqueadas.\n\n' +
+                '📱 Android: Configurações do app > Notificações > Ativar\n' +
+                '🍎 iOS: Ajustes > Safari > [seu site] > Notificações'
+            );
+            return;
+        }
+
+        if (permission === 'granted' && !desativado) {
+            // DESATIVAR
+            btn.textContent = 'Desativando...';
+            btn.disabled = true;
+
+            await fetch('/notificacoes/removerToken', {
+                method: 'POST'
+            });
+
+            localStorage.setItem('push_desativado', '1');
+            btn.disabled = false;
+            await verificarStatusPush();
+            return;
+        }
+
+        // ATIVAR
+        btn.textContent = 'Aguardando...';
+        btn.disabled = true;
+
+        try {
+            const result = await Notification.requestPermission();
+
+            if (result === 'granted') {
+                status.textContent = '⏳ Registrando...';
+                const ok = await registrarPushToken();
+
+                if (ok) {
+                    localStorage.removeItem('push_desativado');
+                    status.textContent = '✅ Push ativado com sucesso!';
+                } else {
+                    status.textContent = '⚠️ Erro ao salvar token';
+                }
+            } else {
+                status.textContent = '🚫 Permissão negada';
+            }
+        } catch (err) {
+            console.error('Erro:', err);
+            status.textContent = '❌ Erro ao ativar push';
+        }
+
+        btn.disabled = false;
+        await verificarStatusPush();
+    }
+
+    // ============================================
+    // E-MAIL - toggle opções
+    // ============================================
     const emailToggle = document.getElementById('enable_email_notifications');
     const emailOptions = document.getElementById('emailOptions');
 
     function toggleEmailOptions() {
         if (emailToggle && emailOptions) {
-            if (emailToggle.checked) {
-                emailOptions.style.display = 'block';
-            } else {
-                emailOptions.style.display = 'none';
-            }
+            emailOptions.style.display = emailToggle.checked ? 'block' : 'none';
         }
     }
 
-    // Inicializa ao carregar
     if (emailToggle) {
         emailToggle.addEventListener('change', toggleEmailOptions);
         toggleEmailOptions();
     }
 
-    // FIX: Garante que todos os checkboxes sejam enviados corretamente
-    document.querySelector('.settings-form').addEventListener('submit', function(e) {
-        // Para cada checkbox desmarcado, adiciona um input hidden com valor "0"
-        const checkboxes = this.querySelectorAll('input[type="checkbox"]');
-
-        checkboxes.forEach(function(checkbox) {
-            // Remove inputs hidden antigos deste checkbox
+    // ============================================
+    // FORM - garante envio dos checkboxes desmarcados
+    // ============================================
+    document.querySelector('.settings-form').addEventListener('submit', function() {
+        this.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
             const oldHidden = document.querySelector(`input[type="hidden"][name="${checkbox.name}"]`);
-            if (oldHidden) {
-                oldHidden.remove();
-            }
+            if (oldHidden) oldHidden.remove();
 
-            // Se o checkbox estiver desmarcado, adiciona um hidden com valor "0"
             if (!checkbox.checked) {
                 const hidden = document.createElement('input');
                 hidden.type = 'hidden';
@@ -645,25 +860,37 @@
         });
     });
 
-    // Feedback visual ao salvar
-    document.querySelector('.btn-primary').addEventListener('click', function(e) {
+    // ============================================
+    // FORM - feedback visual ao salvar
+    // ============================================
+    document.querySelector('.btn-primary[type="submit"]').addEventListener('click', function() {
         const btn = this;
         const originalHTML = btn.innerHTML;
 
-        // Não previne o submit, apenas dá feedback
         btn.innerHTML = `
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10"/>
-            </svg>
-            Salvando...
-        `;
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+        </svg>
+        Salvando...
+    `;
         btn.disabled = true;
 
-        // Restaura após 2 segundos (caso não recarregue a página)
         setTimeout(() => {
             btn.innerHTML = originalHTML;
             btn.disabled = false;
         }, 2000);
+    });
+
+    // ============================================
+    // INIT - apenas 1x!
+    // ============================================
+    document.addEventListener('DOMContentLoaded', async () => {
+        await verificarStatusPush();
+
+        const desativado = localStorage.getItem('push_desativado') === '1';
+        if (Notification.permission === 'granted' && !desativado) {
+            await registrarPushToken();
+        }
     });
 </script>
 

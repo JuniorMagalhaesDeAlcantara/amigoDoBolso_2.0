@@ -1,2 +1,15 @@
-/vendor/
-app/config/openai.php
+# Firebase sensível
+app/config/firebase.json
+
+# dependências
+/vendor
+/node_modules
+
+# logs
+*.log
+
+# env
+.env
+
+# arquivos zip
+*.zip

@@ -22,6 +22,10 @@
     <link rel="apple-touch-icon" sizes="384x384" href="/assets/icons/icon-384.png">
     <link rel="apple-touch-icon" sizes="512x512" href="/assets/icons/icon-512.png">
 
+    <!-- Script FireBase -->
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js"></script>
+
     <!-- Registrar Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -1310,6 +1314,88 @@
         </script>
         <?php unset($_SESSION['info']); ?>
     <?php endif; ?>
+
+    <!-- Firebase Cloud Messaging -->
+    <script>
+        window.addEventListener('load', async () => {
+
+            console.log("🔥 Iniciando Firebase...");
+
+            // 🔹 Inicializa Firebase (só 1x)
+            if (!firebase.apps.length) {
+                firebase.initializeApp({
+                    apiKey: "AIzaSyBRyYFh6MbYy-oXrFpvSymCtPcnVvP2q44",
+                    authDomain: "amigo-do-bolso-24d64.firebaseapp.com",
+                    projectId: "amigo-do-bolso-24d64",
+                    messagingSenderId: "597454835871",
+                    appId: "1:597454835871:web:118cbcf789b4b0279e92aa"
+                });
+            }
+
+            const messaging = firebase.messaging();
+
+            try {
+                // 🔔 Permissão
+                console.log("Permissão atual:", Notification.permission);
+
+                const permission = await Notification.requestPermission();
+                console.log("Permissão após request:", permission);
+
+                if (permission !== "granted") {
+                    console.warn("🚫 Usuário não permitiu notificações");
+                    return;
+                }
+
+                // 🧠 Verifica suporte
+                if (!('serviceWorker' in navigator)) {
+                    console.error("❌ Service Worker não suportado");
+                    return;
+                }
+
+                // 🔥 Registra o Service Worker
+                const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                console.log("✅ Service Worker registrado:", registration);
+
+                // ⏳ Aguarda ele ficar ativo
+                await navigator.serviceWorker.ready;
+                console.log("✅ Service Worker pronto");
+
+                // 🎯 Gera TOKEN
+                const token = await messaging.getToken({
+                    vapidKey: "BHusHiJYULf8omROq0M592NOKVPixo1IXWaYeUVelU7uHIrB-9CF2haygaZ7u9djskRTqPNEwaIZpv3ipjGRVPk",
+                    serviceWorkerRegistration: registration
+                });
+
+                if (!token) {
+                    console.warn("⚠️ Token veio vazio");
+                    return;
+                }
+
+                console.log("🎯 TOKEN GERADO:", token);
+
+                // 💾 Envia pro backend
+                fetch('/notificacoes/salvarToken', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            token
+                        })
+                    })
+                    .then(res => res.text())
+                    .then(data => {
+                        console.log("RESPOSTA BACK:", data);
+                    })
+                    .then(data => console.log("📦 Token salvo:", data))
+                    .catch(err => console.error("Erro ao salvar token:", err));
+
+            } catch (error) {
+                console.error("💥 ERRO GERAL:", error);
+            }
+
+        });
+    </script>
 
 </body>
 

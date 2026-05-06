@@ -497,6 +497,37 @@ class NotificationService
 
                         $this->log("  ✅ Saldo movido para próxima fatura (transação #{$debtTransactionId})");
                         $processedCount++;
+
+                        $members = $this->groupModel->getMembers($card['group_id']);
+
+                        foreach ($members as $member) {
+                            $settings = $this->notificationModel->getUserSettings($member['id']);
+
+                            if (!$settings['enable_app_notifications'] && !$settings['enable_email_notifications']) {
+                                continue;
+                            }
+
+                            $this->notificationModel->createAndNotify(
+                                $member['id'],
+                                'fatura_vencida',
+                                '🔴 Fatura vencida - saldo movido',
+                                "A fatura do cartão {$card['name']} venceu com saldo de R$ " .
+                                    number_format($remainingAmount, 2, ',', '.') .
+                                    ". O valor foi adicionado à próxima fatura.",
+                                'urgent',
+                                'card',
+                                $card['id'],
+                                [
+                                    'card_name' => $card['name'],
+                                    'amount'    => $remainingAmount,
+                                    'due_date'  => "{$dueDay}/{$invoiceMonth}/{$invoiceYear}",
+                                    'days_until_due' => 0
+                                ],
+                                '/cartoes'
+                            );
+
+                            $this->log("  [OK] Usuário {$member['id']} notificado sobre fatura vencida");
+                        }
                     }
                 }
             }

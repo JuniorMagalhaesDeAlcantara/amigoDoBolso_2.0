@@ -1,6 +1,13 @@
 <?php
 // app/models/NotificationModel.php
 
+//  Composer (Firebase e outras libs modernas)
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Kreait\Firebase\Factory;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification;
+
 class NotificationModel extends Model
 {
     protected $table = 'notifications';
@@ -179,6 +186,7 @@ class NotificationModel extends Model
             email_notify_3days,
             email_notify_1day,
             email_notify_today,
+            email_notify_overdue,      -- ← ESTAVA FALTANDO
             email_monthly_report
         FROM notification_settings
         WHERE user_id = :user_id
@@ -190,17 +198,16 @@ class NotificationModel extends Model
 
         $settings = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // fallback seguro
         return $settings ?: [
-            'enable_app_notifications' => 1,
+            'enable_app_notifications'  => 1,
             'enable_email_notifications' => 0,
-            'email_notify_3days' => 0,
-            'email_notify_1day' => 0,
-            'email_notify_today' => 0,
-            'email_monthly_report' => 0,
+            'email_notify_3days'        => 0,
+            'email_notify_1day'         => 0,
+            'email_notify_today'        => 0,
+            'email_notify_overdue'      => 0,  
+            'email_monthly_report'      => 0,
         ];
     }
-
 
     /**
      * Cria configurações padrão
@@ -294,28 +301,30 @@ class NotificationModel extends Model
     }
 
     /**
-     * Cria notificação E envia email se configurado
+     * Cria notificação interna, push, email (respeitando limites) e loga o envio de email
      */
-    public function createAndNotify($userId, $type, $title, $message, $priority = 'medium', $relatedType = null, $relatedId = null, $emailData = null)
+    public function createAndNotify($userId, $type, $title, $message, $priority = 'medium', $relatedType = null, $relatedId = null, $emailData = null, $pushUrl = '/notificacoes')
     {
         $settings = $this->getUserSettings($userId);
 
-        // Criar notificação in-app
+        //  Notificação interna
         if ($settings['enable_app_notifications']) {
             $this->create([
-                'user_id' => $userId,
-                'type' => $type,
-                'title' => $title,
-                'message' => $message,
-                'priority' => $priority,
+                'user_id'      => $userId,
+                'type'         => $type,
+                'title'        => $title,
+                'message'      => $message,
+                'priority'     => $priority,
                 'related_type' => $relatedType,
-                'related_id' => $relatedId
+                'related_id'   => $relatedId
             ]);
+
+            //  Push junto com notificação interna
+            $this->sendPushNotification($userId, $title, $message, $pushUrl);
         }
 
-        // Enviar email se habilitado
+        //  Email
         if ($settings['enable_email_notifications'] && $emailData) {
-            // Evita enviar email duplicado
             if (!$this->wasEmailSentToday($userId, $type, $relatedType, $relatedId)) {
                 $this->sendNotificationEmail($userId, $type, $emailData);
                 $this->logEmail($userId, $type, $relatedType, $relatedId);
@@ -380,5 +389,63 @@ class NotificationModel extends Model
                 // Email genérico
                 return EmailHelper::send($to, $data['title'] ?? 'Notificação', $data['message'] ?? '', $name);
         }
+    }
+
+    public function salvarPushToken($userId, $token)
+    {
+        $sql = "INSERT INTO push_tokens (user_id, token)
+            VALUES (:user_id, :token_insert)
+            ON DUPLICATE KEY UPDATE token = :token_update";
+
+        $stmt = $this->db->prepare($sql);
+
+        return $stmt->execute([
+            'user_id' => $userId,
+            'token_insert' => $token,
+            'token_update' => $token
+        ]);
+    }
+
+    public function sendPushNotification($userId, $title, $message, $url = '/')
+    {
+        require_once __DIR__ . '/../../vendor/autoload.php';
+
+        $factory = (new Factory)
+            ->withServiceAccount(APP . '/config/firebase.json');
+
+        $messaging = $factory->createMessaging();
+
+        // 🎯 pega tokens
+        $stmt = $this->db->prepare("
+        SELECT token FROM push_tokens WHERE user_id = :user_id
+    ");
+        $stmt->execute(['user_id' => $userId]);
+
+        $tokens = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+        if (empty($tokens)) return false;
+
+        foreach ($tokens as $token) {
+
+            $push = CloudMessage::withTarget('token', $token)
+                ->withNotification(Notification::create($title, $message))
+                ->withData([
+                    'url' => $url // 🔥 ESSENCIAL
+                ]);
+
+            try {
+                $messaging->send($push);
+            } catch (\Exception $e) {
+                error_log("Erro push: " . $e->getMessage());
+            }
+        }
+
+        return true;
+    }
+
+    public function removerPushToken($userId)
+    {
+        $stmt = $this->db->prepare("DELETE FROM push_tokens WHERE user_id = :user_id");
+        return $stmt->execute(['user_id' => $userId]);
     }
 }

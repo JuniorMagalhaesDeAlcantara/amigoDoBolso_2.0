@@ -341,3 +341,32 @@ ALTER TABLE credit_card_invoices
 ADD COLUMN is_overdue BOOLEAN DEFAULT 0 AFTER paid_by,
 ADD COLUMN overdue_moved_to_next BOOLEAN DEFAULT 0 AFTER is_overdue,
 ADD COLUMN overdue_transaction_id INT NULL AFTER overdue_moved_to_next;
+
+-- Tabela de Tokens de Push Notification
+CREATE TABLE push_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_user (user_id)
+);
+
+-- Ajusta o ENUM de type para incluir todos os tipos usados no código
+ALTER TABLE notifications 
+MODIFY COLUMN type ENUM(
+    'fatura_vencimento',
+    'fatura_vencida',
+    'boleto_vencimento', 
+    'boleto_vencido',
+    'despesa_recorrente_vencida',
+    'relatorio_mensal'
+) NOT NULL;
+
+-- Ajusta o ENUM de related_type para incluir todos os tipos usados
+ALTER TABLE notifications 
+MODIFY COLUMN related_type ENUM(
+    'card',
+    'bill',
+    'transaction',
+    'report'
+) NULL;

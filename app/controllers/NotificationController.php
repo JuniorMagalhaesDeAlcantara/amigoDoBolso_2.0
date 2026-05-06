@@ -230,4 +230,57 @@ class NotificationController extends Controller
 
         return date('d/m/Y H:i', $time);
     }
+
+    public function salvarToken()
+    {
+        header('Content-Type: application/json');
+
+        $userId = $_SESSION['user_id'] ?? null;
+
+        if (!$userId) {
+            echo json_encode(['success' => false, 'error' => 'Não logado']);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!isset($data['token'])) {
+            echo json_encode(['success' => false, 'error' => 'Token inválido']);
+            return;
+        }
+
+        $success = $this->notificationModel->salvarPushToken(
+            $userId,
+            $data['token']
+        );
+
+        echo json_encode(['success' => $success]);
+    }
+
+    public function testePush()
+    {
+        $userId = $_SESSION['user_id'];
+
+        $this->notificationModel->sendPushNotification(
+            $userId,
+            "🔥 Teste Push",
+            "Se você viu isso, deu bom 😎"
+        );
+
+        echo "Push enviado!";
+    }
+
+    public function removerToken()
+    {
+        header('Content-Type: application/json');
+        $userId = $_SESSION['user_id'] ?? null;
+
+        if (!$userId) {
+            echo json_encode(['success' => false]);
+            return;
+        }
+
+        $success = $this->notificationModel->removerPushToken($userId);
+        echo json_encode(['success' => $success]);
+    }
 }

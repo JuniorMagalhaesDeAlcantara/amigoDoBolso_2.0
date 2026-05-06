@@ -11,5 +11,7 @@
             "email": "juniormagalhaes@proscore.com.br"
         }
     ],
-    "require": {}
+    "require": {
+        "kreait/firebase-php": "^5.26"
+    }
 }

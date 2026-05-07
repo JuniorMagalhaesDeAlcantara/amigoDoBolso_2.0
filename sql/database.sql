@@ -370,3 +370,30 @@ MODIFY COLUMN related_type ENUM(
     'transaction',
     'report'
 ) NULL;
+
+--  Adiciona o novo tipo de notificação
+ALTER TABLE notifications 
+MODIFY COLUMN type ENUM(
+    'fatura_vencimento',
+    'fatura_vencida',
+    'boleto_vencimento', 
+    'boleto_vencido',
+    'despesa_recorrente_vencida',
+    'relatorio_mensal',
+    'insight_ia' -- O novo tipo aqui
+) NOT NULL;
+
+--  Adiciona controle de envio de push 
+ALTER TABLE notifications 
+ADD COLUMN sent_push TINYINT(1) DEFAULT 0 AFTER priority;
+
+-- Tabela para armazenar insights gerados pela IA para envio programado
+CREATE TABLE scheduled_insights (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    message TEXT NOT NULL,
+    scheduled_date DATE NOT NULL,
+    sent TINYINT(1) DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_user_date (user_id, scheduled_date)
+);

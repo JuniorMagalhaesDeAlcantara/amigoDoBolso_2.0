@@ -55,6 +55,8 @@ class NotificationService
             $this->processCardNotifications();
             $this->processMonthlyReports();
             $this->processOverdueInvoices();
+            $this->processAIInsights();
+            $this->processDailyInsights();
             $this->cleanOldNotifications();
             $this->processRecurringExpenses();
 
@@ -546,6 +548,79 @@ class NotificationService
             $this->log("ERRO ao buscar cartões: " . $e->getMessage());
             return [];
         }
+    }
+
+    private function processAIInsights()
+    {
+        $this->log("Iniciando processamento de insights de IA...");
+
+        try {
+            $db = Database::getInstance()->getConnection();
+            // Busca insights não enviados
+            $stmt = $db->query("SELECT * FROM notifications WHERE type = 'insight_ia' AND sent_push = 0");
+            $pending = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($pending as $item) {
+                // Usa o seu NotificationModel para disparar via Firebase
+                $success = $this->notificationModel->sendPushNotification(
+                    $item['user_id'],
+                    $item['title'],
+                    $item['message'],
+                    '/relatorios' // Link para onde o usuário vai ao clicar
+                );
+
+                if ($success) {
+                    // Marca como enviado para não repetir
+                    $update = $db->prepare("UPDATE notifications SET sent_push = 1 WHERE id = ?");
+                    $update->execute([$item['id']]);
+                    $this->log("  [OK] Push enviado para user {$item['user_id']}");
+                }
+            }
+        } catch (Exception $e) {
+            $this->log("ERRO nos insights: " . $e->getMessage());
+        }
+    }
+
+    private function processDailyInsights()
+    {
+        $this->log("Iniciando envio de insights diários...");
+        $hoje = date('Y-m-d');
+
+        // Busca todas as dicas agendadas para hoje que ainda não foram enviadas
+        $insights = $this->notificationModel->getPendingInsightsByDate($hoje);
+
+        $count = 0;
+        foreach ($insights as $item) {
+            // 1. DISPARA O PUSH REAL (O que você já faz)
+            $success = $this->notificationModel->sendPushNotification(
+                $item['user_id'],
+                "Dica do Amigo 💡",
+                $item['message'],
+                '/dashboard'
+            );
+
+            if ($success) {
+                // 2. REGISTRA NO SISTEMA (Para aparecer no "sininho" do App)
+                // Usamos o método create do seu NotificationModel
+                $this->notificationModel->create([
+                    'user_id' => $item['user_id'],
+                    'type' => 'insight_ia',
+                    'title' => '💡 Dica do Amigo',
+                    'message' => $item['message'],
+                    'priority' => 'medium'
+                ]);
+
+                // 3. MARCA COMO ENVIADO (Para não repetir)
+                $db = Database::getInstance()->getConnection();
+                $stmt = $db->prepare("UPDATE scheduled_insights SET sent = 1 WHERE id = ?");
+                $stmt->execute([$item['id']]);
+
+                $count++;
+                $this->log("  [OK] Insight enviado e registrado para user {$item['user_id']}");
+            }
+        }
+
+        $this->log("Insights diários processados: {$count}");
     }
 }
 

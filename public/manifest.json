@@ -12,13 +12,13 @@
   "theme_color": "#2563eb",
   "icons": [
     {
-      "src": "https://amigodobolso.jmadev.com.br/assets/icons/icon-192.png",
+      "src": "https://amigodobolso.jmadev.com.br/assets/icons/amigo192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "https://amigodobolso.jmadev.com.br/assets/icons/icon-512.png",
+      "src": "https://amigodobolso.jmadev.com.br/assets/icons/amigo512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any"

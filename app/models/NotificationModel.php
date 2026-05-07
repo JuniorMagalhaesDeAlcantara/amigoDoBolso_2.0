@@ -7,6 +7,7 @@ require_once __DIR__ . '/../../vendor/autoload.php';
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
+use Kreait\Firebase\Messaging\WebPushConfig;
 
 class NotificationModel extends Model
 {
@@ -204,7 +205,7 @@ class NotificationModel extends Model
             'email_notify_3days'        => 0,
             'email_notify_1day'         => 0,
             'email_notify_today'        => 0,
-            'email_notify_overdue'      => 0,  
+            'email_notify_overdue'      => 0,
             'email_monthly_report'      => 0,
         ];
     }
@@ -425,19 +426,44 @@ class NotificationModel extends Model
 
         if (empty($tokens)) return false;
 
+        error_log("TOKENS ENCONTRADOS:");
+        error_log(print_r($tokens, true));
+
         foreach ($tokens as $token) {
 
             $push = CloudMessage::withTarget('token', $token)
-                ->withNotification(Notification::create($title, $message))
+                ->withNotification(Notification::create("" . $title, $message))
+                ->withWebPushConfig(
+                    WebPushConfig::fromArray([
+                        'notification' => [
+                            // USE A URL COMPLETA DO SEU LOGO NOVO AQUI
+                            'icon' => 'https://amigodobolso.jmadev.com.br/assets/icons/amigo512.png',
+                            'badge' => 'https://amigodobolso.jmadev.com.br/assets/icons/amigo512.png',
+                            'tag' => 'insight-ia',
+                            'renotify' => true
+                        ],
+                        'fcm_options' => [
+                            'link' => 'https://amigodobolso.jmadev.com.br' . $url
+                        ]
+                    ])
+                )
                 ->withData([
-                    'url' => $url // 🔥 ESSENCIAL
+                    'url' => (string)$url
                 ]);
 
             try {
-                $messaging->send($push);
+                try {
+                    $messaging->send($push);
+                    error_log("Push enviado para: $token");
+                } catch (\Exception $e) {
+                    error_log("Erro push: " . $e->getMessage());
+                }
             } catch (\Exception $e) {
                 error_log("Erro push: " . $e->getMessage());
             }
+
+            error_log("ENVIANDO PUSH PARA TOKEN:");
+            error_log($token);
         }
 
         return true;
@@ -447,5 +473,43 @@ class NotificationModel extends Model
     {
         $stmt = $this->db->prepare("DELETE FROM push_tokens WHERE user_id = :user_id");
         return $stmt->execute(['user_id' => $userId]);
+    }
+
+    /**
+     * Limpa agendamentos futuros para evitar duplicidade
+     */
+    public function clearFutureInsights($userId)
+    {
+        $db = Database::getInstance()->getConnection();
+        // Remover o "AND sent = 0" se quiser que ele limpe TUDO do usuário 
+        // antes de colocar a nova semana da IA.
+        $stmt = $db->prepare("DELETE FROM scheduled_insights WHERE user_id = ?");
+        return $stmt->execute([$userId]);
+    }
+
+    /**
+     * Salva uma nova dica agendada
+     */
+    public function scheduleInsight($userId, $message, $date)
+    {
+        $sql = "INSERT INTO scheduled_insights (user_id, message, scheduled_date, sent) 
+            VALUES (:user_id, :message, :scheduled_date, 0)";
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute([
+            'user_id' => $userId,
+            'message' => $message,
+            'scheduled_date' => $date
+        ]);
+    }
+
+    /**
+     * Busca insights para o Cron enviar no dia
+     */
+    public function getPendingInsightsByDate($date)
+    {
+        $sql = "SELECT * FROM scheduled_insights WHERE scheduled_date = :date AND sent = 0";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['date' => $date]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

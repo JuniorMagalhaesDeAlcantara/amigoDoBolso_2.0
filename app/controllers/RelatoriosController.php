@@ -280,7 +280,7 @@ class RelatoriosController extends Controller
             PROMPT;
     }
 
-    private function getMonthName($month)
+    public function getMonthName($month)
     {
         $months = [
             1 => 'Janeiro',

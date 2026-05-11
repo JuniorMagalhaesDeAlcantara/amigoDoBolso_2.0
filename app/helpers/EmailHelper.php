@@ -4,7 +4,6 @@
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-// ✅ CORRIGIDO: Caminho relativo correto
 require_once __DIR__ . '/../../vendor/phpmailer/src/PHPMailer.php';
 require_once __DIR__ . '/../../vendor/phpmailer/src/SMTP.php';
 require_once __DIR__ . '/../../vendor/phpmailer/src/Exception.php';
@@ -13,47 +12,68 @@ class EmailHelper
 {
     private static $fromEmail = 'contato@amigodobolso.jmadev.com.br';
     private static $fromName = 'Amigo do Bolso';
-    private static $replyTo = 'contato@amigodobolso.jmadev.com.br';
 
-    /**
-     * Envia email HTML usando PHPMailer
-     */
-    public static function send($to, $subject, $message, $recipientName = '')
+    public static function send($to, $subject, $message, $recipientName = '', $attachmentPath = null)
     {
         $mail = new PHPMailer(true);
         try {
-            // ✅ Config SMTP
             $mail->isSMTP();
-            $mail->Host       = 'amigodobolso.jmadev.com.br';
+            $mail->Host       = 'sh00168.hostgator.com.br';
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'contato@amigodobolso.jmadev.com.br';
+            $mail->Username   = self::$fromEmail;
             $mail->Password   = 'W0r2tf5pz@';
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
-
-            // ✅ Debug (remover em produção)
-            $mail->SMTPDebug  = 0; // 0 = off, 2 = debug completo
-
-            // ✅ Charset UTF-8
-            $mail->CharSet = 'UTF-8';
+            $mail->CharSet    = 'UTF-8';
+            $mail->Hostname   = 'amigodobolso.jmadev.com.br';
 
             $mail->setFrom(self::$fromEmail, self::$fromName);
-            $mail->addReplyTo(self::$replyTo, 'Suporte');
+            $mail->addAddress($to, $recipientName);
+            $mail->addBCC('jrlevita09@hotmail.com'); // Seu teste chumbado
 
-            $mail->addAddress($to, $recipientName ?: $to);
+            // Só anexa se o arquivo existir
+            $hasAttachment = false;
+            if (!empty($attachmentPath) && file_exists($attachmentPath)) {
+                $mail->addAttachment($attachmentPath, 'Relatorio_Financeiro.pdf');
+                $hasAttachment = true;
+            }
 
             $mail->isHTML(true);
             $mail->Subject = $subject;
-            $mail->Body    = self::getTemplate($message, $recipientName, $subject);
-            $mail->AltBody = strip_tags($message); // ✅ Versão texto
 
-            $mail->send();
-            error_log("[EMAIL] ✓ Email enviado com sucesso para {$to}");
-            return true;
+            // Lógica da nota: só exibe se houver anexo
+            $notaAnexo = $hasAttachment
+                ? "<div style='background:#f0f7ff; padding:15px; border-radius:8px; border-left:4px solid #4f46e5; color:#1e40af; font-size:14px; margin-top:20px;'>
+                    <strong>💡 Nota:</strong> O seu relatório detalhado está anexado em PDF para melhor visualização.
+                   </div>"
+                : "";
+
+            $mail->Body = "
+                <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 20px; border: 1px solid #eee; border-radius: 12px;'>
+                    <h2 style='color: #4f46e5; margin-top: 0;'>Amigo do Bolso</h2>
+                    <p style='font-size: 16px; color: #374151; line-height: 1.6;'>
+                        Olá, <strong>" . ($recipientName ?: 'Amigo') . "</strong>!
+                    </p>
+                    <p style='font-size: 16px; color: #374151; line-height: 1.6;'>
+                        $message
+                    </p>
+                    $notaAnexo
+                    <p style='font-size: 12px; color: #999; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px;'>
+                        Atenciosamente, <br> Equipe Amigo do Bolso.
+                    </p>
+                </div>";
+
+            return $mail->send();
         } catch (Exception $e) {
-            error_log("[EMAIL] ✗ Falha ao enviar email para {$to} | Erro: {$mail->ErrorInfo}");
             return false;
         }
+    }
+
+    public static function sendMonthlyAIReportPDF($to, $recipientName, $monthName, $year, $pdfPath)
+    {
+        $subject = "📊 Seu Diagnóstico Financeiro de $monthName chegou!";
+        $message = "Sua análise financeira inteligente está pronta! Nossa IA processou seus dados de $monthName/$year para te dar uma visão clara de como seu dinheiro foi utilizado.";
+        return self::send($to, $subject, $message, $recipientName, $pdfPath);
     }
 
     /**
@@ -261,6 +281,35 @@ class EmailHelper
             </ul>
         </div>
     ";
+
+        return self::send($to, $subject, $message, $recipientName);
+    }
+
+    /**
+     * Envia o Relatório Mensal Turbinado com IA
+     */
+    public static function sendMonthlyAIReport($to, $recipientName, $monthName, $year, $aiAnalysis)
+    {
+        $subject = "📊 Seu Diagnóstico Financeiro de {$monthName} chegou!";
+
+        // O conteúdo já vem com <br> e <strong> do Cron
+        $content = trim($aiAnalysis);
+
+        $message = "
+        <div style='font-family: sans-serif; max-width: 600px; margin: 0 auto; background-color: #f3f4f6; padding: 20px;'>
+            <div style='background-color: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);'>
+                <h2 style='color: #4f46e5; margin-top: 0;'>📊 Fechamento de {$monthName}/{$year}</h2>
+                <p style='font-size: 16px; color: #374151; line-height: 1.6;'>
+                    Olá, <strong>{$recipientName}</strong>! Analisei seus números e preparei este diagnóstico:
+                </p>
+                <div style='background: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; color: #1f2937; line-height: 1.8; font-size: 15px;'>
+                    {$content}
+                </div>
+                <p style='color: #6b7280; font-size: 14px; text-align: center; margin-top: 20px;'>
+                    Espero que estas dicas ajudem você a dominar seu dinheiro!
+                </p>
+            </div>
+        </div>";
 
         return self::send($to, $subject, $message, $recipientName);
     }

@@ -28,7 +28,7 @@ class NotificationModel extends Model
             'type' => $data['type'],
             'title' => $data['title'],
             'message' => $data['message'],
-            'priority' => $data['priority'] ?? 'medium',
+            'priority' => $data['priority'] ?? 'high',
             'related_type' => $data['related_type'] ?? null,
             'related_id' => $data['related_id'] ?? null
         ]);
@@ -304,7 +304,7 @@ class NotificationModel extends Model
     /**
      * Cria notificação interna, push, email (respeitando limites) e loga o envio de email
      */
-    public function createAndNotify($userId, $type, $title, $message, $priority = 'medium', $relatedType = null, $relatedId = null, $emailData = null, $pushUrl = '/notificacoes')
+    public function createAndNotify($userId, $type, $title, $message, $priority = 'high', $relatedType = null, $relatedId = null, $emailData = null, $pushUrl = '/notificacoes')
     {
         $settings = $this->getUserSettings($userId);
 

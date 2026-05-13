@@ -273,7 +273,7 @@ class RelatoriosController extends Controller
             4. METAS: 3 metas mensuráveis para o próximo mês
             5. PONTO POSITIVO: 1 destaque motivador
 
-            Tom: encorajador e honesto. Seja direto. Se apresente como Amigo do Bolso.
+            Tom: apresente-se como Amigo do Bolso use tomencorajador e honesto. Seja direto. Se apresente como Amigo do Bolso.
 
             DICA EXTRA: No final da sua resposta, adicione uma linha EXATAMENTE assim:
             PUSH_NOTIFICATION: [Aqui você escreve uma frase de impacto com emojis, sem colchetes, de até 90 caracteres para o celular do usuário, baseada no dado mais crítico que você encontrou]

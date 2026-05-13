@@ -38,8 +38,7 @@ class EmailHelper
 
             $mail->setFrom(self::$fromEmail, self::$fromName);
             $mail->addAddress($to, $recipientName);
-            $mail->addBCC('jrlevita09@hotmail.com');
-
+           
             $hasAttachment = false;
             if (!empty($attachmentPath) && file_exists($attachmentPath)) {
                 $fileSize = filesize($attachmentPath);
@@ -279,14 +278,19 @@ class EmailHelper
               <![endif]-->
               <!--[if !mso]><!-->
               <a href='$pdfUrl'
-                 style='display:inline-block;padding:15px 40px;
-                        background:linear-gradient(135deg,#6c3fc5,#4f46e5);
-                        color:#ffffff;text-decoration:none;
-                        border-radius:10px;font-family:Arial,sans-serif;
-                        font-size:16px;font-weight:700;
+                style='display:inline-block;
+                        padding:15px 40px;
+                        background-color:#4f46e5;
+                        border:1px solid #4f46e5;
+                        color:#ffffff;
+                        text-decoration:none;
+                        border-radius:10px;
+                        font-family:Arial,sans-serif;
+                        font-size:16px;
+                        font-weight:700;
                         mso-padding-alt:15px 40px;'>
                 &#128196; Ver meu Relatório em PDF
-              </a>
+               </a>
               <!--<![endif]-->
             </td>
           </tr>

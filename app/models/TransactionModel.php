@@ -78,19 +78,13 @@ class TransactionModel extends Model
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
             'group_id' => $groupId,
-            'month' => $month,
-            'year' => $year
+            'month'    => $month,
+            'year'     => $year
         ]);
 
-        $balance = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // ADICIONA: Faturas de cartão PAGAS no mês
-        $invoiceModel = new CreditCardInvoiceModel();
-        $paidInvoices = $invoiceModel->getPaidInMonth($groupId, $month, $year);
-
-        $balance['total_expense'] += $paidInvoices;
-
-        return $balance;
+        // ✅ SEM getPaidInMonth() aqui — registerPaymentTransaction() já cria
+        // a transação como despesa/débito/paid=1, capturada pela query acima.
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getSpendingByCategory($groupId, $month, $year)

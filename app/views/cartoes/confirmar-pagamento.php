@@ -11,7 +11,7 @@
         background: white;
         border-radius: 16px;
         padding: 2rem;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         border: 1px solid #e5e7eb;
     }
 
@@ -69,7 +69,7 @@
         border-radius: 8px;
         margin-bottom: 2rem;
     }
-    
+
     .success-box {
         background: #d1fae5;
         border-left: 4px solid #10b981;
@@ -285,7 +285,7 @@
                 <span>Período:</span>
                 <strong><?= $monthName ?>/<?= $year ?></strong>
             </div>
-            
+
             <?php if ($alreadyPaid > 0): ?>
                 <div class="detail-row">
                     <span>Valor Total da Fatura:</span>
@@ -296,7 +296,7 @@
                     <strong style="color: #10b981;">- R$ <?= number_format($alreadyPaid, 2, ',', '.') ?></strong>
                 </div>
             <?php endif; ?>
-            
+
             <div class="detail-row total">
                 <span><?= $alreadyPaid > 0 ? 'Saldo Devedor:' : 'Valor Total:' ?></span>
                 <strong>R$ <?= number_format($remainingAmount, 2, ',', '.') ?></strong>
@@ -304,6 +304,8 @@
         </div>
 
         <form method="POST" id="paymentForm">
+            <input type="hidden" name="month" value="<?= $month ?>">
+            <input type="hidden" name="year" value="<?= $year ?>">
             <div class="payment-options">
                 <h3>💰 Como deseja pagar?</h3>
 
@@ -322,16 +324,16 @@
 
                 <div class="custom-amount-box" id="customAmountBox">
                     <label for="custom_amount">Valor a pagar:</label>
-                    <input 
-                        type="number" 
-                        step="0.01" 
-                        name="custom_amount" 
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="custom_amount"
                         id="custom_amount"
-                        min="0.01" 
-                        max="<?= $remainingAmount ?>" 
+                        min="0.01"
+                        max="<?= $remainingAmount ?>"
                         placeholder="R$ 0,00"
                         oninput="calculateRemaining()">
-                    
+
                     <div class="remaining-alert" id="remainingAlert">
                         ⚠️ Ainda faltará pagar <strong id="remainingValue">R$ 0,00</strong>. Este valor poderá ser pago antes do vencimento ou será movido para a próxima fatura automaticamente.
                     </div>
@@ -342,8 +344,8 @@
                 <button type="submit" class="btn btn-confirm" id="confirmBtn">
                     ✓ Confirmar Pagamento
                 </button>
-                <a href="/cartoes/extrato/<?= $card['id'] ?>?month=<?= $month ?>&year=<?= $year ?>" 
-                   class="btn btn-cancel">
+                <a href="/cartoes/extrato/<?= $card['id'] ?>?month=<?= $month ?>&year=<?= $year ?>"
+                    class="btn btn-cancel">
                     Cancelar
                 </a>
             </div>
@@ -352,93 +354,93 @@
 </div>
 
 <script>
-// ✅ CORREÇÃO: Usa o saldo devedor (remainingAmount), não o total
-const remainingAmount = <?= $remainingAmount ?>;
+    // ✅ CORREÇÃO: Usa o saldo devedor (remainingAmount), não o total
+    const remainingAmount = <?= $remainingAmount ?>;
 
-function selectPaymentType(type) {
-    // Remove active de todos
-    document.querySelectorAll('.payment-option').forEach(opt => {
-        opt.classList.remove('active');
-    });
+    function selectPaymentType(type) {
+        // Remove active de todos
+        document.querySelectorAll('.payment-option').forEach(opt => {
+            opt.classList.remove('active');
+        });
 
-    // Ativa o selecionado
-    const selectedOption = document.querySelector(`#payment_${type}`).closest('.payment-option');
-    selectedOption.classList.add('active');
+        // Ativa o selecionado
+        const selectedOption = document.querySelector(`#payment_${type}`).closest('.payment-option');
+        selectedOption.classList.add('active');
 
-    // Marca o radio
-    document.getElementById(`payment_${type}`).checked = true;
+        // Marca o radio
+        document.getElementById(`payment_${type}`).checked = true;
 
-    // Mostra/esconde campo customizado
-    const customBox = document.getElementById('customAmountBox');
-    const customInput = document.getElementById('custom_amount');
-    
-    if (type === 'custom') {
-        customBox.classList.add('active');
-        customInput.focus();
-    } else {
-        customBox.classList.remove('active');
-        customInput.value = '';
-        document.getElementById('remainingAlert').classList.remove('show');
+        // Mostra/esconde campo customizado
+        const customBox = document.getElementById('customAmountBox');
+        const customInput = document.getElementById('custom_amount');
+
+        if (type === 'custom') {
+            customBox.classList.add('active');
+            customInput.focus();
+        } else {
+            customBox.classList.remove('active');
+            customInput.value = '';
+            document.getElementById('remainingAlert').classList.remove('show');
+        }
     }
-}
 
-function calculateRemaining() {
-    const customAmount = parseFloat(document.getElementById('custom_amount').value) || 0;
-    const stillRemaining = remainingAmount - customAmount;
-    const remainingAlert = document.getElementById('remainingAlert');
-    const confirmBtn = document.getElementById('confirmBtn');
-
-    if (customAmount > 0 && customAmount < remainingAmount) {
-        remainingAlert.classList.add('show');
-        document.getElementById('remainingValue').textContent = 
-            'R$ ' + stillRemaining.toFixed(2).replace('.', ',');
-        confirmBtn.disabled = false;
-    } else if (customAmount >= remainingAmount) {
-        remainingAlert.classList.remove('show');
-        confirmBtn.disabled = false;
-    } else {
-        remainingAlert.classList.remove('show');
-        confirmBtn.disabled = true;
-    }
-}
-
-// Validação antes de enviar
-document.getElementById('paymentForm').addEventListener('submit', function(e) {
-    const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
-    
-    if (paymentType === 'custom') {
+    function calculateRemaining() {
         const customAmount = parseFloat(document.getElementById('custom_amount').value) || 0;
-        
-        if (customAmount <= 0) {
-            e.preventDefault();
-            alert('Por favor, informe um valor válido para pagamento.');
-            document.getElementById('custom_amount').focus();
-            return false;
-        }
-        
-        if (customAmount > remainingAmount) {
-            e.preventDefault();
-            alert(`O valor informado não pode ser maior que o saldo devedor de R$ ${remainingAmount.toFixed(2).replace('.', ',')}.`);
-            document.getElementById('custom_amount').focus();
-            return false;
-        }
+        const stillRemaining = remainingAmount - customAmount;
+        const remainingAlert = document.getElementById('remainingAlert');
+        const confirmBtn = document.getElementById('confirmBtn');
 
-        // Confirmação extra para pagamento parcial
-        if (customAmount < remainingAmount) {
-            const stillRemaining = remainingAmount - customAmount;
-            const confirm = window.confirm(
-                `Você está pagando apenas R$ ${customAmount.toFixed(2).replace('.', ',')} de R$ ${remainingAmount.toFixed(2).replace('.', ',')}.\n\n` +
-                `Ainda faltará pagar R$ ${stillRemaining.toFixed(2).replace('.', ',')}.\n\n` +
-                `Deseja continuar?`
-            );
-            
-            if (!confirm) {
+        if (customAmount > 0 && customAmount < remainingAmount) {
+            remainingAlert.classList.add('show');
+            document.getElementById('remainingValue').textContent =
+                'R$ ' + stillRemaining.toFixed(2).replace('.', ',');
+            confirmBtn.disabled = false;
+        } else if (customAmount >= remainingAmount) {
+            remainingAlert.classList.remove('show');
+            confirmBtn.disabled = false;
+        } else {
+            remainingAlert.classList.remove('show');
+            confirmBtn.disabled = true;
+        }
+    }
+
+    // Validação antes de enviar
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        const paymentType = document.querySelector('input[name="payment_type"]:checked').value;
+
+        if (paymentType === 'custom') {
+            const customAmount = parseFloat(document.getElementById('custom_amount').value) || 0;
+
+            if (customAmount <= 0) {
                 e.preventDefault();
+                alert('Por favor, informe um valor válido para pagamento.');
+                document.getElementById('custom_amount').focus();
                 return false;
             }
+
+            if (customAmount > remainingAmount) {
+                e.preventDefault();
+                alert(`O valor informado não pode ser maior que o saldo devedor de R$ ${remainingAmount.toFixed(2).replace('.', ',')}.`);
+                document.getElementById('custom_amount').focus();
+                return false;
+            }
+
+            // Confirmação extra para pagamento parcial
+            if (customAmount < remainingAmount) {
+                const stillRemaining = remainingAmount - customAmount;
+                const confirm = window.confirm(
+                    `Você está pagando apenas R$ ${customAmount.toFixed(2).replace('.', ',')} de R$ ${remainingAmount.toFixed(2).replace('.', ',')}.\n\n` +
+                    `Ainda faltará pagar R$ ${stillRemaining.toFixed(2).replace('.', ',')}.\n\n` +
+                    `Deseja continuar?`
+                );
+
+                if (!confirm) {
+                    e.preventDefault();
+                    return false;
+                }
+            }
         }
-    }
-});
+    });
 </script>
 
 <?php include VIEWS . '/layouts/footer.php'; ?>

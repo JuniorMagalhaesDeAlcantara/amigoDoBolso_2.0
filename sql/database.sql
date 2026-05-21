@@ -397,3 +397,11 @@ CREATE TABLE scheduled_insights (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_user_date (user_id, scheduled_date)
 );
+
+-- Marca categorias gerenciadas pelo sistema (não editáveis pelo usuário)
+ALTER TABLE categories 
+    ADD COLUMN is_system TINYINT(1) NOT NULL DEFAULT 0;
+
+-- Identifica transações de pagamento de fatura (evita exibi-las como despesa comum)
+ALTER TABLE transactions 
+    ADD COLUMN is_invoice_payment TINYINT(1) NOT NULL DEFAULT 0;

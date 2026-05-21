@@ -119,11 +119,18 @@ class TransacoesController extends Controller
                 $data['credit_card_id'] = filter_input(INPUT_POST, 'credit_card_id', FILTER_VALIDATE_INT);
                 $installments = filter_input(INPUT_POST, 'installments', FILTER_VALIDATE_INT) ?? 1;
 
+                // IMPORTANTE: Compra no crédito NÃO nasce paga no saldo bancário.
+                // Ela fica como 0 (pendente) porque quem vai pagar é a fatura depois.
+                $data['paid'] = 0;
+
                 if ($installments > 1) {
                     $this->transactionModel->createInstallments($data, $installments);
-                    $this->redirect('/transacoes');
-                    return;
+                } else {
+                    $this->transactionModel->create($data);
                 }
+
+                $this->redirect('/transacoes');
+                return; // <-- ESSENCIAL: Impede que o script continue rodando para o "else" abaixo!
             }
 
             // Se for recorrente
@@ -276,6 +283,47 @@ class TransacoesController extends Controller
             'success' => true,
             'message' => $paid === '1' ? 'Transação marcada como paga' : 'Transação marcada como pendente'
         ]);
+        exit;
+    }
+
+    public function pagarFatura()
+    {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Método inválido']);
+            exit;
+        }
+
+        $cardId     = filter_input(INPUT_POST, 'card_id', FILTER_VALIDATE_INT);
+        $month      = filter_input(INPUT_POST, 'month',   FILTER_VALIDATE_INT);
+        $year       = filter_input(INPUT_POST, 'year',    FILTER_VALIDATE_INT);
+        $amount     = floatval($_POST['amount']      ?? 0);
+        $totalAmount = floatval($_POST['total_amount'] ?? $amount); // total da fatura
+
+        if (!$cardId || !$month || !$year || $amount <= 0) {
+            echo json_encode(['success' => false, 'message' => 'Dados inválidos']);
+            exit;
+        }
+
+        $groupId = $_SESSION['current_group_id'];
+        $userId  = $_SESSION['user_id'];
+
+        $card = $this->creditCardModel->findById($cardId);
+        if (!$card || $card['group_id'] != $groupId) {
+            echo json_encode(['success' => false, 'message' => 'Cartão não encontrado']);
+            exit;
+        }
+
+        try {
+            // ✅ Chama o model correto, que já cria a transação de despesa via registerPaymentTransaction()
+            $invoiceModel = new CreditCardInvoiceModel();
+            $invoiceModel->payInvoice($cardId, $month, $year, $totalAmount, $amount, $userId);
+
+            echo json_encode(['success' => true, 'message' => 'Fatura paga com sucesso']);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
         exit;
     }
 }

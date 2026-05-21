@@ -46,7 +46,7 @@ class DashboardController extends Controller {
         }
 
         // Mês e ano (permite trocar via GET)
-        $month = $_GET['month'] ?? date('n');
+        $month = $_GET['month'] ?? date('m');
         $year  = $_GET['year']  ?? date('Y');
 
         // ===== Dados do Dashboard =====

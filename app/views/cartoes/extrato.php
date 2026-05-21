@@ -87,13 +87,13 @@
         transform: scale(1.05);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
-    
+
     .btn-pay-invoice.partial {
         background: var(--warning);
         color: white;
         border-color: var(--warning);
     }
-    
+
     .btn-pay-invoice.partial:hover {
         background: #d97706;
     }
@@ -275,7 +275,7 @@
         font-weight: 800;
         font-family: 'Courier New', monospace;
     }
-    
+
     .payment-status {
         margin-top: 0.75rem;
         font-size: 0.875rem;
@@ -283,11 +283,11 @@
         border-radius: 8px;
         background: rgba(255, 255, 255, 0.2);
     }
-    
+
     .payment-status.full {
         background: rgba(16, 185, 129, 0.3);
     }
-    
+
     .payment-status.partial {
         background: rgba(245, 158, 11, 0.3);
     }
@@ -744,21 +744,7 @@
             </div>
 
             <?php
-            $invoiceModel = new CreditCardInvoiceModel();
-            $invoice = $invoiceModel->findInvoice($card['id'], $month, $year);
-            
-            // ✅ LÓGICA CORRIGIDA
-            $remainingAmount = 0;
-            
-            if ($invoice) {
-                // Se existe registro de pagamento
-                $remainingAmount = $invoiceTotal - $invoice['paid_amount'];
-                $isFullyPaid = $remainingAmount <= 0;
-            } else {
-                // Sem registro = fatura não paga
-                $remainingAmount = $invoiceTotal;
-                $isFullyPaid = false;
-            }
+            $isFullyPaid = $isPaid;
             ?>
 
             <div class="fatura-summary">
@@ -770,14 +756,14 @@
                     <span class="label">Total da Fatura</span>
                     <span class="value-total">R$ <?= number_format($invoiceTotal, 2, ',', '.') ?></span>
 
-                    <?php if ($invoice): ?>
-                        <?php if ($isFullyPaid): ?>
+                    <?php if ($alreadyPaid > 0): ?>
+                        <?php if ($isPaid): ?>
                             <div class="payment-status full">
-                                ✓ Paga integralmente em <?= date('d/m/Y', strtotime($invoice['paid_at'])) ?>
+                                ✓ Paga integralmente em <?= date('d/m/Y', strtotime($paidAt)) ?>
                             </div>
                         <?php else: ?>
                             <div class="payment-status partial">
-                                ⚠️ Pago: R$ <?= number_format($invoice['paid_amount'], 2, ',', '.') ?><br>
+                                ⚠️ Pago: R$ <?= number_format($alreadyPaid, 2, ',', '.') ?><br>
                                 Restante: R$ <?= number_format($remainingAmount, 2, ',', '.') ?>
                             </div>
                         <?php endif; ?>
@@ -789,11 +775,11 @@
                 </div>
             </div>
 
-            <?php if (!$isFullyPaid && $invoiceTotal > 0): ?>
+            <?php if (!$isPaid && $invoiceTotal > 0): ?>
                 <div style="margin-top: 1.5rem; text-align: center;">
                     <a href="/cartoes/pagar-fatura/<?= $card['id'] ?>?month=<?= $month ?>&year=<?= $year ?>"
-                        class="btn-pay-invoice <?= $invoice ? 'partial' : '' ?>">
-                        💳 <?= $invoice ? 'Pagar Saldo Restante' : 'Pagar Esta Fatura' ?>
+                        class="btn-pay-invoice <?= $alreadyPaid > 0 ? 'partial' : '' ?>">
+                        💳 <?= $alreadyPaid > 0 ? 'Pagar Saldo Restante' : 'Pagar Esta Fatura' ?>
                     </a>
                 </div>
             <?php endif; ?>

@@ -170,7 +170,7 @@
         margin: 1.5rem 0;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         position: relative;
-        overflow: hidden;
+        overflow: visible;
     }
 
     .welcome-section::before {
@@ -213,6 +213,9 @@
         border-radius: 12px;
         border: 1px solid rgba(255, 255, 255, 0.2);
         text-align: right;
+        overflow: visible;
+        position: relative;
+        z-index: 10; 
     }
 
     .group-name {
@@ -233,6 +236,189 @@
     .group-code:hover {
         opacity: 0.8;
         transform: scale(1.05);
+    }
+
+    .group-code-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .share-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-share {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: var(--transition);
+    }
+
+    .btn-share.whatsapp {
+        background: #25D366;
+        color: white;
+    }
+
+    .btn-share.whatsapp:hover {
+        background: #1ebe5d;
+    }
+
+    .btn-share.copy {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .btn-share.copy:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+
+    .group-code-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+    }
+
+    .group-code {
+        font-family: 'Courier New', monospace;
+        font-size: 1.0625rem;
+        font-weight: 600;
+    }
+
+    .btn-share-trigger {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        color: white;
+        padding: 0.3rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+    }
+
+    .btn-share-trigger:hover {
+        background: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Popover */
+    .share-popover {
+        display: none;
+        position: absolute;
+        top: calc(100% + 12px);
+        right: 0;
+        width: 260px;
+        background: white;
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+        padding: 1.125rem;
+        z-index: 999;
+        animation: popIn 0.18s ease-out;
+    }
+
+    .share-popover.open {
+        display: block;
+    }
+
+    @keyframes popIn {
+        from {
+            opacity: 0;
+            transform: translateY(-6px) scale(0.97);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .share-popover-arrow {
+        position: absolute;
+        top: -6px;
+        right: 20px;
+        width: 12px;
+        height: 12px;
+        background: white;
+        transform: rotate(45deg);
+        border-radius: 2px;
+        box-shadow: -2px -2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .share-popover-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.75rem;
+    }
+
+    .share-code-display {
+        background: #f3f4f6;
+        border-radius: 8px;
+        padding: 0.625rem 0.875rem;
+        text-align: center;
+        font-family: 'Courier New', monospace;
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: 1px;
+        margin-bottom: 0.875rem;
+    }
+
+    .share-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .share-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0.625rem 0.875rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+        text-decoration: none;
+        border: none;
+        width: 100%;
+    }
+
+    .share-action-btn.wpp {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .share-action-btn.wpp:hover {
+        background: #bbf7d0;
+    }
+
+    .share-action-btn.copy {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
+    .share-action-btn.copy:hover {
+        background: #e5e7eb;
+    }
+
+    .share-action-btn.copied {
+        background: #eff6ff;
+        color: #1d4ed8;
     }
 
     /* ==================== SUMMARY CARDS RESPONSIVOS ==================== */
@@ -974,12 +1160,14 @@
         .welcome-section {
             padding: 1.25rem 1rem;
             margin: 1rem 0;
+            overflow: visible;
         }
 
         .welcome-content {
             flex-direction: column;
             align-items: flex-start;
             gap: 1rem;
+            overflow: visible;
         }
 
         .welcome-text h1 {
@@ -1188,8 +1376,42 @@
             </div>
             <div class="group-info">
                 <div class="group-name">👥 Grupo: <?= $currentGroup['name'] ?></div>
-                <div class="group-code" title="Clique para copiar o código de convite">
-                    <?= $currentGroup['invite_code'] ?>
+                <div class="group-code-wrapper">
+                    <span class="group-code"><?= $currentGroup['invite_code'] ?></span>
+                    <button class="btn-share-trigger" onclick="toggleShare(event)" title="Compartilhar">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <circle cx="18" cy="5" r="3" />
+                            <circle cx="6" cy="12" r="3" />
+                            <circle cx="18" cy="19" r="3" />
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                        </svg>
+                        Compartilhar
+                    </button>
+
+                    <div class="share-popover" id="sharePopover">
+                        <div class="share-popover-arrow"></div>
+                        <p class="share-popover-label">Convidar para o grupo</p>
+                        <div class="share-code-display">
+                            <span><?= $currentGroup['invite_code'] ?></span>
+                        </div>
+                        <div class="share-actions">
+                            <a href="https://wa.me/?text=<?= urlencode('Entre no meu grupo no Amigo do Bolso! Use o código: ' . $currentGroup['invite_code']) ?>"
+                                target="_blank" class="share-action-btn wpp">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                                </svg>
+                                WhatsApp
+                            </a>
+                            <button onclick="copyInviteCode('<?= $currentGroup['invite_code'] ?>')" class="share-action-btn copy" id="copyBtn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                </svg>
+                                <span id="copyBtnText">Copiar código</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1462,16 +1684,41 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script>
     // Copiar código de convite
-    document.querySelector('.group-code')?.addEventListener('click', function() {
-        const code = this.textContent.trim();
+    function toggleShare(e) {
+        e.stopPropagation();
+        const pop = document.getElementById('sharePopover');
+        pop.classList.toggle('open');
+    }
+
+    function copyInviteCode(code) {
         navigator.clipboard.writeText(code).then(() => {
-            const original = this.textContent;
-            this.textContent = '✓ Copiado!';
+            const btn = document.getElementById('copyBtn');
+            const text = document.getElementById('copyBtnText');
+            btn.classList.add('copied');
+            text.textContent = '✓ Copiado!';
             setTimeout(() => {
-                this.textContent = original;
+                btn.classList.remove('copied');
+                text.textContent = 'Copiar código';
             }, 2000);
         });
+    }
+
+    // Fecha ao clicar fora
+    document.addEventListener('click', function(e) {
+        const pop = document.getElementById('sharePopover');
+        if (pop && !pop.contains(e.target) && !e.target.closest('.btn-share-trigger')) {
+            pop.classList.remove('open');
+        }
     });
+
+    function shareCode(code) {
+        navigator.clipboard.writeText(code).then(() => {
+            const btn = document.querySelector('.btn-share.copy');
+            const original = btn.textContent;
+            btn.textContent = '✓ Copiado!';
+            setTimeout(() => btn.textContent = original, 2000);
+        });
+    }
 
     <?php if (!empty($spendingByCategory)): ?>
         // Gráfico de Gastos por Categoria

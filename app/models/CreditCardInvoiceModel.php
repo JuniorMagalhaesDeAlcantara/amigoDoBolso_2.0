@@ -10,90 +10,89 @@ class CreditCardInvoiceModel extends Model
     public function payInvoice($cardId, $month, $year, $totalAmount, $paidAmount, $userId)
     {
         $creditCardModel = new CreditCardModel();
-        $card = $creditCardModel->findById($cardId);
+        $card            = $creditCardModel->findById($cardId);
 
         $existing = $this->findInvoice($cardId, $month, $year);
 
-        // Se já existe
         if ($existing) {
-            $newPaidAmount = $existing['paid_amount'] + $paidAmount;
-            $newRemainingAmount = $totalAmount - $newPaidAmount;
+            $newPaidAmount      = round(floatval($existing['paid_amount']) + $paidAmount, 2);
+            $newRemainingAmount = round($totalAmount - $newPaidAmount, 2);
 
-            // Se quitou totalmente E tinha saldo devedor movido
-            if ($newRemainingAmount <= 0 && $existing['overdue_moved_to_next']) {
+            // FIX: tolerância de 1 centavo na comparação de float
+            if ($newRemainingAmount <= 0.01 && $existing['overdue_moved_to_next']) {
                 $this->removeOverdueDebt($cardId, $month, $year);
             }
 
-            $sql = "UPDATE {$this->table} 
-                    SET total_amount = ?,
-                        paid_amount = ?, 
+            $sql = "UPDATE {$this->table}
+                    SET total_amount     = ?,
+                        paid_amount      = ?,
                         remaining_amount = ?,
-                        paid_at = NOW(),
-                        is_overdue = 0
+                        paid_at          = NOW(),
+                        paid_by          = ?,
+                        is_overdue       = 0
                     WHERE id = ?";
 
             $stmt = $this->db->prepare($sql);
-            $stmt->execute([$totalAmount, $newPaidAmount, $newRemainingAmount, $existing['id']]);
+            $stmt->execute([$totalAmount, $newPaidAmount, $newRemainingAmount, $userId, $existing['id']]);
 
-            // REGISTRA O PAGAMENTO COMO TRANSAÇÃO DE DESPESA
             $this->registerPaymentTransaction($card, $month, $year, $paidAmount, $userId);
 
             return $existing['id'];
         }
 
-        // Se não existe, cria novo registro
-        $data = [
-            'credit_card_id' => $cardId,
-            'month' => $month,
-            'year' => $year,
-            'total_amount' => $totalAmount,
-            'paid_amount' => $paidAmount,
-            'remaining_amount' => $totalAmount - $paidAmount,
-            'paid_at' => date('Y-m-d H:i:s'),
-            'paid_by' => $userId,
-            'is_overdue' => 0,
-            'overdue_moved_to_next' => 0
-        ];
+        // Novo registro
+        $invoiceId = $this->create([
+            'credit_card_id'       => $cardId,
+            'month'                => $month,
+            'year'                 => $year,
+            'total_amount'         => $totalAmount,
+            'paid_amount'          => $paidAmount,
+            'remaining_amount'     => round($totalAmount - $paidAmount, 2),
+            'paid_at'              => date('Y-m-d H:i:s'),
+            'paid_by'              => $userId,
+            'is_overdue'           => 0,
+            'overdue_moved_to_next' => 0,
+        ]);
 
-        $invoiceId = $this->create($data);
-
-        // REGISTRA O PAGAMENTO COMO TRANSAÇÃO DE DESPESA
         $this->registerPaymentTransaction($card, $month, $year, $paidAmount, $userId);
-
-        // ❌ REMOVIDO: NÃO cria débito imediatamente
-        // O débito só será criado pelo CRON quando a fatura vencer sem pagamento total
 
         return $invoiceId;
     }
 
     /**
-     * Registra o pagamento da fatura como transação de despesa
+     * Registra o pagamento da fatura como transação de despesa.
+     *
+     * REGRA: a transação NÃO é vinculada ao cartão (credit_card_id = null)
+     * para não aparecer no extrato de compras do cartão.
+     * Ela representa o débito na conta corrente ao quitar a fatura.
+     *
+     * FIX: data de pagamento usa vencimento real ou hoje se fatura passada,
+     * mas NUNCA usa data futura para faturas históricas.
      */
     private function registerPaymentTransaction($card, $month, $year, $paidAmount, $userId)
     {
         $transactionModel = new TransactionModel();
-        $categoryModel = new CategoryModel();
+        $categoryModel    = new CategoryModel();
 
-        $paymentCategory = $categoryModel->findByName($card['group_id'], 'Pagamento Cartão');
-
-        if (!$paymentCategory) {
+        $category = $categoryModel->findByName($card['group_id'], 'Pagamento Cartão');
+        if (!$category) {
             $categoryId = $categoryModel->create([
                 'group_id' => $card['group_id'],
                 'name'     => 'Pagamento Cartão',
                 'type'     => 'despesa',
-                'color'    => '#8b5cf6'
+                'color'    => '#8b5cf6',
             ]);
         } else {
-            $categoryId = $paymentCategory['id'];
+            $categoryId = $category['id'];
         }
 
         $creditCardModel = new CreditCardModel();
-        $cardData = $creditCardModel->findById($card['id']);
+        $cardData        = $creditCardModel->findById($card['id']);
 
-        $paymentDate = sprintf('%04d-%02d-%02d', $year, $month, $cardData['due_day']);
-        if (strtotime($paymentDate) > time()) {
-            $paymentDate = date('Y-m-d');
-        }
+        // FIX: usa o vencimento da fatura como data do pagamento.
+        // Se for fatura futura → usa hoje. Se for fatura passada → usa data do vencimento real.
+        $dueTs       = mktime(0, 0, 0, $month, $cardData['due_day'], $year);
+        $paymentDate = ($dueTs > time()) ? date('Y-m-d') : date('Y-m-d', $dueTs);
 
         $transactionModel->create([
             'group_id'         => $card['group_id'],
@@ -104,120 +103,70 @@ class CreditCardInvoiceModel extends Model
             'type'             => 'despesa',
             'transaction_date' => $paymentDate,
             'payment_method'   => 'debito',
-            'credit_card_id'   => null, // ← era $card['id'], causava o problema
-            'paid'             => 1
-        ]);
-    }
-    /**
-     * Cria débito de saldo devedor na próxima fatura (pagamento parcial)
-     * ⚠️ ESTE MÉTODO AGORA SÓ DEVE SER CHAMADO PELO CRON NO VENCIMENTO
-     */
-    private function createRemainingDebt($cardId, $month, $year, $amount, $userId)
-    {
-        $creditCardModel = new CreditCardModel();
-        $card = $creditCardModel->findById($cardId);
-
-        // Próximo mês
-        $nextMonth = $month + 1;
-        $nextYear = $year;
-        if ($nextMonth > 12) {
-            $nextMonth = 1;
-            $nextYear++;
-        }
-
-        // Data da transação: dia de vencimento do mês atual + 1
-        $debtDate = sprintf('%04d-%02d-%02d', $year, $month, $card['due_day']);
-        $debtDateTime = new DateTime($debtDate);
-        $debtDateTime->modify('+1 day');
-
-        $transactionModel = new TransactionModel();
-        $categoryModel = new CategoryModel();
-
-        // Busca ou cria categoria "Pagamento Parcial Cartão"
-        $debtCategory = $categoryModel->findByName($card['group_id'], 'Pagamento Parcial Cartão');
-
-        if (!$debtCategory) {
-            $categoryId = $categoryModel->create([
-                'group_id' => $card['group_id'],
-                'name' => 'Pagamento Parcial Cartão',
-                'type' => 'despesa',
-                'color' => '#f59e0b'
-            ]);
-        } else {
-            $categoryId = $debtCategory['id'];
-        }
-
-        $transactionModel->create([
-            'group_id' => $card['group_id'],
-            'user_id' => $userId,
-            'category_id' => $categoryId,
-            'description' => "💳 Saldo devedor fatura {$month}/{$year} - " . $card['name'],
-            'amount' => $amount,
-            'type' => 'despesa',
-            'transaction_date' => $debtDateTime->format('Y-m-d'),
-            'payment_method' => 'credito',
-            'credit_card_id' => $cardId,
-            'paid' => 0
+            'credit_card_id'   => null,  // ← não vincular ao cartão; é saída da conta corrente
+            'paid'             => 1,
         ]);
     }
 
     /**
-     * Move saldo devedor para próxima fatura (quando vence sem pagar)
+     * Move saldo devedor para próxima fatura (chamado pelo CRON no vencimento).
+     *
+     * FIX: $userId pode vir null quando a fatura nunca teve pagamento (CRON).
+     * Usa um fallback para o primeiro admin do grupo.
      */
     public function moveOverdueToNextInvoice($cardId, $month, $year, $amount, $userId)
     {
         $creditCardModel = new CreditCardModel();
-        $card = $creditCardModel->findById($cardId);
+        $card            = $creditCardModel->findById($cardId);
 
-        // Próximo mês
+        // FIX: se não houver userId (fatura nunca paga), busca o criador do grupo
+        if (!$userId) {
+            $userId = $this->getGroupOwner($card['group_id']);
+        }
+
         $nextMonth = $month + 1;
-        $nextYear = $year;
+        $nextYear  = $year;
         if ($nextMonth > 12) {
             $nextMonth = 1;
             $nextYear++;
         }
 
-        // Data: dia seguinte ao vencimento
-        $debtDate = sprintf('%04d-%02d-%02d', $year, $month, $card['due_day']);
-        $debtDateTime = new DateTime($debtDate);
-        $debtDateTime->modify('+1 day');
+        // Dia seguinte ao vencimento
+        $debtTs       = mktime(0, 0, 0, $month, $card['due_day'] + 1, $year);
+        $debtDate     = date('Y-m-d', $debtTs);
 
         $transactionModel = new TransactionModel();
-        $categoryModel = new CategoryModel();
+        $categoryModel    = new CategoryModel();
 
-        // Busca ou cria categoria "Fatura Atrasada"
         $debtCategory = $categoryModel->findByName($card['group_id'], 'Fatura Atrasada');
-
         if (!$debtCategory) {
             $categoryId = $categoryModel->create([
                 'group_id' => $card['group_id'],
-                'name' => 'Fatura Atrasada',
-                'type' => 'despesa',
-                'color' => '#dc2626'
+                'name'     => 'Fatura Atrasada',
+                'type'     => 'despesa',
+                'color'    => '#dc2626',
             ]);
         } else {
             $categoryId = $debtCategory['id'];
         }
 
-        // Cria transação de débito
         $transactionId = $transactionModel->create([
-            'group_id' => $card['group_id'],
-            'user_id' => $userId,
-            'category_id' => $categoryId,
-            'description' => "💳 Fatura vencida {$month}/{$year} - " . $card['name'],
-            'amount' => $amount,
-            'type' => 'despesa',
-            'transaction_date' => $debtDateTime->format('Y-m-d'),
-            'payment_method' => 'credito',
-            'credit_card_id' => $cardId,
-            'paid' => 0
+            'group_id'         => $card['group_id'],
+            'user_id'          => $userId,
+            'category_id'      => $categoryId,
+            'description'      => "💳 Fatura vencida {$month}/{$year} - " . $card['name'],
+            'amount'           => $amount,
+            'type'             => 'despesa',
+            'transaction_date' => $debtDate,
+            'payment_method'   => 'debito',  // débito bancário, não crédito
+            'credit_card_id'   => null,       // não vincula ao cartão para não dobrar o total
+            'paid'             => 0,
         ]);
 
-        // Marca a fatura como tendo movido o saldo
-        $sql = "UPDATE {$this->table} 
-                SET is_overdue = 1,
-                    overdue_moved_to_next = 1,
-                    overdue_transaction_id = ?
+        $sql = "UPDATE {$this->table}
+                SET is_overdue              = 1,
+                    overdue_moved_to_next   = 1,
+                    overdue_transaction_id  = ?
                 WHERE credit_card_id = ? AND month = ? AND year = ?";
 
         $stmt = $this->db->prepare($sql);
@@ -237,14 +186,12 @@ class CreditCardInvoiceModel extends Model
             return false;
         }
 
-        // Deleta a transação de débito que foi criada
         $transactionModel = new TransactionModel();
         $transactionModel->delete($invoice['overdue_transaction_id']);
 
-        // Atualiza a fatura
-        $sql = "UPDATE {$this->table} 
-                SET overdue_moved_to_next = 0,
-                    overdue_transaction_id = NULL
+        $sql = "UPDATE {$this->table}
+                SET overdue_moved_to_next   = 0,
+                    overdue_transaction_id  = NULL
                 WHERE credit_card_id = ? AND month = ? AND year = ?";
 
         $stmt = $this->db->prepare($sql);
@@ -252,8 +199,7 @@ class CreditCardInvoiceModel extends Model
     }
 
     /**
-     * Verifica se fatura está TOTALMENTE paga
-     * ✅ CORRIGIDO: Compara paid_amount com total_amount
+     * Verifica se fatura está TOTALMENTE paga (com tolerância de 1 centavo)
      */
     public function isInvoicePaid($cardId, $month, $year)
     {
@@ -263,8 +209,8 @@ class CreditCardInvoiceModel extends Model
             return false;
         }
 
-        // Fatura está paga se paid_amount >= total_amount
-        return $invoice['paid_amount'] >= $invoice['total_amount'];
+        // FIX: tolerância para evitar falso-negativo por arredondamento de float
+        return floatval($invoice['paid_amount']) >= floatval($invoice['total_amount']) - 0.01;
     }
 
     /**
@@ -272,7 +218,7 @@ class CreditCardInvoiceModel extends Model
      */
     public function findInvoice($cardId, $month, $year)
     {
-        $sql = "SELECT * FROM {$this->table} 
+        $sql = "SELECT * FROM {$this->table}
                 WHERE credit_card_id = ? AND month = ? AND year = ?";
 
         $stmt = $this->db->prepare($sql);
@@ -285,12 +231,12 @@ class CreditCardInvoiceModel extends Model
      */
     public function getPaidInMonth($groupId, $month, $year)
     {
-        $sql = "SELECT COALESCE(SUM(i.paid_amount), 0) as total
+        $sql = "SELECT COALESCE(SUM(i.paid_amount), 0) AS total
                 FROM {$this->table} i
                 INNER JOIN credit_cards c ON i.credit_card_id = c.id
                 WHERE c.group_id = ?
-                AND MONTH(i.paid_at) = ?
-                AND YEAR(i.paid_at) = ?";
+                  AND MONTH(i.paid_at) = ?
+                  AND YEAR(i.paid_at)  = ?";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([$groupId, $month, $year]);
@@ -304,9 +250,9 @@ class CreditCardInvoiceModel extends Model
      */
     public function getCardHistory($cardId, $limit = 12)
     {
-        $sql = "SELECT i.*, u.name as paid_by_name
+        $sql = "SELECT i.*, u.name AS paid_by_name
                 FROM {$this->table} i
-                INNER JOIN users u ON i.paid_by = u.id
+                LEFT JOIN users u ON i.paid_by = u.id
                 WHERE i.credit_card_id = ?
                 ORDER BY i.year DESC, i.month DESC
                 LIMIT ?";
@@ -321,7 +267,7 @@ class CreditCardInvoiceModel extends Model
      */
     public function cancelPayment($cardId, $month, $year)
     {
-        $sql = "DELETE FROM {$this->table} 
+        $sql = "DELETE FROM {$this->table}
                 WHERE credit_card_id = ? AND month = ? AND year = ?";
 
         $stmt = $this->db->prepare($sql);
@@ -329,38 +275,65 @@ class CreditCardInvoiceModel extends Model
     }
 
     /**
-     * ✅ NOVO: Processa faturas vencidas (chamado pelo CRON)
-     * Verifica faturas que venceram e move saldo devedor para próxima fatura
+     * Processa faturas vencidas (chamado pelo CRON).
+     * Verifica faturas que venceram e move saldo devedor para próxima fatura.
+     *
+     * FIX: usa LPAD para montar a data corretamente no MySQL.
      */
     public function processOverdueInvoices()
     {
-        // Busca todas as faturas que:
-        // 1. Têm saldo devedor (remaining_amount > 0)
-        // 2. Venceram (data de vencimento já passou)
-        // 3. Ainda não tiveram o saldo movido
-
         $sql = "SELECT i.*, c.due_day, c.group_id
                 FROM {$this->table} i
                 INNER JOIN credit_cards c ON i.credit_card_id = c.id
-                WHERE i.remaining_amount > 0
-                AND i.overdue_moved_to_next = 0
-                AND CONCAT(i.year, '-', LPAD(i.month, 2, '0'), '-', LPAD(c.due_day, 2, '0')) < CURDATE()";
+                WHERE i.remaining_amount > 0.01
+                  AND i.overdue_moved_to_next = 0
+                  AND STR_TO_DATE(
+                        CONCAT(i.year, '-', LPAD(i.month, 2, '0'), '-', LPAD(c.due_day, 2, '0')),
+                        '%Y-%m-%d'
+                      ) < CURDATE()";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute();
         $overdueInvoices = $stmt->fetchAll();
 
         foreach ($overdueInvoices as $invoice) {
-            // Move o saldo devedor para a próxima fatura
+            // FIX: paid_by pode ser null (fatura nunca paga); moveOverdueToNextInvoice trata isso
             $this->moveOverdueToNextInvoice(
                 $invoice['credit_card_id'],
                 $invoice['month'],
                 $invoice['year'],
                 $invoice['remaining_amount'],
-                $invoice['paid_by'] // Usa o mesmo usuário que fez o último pagamento
+                $invoice['paid_by'] ?? null
             );
         }
 
         return count($overdueInvoices);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers privados
+    // -------------------------------------------------------------------------
+
+    /**
+     * FIX: retorna o ID do dono/admin do grupo para usar quando paid_by é null
+     */
+    private function getGroupOwner($groupId)
+    {
+        $sql  = "SELECT user_id FROM group_members
+                 WHERE group_id = ? AND role = 'owner'
+                 LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute([$groupId]);
+        $row = $stmt->fetch();
+
+        // fallback: qualquer membro
+        if (!$row) {
+            $sql  = "SELECT user_id FROM group_members WHERE group_id = ? LIMIT 1";
+            $stmt = $this->db->prepare($sql);
+            $stmt->execute([$groupId]);
+            $row = $stmt->fetch();
+        }
+
+        return $row ? $row['user_id'] : null;
     }
 }

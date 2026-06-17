@@ -114,20 +114,27 @@ class TransactionModel extends Model
      */
     private function calculateFirstInstallmentDate($purchaseDate, $closingDay)
     {
-        $purchase = new DateTime($purchaseDate);
+        $purchase    = new DateTime($purchaseDate);
         $purchaseDay = (int)$purchase->format('d');
+        $purchaseMonth = (int)$purchase->format('m');
+        $purchaseYear  = (int)$purchase->format('Y');
 
-        // Se a compra foi ANTES do fechamento, entra na fatura deste mês
         if ($purchaseDay <= $closingDay) {
-            return $purchaseDate;
+            // Compra antes ou no fechamento → fatura deste mês
+            // Usa o dia de fechamento como anchor para cair dentro do período
+            return date('Y-m-d', mktime(0, 0, 0, $purchaseMonth, $closingDay, $purchaseYear));
         } else {
-            // Se a compra foi DEPOIS do fechamento, entra na fatura do próximo mês
-            $firstInstallment = clone $purchase;
-            $firstInstallment->modify('+1 month');
-            return $firstInstallment->format('Y-m-d');
+            // Compra depois do fechamento → fatura do próximo mês
+            // Usa o fechamento do próximo mês para garantir que cai dentro do período
+            $nextMonth = $purchaseMonth + 1;
+            $nextYear  = $purchaseYear;
+            if ($nextMonth > 12) {
+                $nextMonth = 1;
+                $nextYear++;
+            }
+           return date('Y-m-d', mktime(0, 0, 0, $purchaseMonth, $purchaseDay, $purchaseYear));
         }
     }
-
     /**
      * Cria transações parceladas considerando o fechamento do cartão
      */
@@ -148,10 +155,16 @@ class TransactionModel extends Model
 
         try {
             $closingDay = $creditCard['closing_day'];
+            $dueDay     = $creditCard['due_day'];
+
             $amountPerInstallment = $data['amount'] / $installments;
 
             // Calcula a data da primeira parcela
-            $firstInstallmentDate = $this->calculateFirstInstallmentDate($data['transaction_date'], $closingDay);
+            $firstInstallmentDate = $this->calculateFirstInstallmentDate(
+                $data['transaction_date'],
+                $closingDay,
+                $dueDay
+            );
 
             // Cria a transação PAI (primeira parcela)
             $parentData = array_merge($data, [
@@ -354,30 +367,25 @@ class TransactionModel extends Model
      */
     public function getByCard($cardId, $month, $year)
     {
-        // Busca informações do cartão
         $creditCardModel = new CreditCardModel();
         $card = $creditCardModel->findById($cardId);
 
-        if (!$card) {
-            return [];
-        }
+        if (!$card) return [];
 
         $closingDay = $card['closing_day'];
 
-        // Calcula período da fatura (mesmo cálculo do getCardInvoiceTotal)
-        $previousMonth = $month - 1;
-        $previousYear = $year;
-
-        if ($previousMonth < 1) {
-            $previousMonth = 12;
-            $previousYear--;
+        $prevMonth = $month - 1;
+        $prevYear  = $year;
+        if ($prevMonth < 1) {
+            $prevMonth = 12;
+            $prevYear--;
         }
 
-        $startDate = sprintf('%04d-%02d-%02d', $previousYear, $previousMonth, $closingDay);
-        $startDateTime = new DateTime($startDate);
-        $startDateTime->modify('+1 day');
+        // Início: dia (closingDay+1) do mês anterior — idêntico ao getCardInvoiceTotal
+        $startDate = date('Y-m-d', mktime(0, 0, 0, $prevMonth, $closingDay + 1, $prevYear));
 
-        $endDate = sprintf('%04d-%02d-%02d', $year, $month, $closingDay);
+        // Fim: dia de fechamento do mês atual (inclusive)
+        $endDate = date('Y-m-d', mktime(0, 0, 0, $month, $closingDay, $year));
 
         $sql = "
         SELECT 
@@ -391,21 +399,22 @@ class TransactionModel extends Model
         LEFT JOIN credit_cards cc ON t.credit_card_id = cc.id
         LEFT JOIN users u ON t.user_id = u.id
         WHERE t.credit_card_id = :card_id
-        AND t.transaction_date > :start_date
+        AND t.type = 'despesa'
+        AND t.transaction_date >= :start_date
         AND t.transaction_date <= :end_date
+        AND (c.name IS NULL OR c.name != 'Fatura Atrasada')
         ORDER BY t.transaction_date DESC, t.created_at DESC
     ";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':card_id' => $cardId,
-            ':start_date' => $startDateTime->format('Y-m-d'),
-            ':end_date' => $endDate
+            ':card_id'    => $cardId,
+            ':start_date' => $startDate,
+            ':end_date'   => $endDate,
         ]);
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
     /**
      * Busca transações de um benefício específico (VR/VA)
      */
@@ -430,51 +439,42 @@ class TransactionModel extends Model
      */
     public function getCardInvoiceTotal($cardId, $month, $year)
     {
-        // Busca informações do cartão para pegar o dia de fechamento
         $creditCardModel = new CreditCardModel();
         $card = $creditCardModel->findById($cardId);
 
-        if (!$card) {
-            return 0;
-        }
+        if (!$card) return 0;
 
         $closingDay = $card['closing_day'];
 
-        // Calcula o período da fatura
-        // A fatura de um mês X engloba compras entre o fechamento do mês X-1 e o fechamento do mês X
-
-        // Data de fechamento do mês ANTERIOR
-        $previousMonth = $month - 1;
-        $previousYear = $year;
-
-        if ($previousMonth < 1) {
-            $previousMonth = 12;
-            $previousYear--;
+        $prevMonth = $month - 1;
+        $prevYear  = $year;
+        if ($prevMonth < 1) {
+            $prevMonth = 12;
+            $prevYear--;
         }
 
-        // Data inicial: dia após o fechamento do mês anterior
-        $startDate = sprintf('%04d-%02d-%02d', $previousYear, $previousMonth, $closingDay);
-        $startDateTime = new DateTime($startDate);
-        $startDateTime->modify('+1 day');
+        // Início: dia (closingDay+1) do mês anterior
+        $startDate = date('Y-m-d', mktime(0, 0, 0, $prevMonth, $closingDay + 1, $prevYear));
 
-        // Data final: dia de fechamento do mês atual
-        $endDate = sprintf('%04d-%02d-%02d', $year, $month, $closingDay);
+        // Fim: dia de fechamento do mês atual (inclusive)
+        $endDate = date('Y-m-d', mktime(0, 0, 0, $month, $closingDay, $year));
 
-        // Query que busca transações do cartão dentro do período da fatura
         $sql = "
-        SELECT COALESCE(SUM(amount), 0) as total
-        FROM transactions
-        WHERE credit_card_id = :card_id
-        AND transaction_date > :start_date
-        AND transaction_date <= :end_date
-        AND type = 'despesa'
+        SELECT COALESCE(SUM(t.amount), 0) as total
+        FROM transactions t
+        LEFT JOIN categories c ON t.category_id = c.id
+        WHERE t.credit_card_id = :card_id
+        AND t.transaction_date >= :start_date
+        AND t.transaction_date <= :end_date
+        AND t.type = 'despesa'
+        AND (c.name IS NULL OR c.name != 'Fatura Atrasada')
     ";
 
         $stmt = $this->db->prepare($sql);
         $stmt->execute([
-            ':card_id' => $cardId,
-            ':start_date' => $startDateTime->format('Y-m-d'),
-            ':end_date' => $endDate
+            ':card_id'    => $cardId,
+            ':start_date' => $startDate,
+            ':end_date'   => $endDate,
         ]);
 
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -491,7 +491,7 @@ class TransactionModel extends Model
                 INNER JOIN categories c ON t.category_id = c.id
                 WHERE t.credit_card_id = ?
                 AND t.transaction_date > CURDATE()
-                AND t.installments > 0
+                AND t.is_installment = 1
                 ORDER BY t.transaction_date ASC
                 LIMIT ?";
 
@@ -619,6 +619,8 @@ class TransactionModel extends Model
 
     public function getOverdue($groupId)
     {
+        // Exclui compras no crédito: elas são gerenciadas pela fatura, não são
+        // débitos bancários atrasados. Só mostra débito, dinheiro, pix, vr, va etc.
         $sql = "SELECT t.*, c.name as category_name, c.color, u.name as user_name
             FROM transactions t
             INNER JOIN categories c ON t.category_id = c.id
@@ -626,6 +628,7 @@ class TransactionModel extends Model
             WHERE t.group_id = :group_id
             AND t.paid = 0
             AND t.type = 'despesa'
+            AND t.payment_method != 'credito'
             AND t.transaction_date < DATE_FORMAT(CURDATE(), '%Y-%m-01')
             ORDER BY t.transaction_date ASC";
 

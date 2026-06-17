@@ -1,6 +1,10 @@
 # Firebase sensível
 app/config/firebase.json
 
+# Arquivos sensíveis
+config/Database.php
+config/openai.php
+
 # dependências
 /vendor
 /node_modules

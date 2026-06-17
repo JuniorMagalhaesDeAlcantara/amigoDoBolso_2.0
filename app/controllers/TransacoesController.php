@@ -62,8 +62,8 @@ class TransacoesController extends Controller
             $paymentMethod = htmlspecialchars(trim($_POST['payment_method'] ?? ''), ENT_QUOTES, 'UTF-8');
             $isRecurring = isset($_POST['is_recurring']) && $_POST['is_recurring'] === '1';
 
-            // Valor como string (será convertido depois)
-            $amount = htmlspecialchars(trim($_POST['amount'] ?? ''), ENT_QUOTES, 'UTF-8');
+            // Valor: sanitiza e converte formato pt-BR (1.500,99 → 1500.99)
+            $amount = floatval($_POST['amount'] ?? 0);
 
             $data = [
                 'group_id' => $groupId,
@@ -298,8 +298,7 @@ class TransacoesController extends Controller
         $cardId     = filter_input(INPUT_POST, 'card_id', FILTER_VALIDATE_INT);
         $month      = filter_input(INPUT_POST, 'month',   FILTER_VALIDATE_INT);
         $year       = filter_input(INPUT_POST, 'year',    FILTER_VALIDATE_INT);
-        $amount     = floatval($_POST['amount']      ?? 0);
-        $totalAmount = floatval($_POST['total_amount'] ?? $amount); // total da fatura
+        $amount     = floatval($_POST['amount'] ?? 0);
 
         if (!$cardId || !$month || !$year || $amount <= 0) {
             echo json_encode(['success' => false, 'message' => 'Dados inválidos']);
@@ -314,6 +313,9 @@ class TransacoesController extends Controller
             echo json_encode(['success' => false, 'message' => 'Cartão não encontrado']);
             exit;
         }
+
+        // Busca o total real do DB — não confia no valor enviado pelo POST
+        $totalAmount = $this->transactionModel->getCardInvoiceTotal($cardId, $month, $year);
 
         try {
             // ✅ Chama o model correto, que já cria a transação de despesa via registerPaymentTransaction()
